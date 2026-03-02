@@ -1,0 +1,249 @@
+{
+  "meta": {
+    "tz": "Asia/Shanghai",
+    "week1_monday": "2026-03-02"
+  },
+  "periodTimes": {
+    "1": "08:10-08:55",
+    "2": "09:05-09:50",
+    "3": "10:20-11:05",
+    "4": "11:15-12:00",
+    "5": "14:00-14:45",
+    "6": "14:55-15:40",
+    "7": "16:10-16:55",
+    "8": "17:05-17:50",
+    "9": "19:00-19:45",
+    "10": "19:55-20:40"
+  },
+  "special": [
+    {
+      "title": "专业劳动实践（数理学院）",
+      "weekday": [1,2,3,4,5],
+      "weeks": "1",
+      "times": [
+        {"start": "09:00", "end": "11:00"},
+        {"start": "14:00", "end": "16:00"}
+      ],
+      "location": "笃行楼235 学院机房",
+      "note": "本学期第1周 周一至周五"
+    }
+  ],
+  "courses": [
+    {
+      "title": "大数据技术基础",
+      "periods": [
+        1,
+        2
+      ],
+      "weeks": "2-13",
+      "location": "仁智楼 323(多)",
+      "teacher": "王英华",
+      "source": "PDF",
+      "weekday": 1
+    },
+    {
+      "title": "Python数据处理与分析",
+      "periods": [
+        5,
+        6
+      ],
+      "weeks": "2-17",
+      "location": "笃学B楼 201(多)",
+      "teacher": "张佳川",
+      "source": "PDF",
+      "weekday": 1
+    },
+    {
+      "title": "数据结构与算法",
+      "periods": [
+        9,
+        10
+      ],
+      "weeks": "2-17",
+      "location": "仁智楼 312(多)",
+      "teacher": "杜振龙",
+      "source": "PDF",
+      "weekday": 1
+    },
+    {
+      "title": "多元统计分析",
+      "periods": [
+        1,
+        2
+      ],
+      "weeks": "2-13",
+      "location": "笃学A楼 209(多)",
+      "teacher": "夏婉婉",
+      "source": "PDF",
+      "weekday": 2
+    },
+    {
+      "title": "毛泽东思想和中国特色 社会主义理论体系概论",
+      "periods": [
+        3,
+        4
+      ],
+      "weeks": "2-11",
+      "location": "笃学B楼 204(多)",
+      "teacher": "刘玉珍",
+      "source": "PDF",
+      "weekday": 2
+    },
+    {
+      "title": "数值分析",
+      "periods": [
+        5,
+        6
+      ],
+      "weeks": "2-17",
+      "location": "笃学B楼 202(多)",
+      "teacher": "石玮",
+      "source": "PDF",
+      "weekday": 2
+    },
+    {
+      "title": "数据结构与算法",
+      "periods": [
+        7,
+        8
+      ],
+      "weeks": "2-17",
+      "location": "笃学A楼 305(多)",
+      "teacher": "杜振龙",
+      "source": "PDF",
+      "weekday": 2
+    },
+    {
+      "title": "大学体育-4（跆拳道 ）",
+      "periods": [
+        1,
+        2
+      ],
+      "weeks": "1-15",
+      "location": "体育馆 主馆",
+      "teacher": "王小飞",
+      "source": "PDF",
+      "weekday": 3
+    },
+    {
+      "title": "数学模型与数学软件",
+      "periods": [
+        3,
+        4
+      ],
+      "weeks": "2-17",
+      "location": "笃学A楼 203(多)",
+      "teacher": "杨维维",
+      "source": "PDF",
+      "weekday": 3
+    },
+    {
+      "title": "马克思主义基本原理",
+      "periods": [
+        1,
+        2
+      ],
+      "weeks": "2-11",
+      "location": "笃学A楼 502(多)",
+      "teacher": "王云梅",
+      "source": "PDF",
+      "weekday": 4
+    },
+    {
+      "title": "数值分析",
+      "periods": [
+        3,
+        4
+      ],
+      "weeks": "2-17",
+      "location": "笃学B楼 202(多)",
+      "teacher": "石玮",
+      "source": "PDF",
+      "weekday": 4
+    },
+    {
+      "title": "Python数据处理与分析",
+      "periods": [
+        5,
+        6
+      ],
+      "weeks": "2-17",
+      "location": "笃学B楼 201(多)",
+      "teacher": "张佳川",
+      "source": "PDF",
+      "weekday": 4
+    },
+    {
+      "title": "多元统计分析",
+      "periods": [
+        7,
+        8
+      ],
+      "weeks": "2-13",
+      "location": "笃学A楼 209(多)",
+      "teacher": "夏婉婉",
+      "source": "PDF",
+      "weekday": 4
+    },
+    {
+      "title": "形势与政策",
+      "periods": [
+        9,
+        10
+      ],
+      "weeks": "12-13",
+      "location": "仁智 楼216(多)",
+      "teacher": "刘海存",
+      "source": "PDF",
+      "weekday": 4
+    },
+    {
+      "title": "马克思主义基本原理",
+      "periods": [
+        1,
+        2
+      ],
+      "weeks": "2-11",
+      "location": "同和楼 312(多)",
+      "teacher": "王云梅",
+      "source": "PDF",
+      "weekday": 5
+    },
+    {
+      "title": "毛泽东思想和中国特色 社会主义理论体系概论",
+      "periods": [
+        3,
+        4
+      ],
+      "weeks": "2-11",
+      "location": "同和楼 513(多)",
+      "teacher": "刘玉珍",
+      "source": "PDF",
+      "weekday": 5
+    },
+    {
+      "title": "数学模型与数学软件",
+      "periods": [
+        5,
+        6
+      ],
+      "weeks": "2-17",
+      "location": "笃学A楼 210(多)",
+      "teacher": "杨维维",
+      "source": "PDF",
+      "weekday": 5
+    },
+    {
+      "title": "大数据技术基础",
+      "periods": [
+        7,
+        8
+      ],
+      "weeks": "2-13",
+      "location": "笃学C楼 205(多)",
+      "teacher": "王英华",
+      "source": "PDF",
+      "weekday": 5
+    }
+  ]
+}
