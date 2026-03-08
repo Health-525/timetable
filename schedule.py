@@ -84,7 +84,17 @@ def main(argv: list[str]) -> int:
 
     arg = argv[1].strip().lower()
 
-    data = load_data(default_schedule_path())
+    schedule_path = default_schedule_path()
+    if not os.path.exists(schedule_path):
+        print(f"Missing schedule file: {schedule_path}")
+        print("\nHow to prepare data:")
+        print("1) Put your timetable PDF at: inbound/schedule.pdf (do NOT commit it)")
+        print("2) Run: python3 scripts/extract_from_pdf.py")
+        print("3) It will generate: data/schedule.json")
+        print("\nOr set TIMETABLE_SCHEDULE=/path/to/schedule.json")
+        return 2
+
+    data = load_data(schedule_path)
     tz = data.get('meta', {}).get('tz', 'Asia/Shanghai')
     week1 = date.fromisoformat(data.get('meta', {}).get('week1_monday', '2026-03-02'))
 
