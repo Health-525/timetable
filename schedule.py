@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
 import sys
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -56,6 +57,22 @@ def load_data(path: str):
         return json.load(f)
 
 
+def default_schedule_path() -> str:
+    """Resolve schedule.json path.
+
+    Priority:
+    1) env TIMETABLE_SCHEDULE
+    2) ./data/schedule.json (new layout)
+    3) ./schedule.json (legacy)
+    """
+    env_path = (os.environ.get('TIMETABLE_SCHEDULE') or '').strip()
+    if env_path:
+        return env_path
+    if os.path.exists('data/schedule.json'):
+        return 'data/schedule.json'
+    return 'schedule.json'
+
+
 def format_day(d: date) -> str:
     return d.isoformat()
 
@@ -67,7 +84,7 @@ def main(argv: list[str]) -> int:
 
     arg = argv[1].strip().lower()
 
-    data = load_data('schedule.json')
+    data = load_data(default_schedule_path())
     tz = data.get('meta', {}).get('tz', 'Asia/Shanghai')
     week1 = date.fromisoformat(data.get('meta', {}).get('week1_monday', '2026-03-02'))
 
@@ -146,7 +163,18 @@ def main(argv: list[str]) -> int:
         ps = c.periods
         if ps:
             ptxt = f"{ps[0]}" if len(ps) == 1 else f"{ps[0]}-{ps[-1]}"
-            ttxt = f"{period_times.get(ps[0], '')}" if len(ps) == 1 else f"{period_times.get(ps[0], '')}~{period_times.get(ps[-1], '')}".strip('~')
+            if len(ps) == 1:
+                ttxt = f"{period_times.get(ps[0], '')}"
+            else:
+                first = period_times.get(ps[0], '')
+                last = period_times.get(ps[-1], '')
+                # Expect "HH:MM-HH:MM"; fall back to raw strings if format differs.
+                if '-' in first and '-' in last:
+                    start = first.split('-', 1)[0].strip()
+                    end = last.split('-', 1)[1].strip()
+                    ttxt = f"{start}-{end}" if (start and end) else f"{first}~{last}".strip('~')
+                else:
+                    ttxt = f"{first}~{last}".strip('~')
         else:
             ptxt, ttxt = "?", ""
         loc = c.location or "(地点待补)"

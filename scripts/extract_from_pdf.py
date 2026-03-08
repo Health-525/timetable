@@ -12,8 +12,9 @@ from pathlib import Path
 
 import pdfplumber
 
-PDF_PATH = Path(__file__).parent / "inbound" / "schedule.pdf"
-OUT_PATH = Path(__file__).parent / "schedule.json"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PDF_PATH = REPO_ROOT / "inbound" / "schedule.pdf"
+OUT_PATH = REPO_ROOT / "data" / "schedule.json"
 
 SETTINGS = {
     "vertical_strategy": "lines",
@@ -128,6 +129,7 @@ def main():
         "courses": unique,
     }
 
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Extracted {len(unique)} courses -> {OUT_PATH}")
 
