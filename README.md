@@ -23,7 +23,13 @@ timetable/
   requirements.txt
 ```
 
-## Quickstart
+## Quickstart（给第一次用的人）
+
+### 0) Clone
+```bash
+git clone https://github.com/Health-525/timetable.git
+cd timetable
+```
 
 ### 1) 安装依赖
 ```bash
@@ -32,7 +38,22 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2) 查询课表
+### 2) 准备你的课表数据（两种方式二选一）
+
+**方式 A：从 PDF 抽取（推荐）**
+1. 把课表 PDF 放到：`inbound/schedule.pdf`
+2. 运行：
+```bash
+python3 scripts/extract_from_pdf.py
+```
+会生成：`data/schedule.json`
+
+**方式 B：手动维护 JSON**
+- 直接编辑/创建：`data/schedule.json`
+
+> 注意：`inbound/` 下的 PDF 很可能包含姓名/学号等个人信息，**不要提交到 GitHub**（本仓库已 `.gitignore` 忽略 `inbound/*.pdf`）。
+
+### 3) 查询课表
 ```bash
 python3 schedule.py today
 python3 schedule.py 2026-03-04
