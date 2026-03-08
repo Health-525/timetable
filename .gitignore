@@ -15,3 +15,6 @@ dist/
 .DS_Store
 *.log
 pdfimgs/
+
+# raw inputs may contain personal info; keep them local
+inbound/*.pdf
