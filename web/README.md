@@ -23,6 +23,10 @@ cp .env.local.example .env.local
 
 2) 修改 `.env.local`：
 ```env
+# 服务端优先（推荐）：不会暴露到浏览器 bundle
+SCHEDULE_URL=https://your-domain.com/schedule.json
+
+# 兼容：如需在浏览器端使用也可保留（会暴露到客户端）
 NEXT_PUBLIC_SCHEDULE_URL=https://your-domain.com/schedule.json
 ```
 
@@ -34,8 +38,10 @@ npm run dev
 ```
 
 ## 支持的输入
-- today / 今天 / 今日
+- today / 今天 / 今日 / 本周
 - 明天 / 明日
+- 周末
+- 下周 / 下周一
 - 周一/周二/…（默认指“下一个该星期几”，避免和今天冲突）
 - YYYY-MM-DD（如 2026-03-12）
 

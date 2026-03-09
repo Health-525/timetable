@@ -6,8 +6,18 @@ export function parseDateInput(input: string): Date | null {
   today.setHours(0, 0, 0, 0);
   
   // today / 今天
-  if (normalized === "today" || normalized === "今天" || normalized === "今日") {
+  if (normalized === "today" || normalized === "今天" || normalized === "今日" || normalized === "本周") {
     return today;
+  }
+
+  // next week / 下周 — interpret as next Monday
+  if (normalized === "next week" || normalized === "下周" || normalized === "下星期") {
+    const current = today.getDay(); // 0=Sun..6=Sat
+    let diff = (1 - current + 7) % 7;
+    if (diff === 0) diff = 7;
+    const d = new Date(today);
+    d.setDate(today.getDate() + diff);
+    return d;
   }
   
   // tomorrow / 明天
@@ -15,6 +25,29 @@ export function parseDateInput(input: string): Date | null {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow;
+  }
+
+  // this weekend / 周末 — return upcoming Saturday (Asia/Shanghai)
+  if (normalized === "weekend" || normalized === "周末") {
+    const current = today.getDay(); // 0=Sun..6=Sat
+    const target = 6; // Saturday
+    let diff = target - current;
+    if (diff < 0) diff += 7;
+    if (diff === 0) diff = 7; // next Saturday if today is Saturday
+    const d = new Date(today);
+    d.setDate(today.getDate() + diff);
+    return d;
+  }
+
+  // next monday / 下周一 — Monday of next week
+  if (normalized === "next monday" || normalized === "下周一" || normalized === "下星期一") {
+    const current = today.getDay(); // 0=Sun..6=Sat
+    // Monday of next week (rolling): if today is Monday -> +7, else next upcoming Monday
+    let diff = (1 - current + 7) % 7;
+    if (diff === 0) diff = 7;
+    const d = new Date(today);
+    d.setDate(today.getDate() + diff);
+    return d;
   }
   
   // yesterday / 昨天
