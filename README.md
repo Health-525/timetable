@@ -11,6 +11,10 @@
 - 支持「特殊安排」：如实践周（非节次、按时间段）
 
 ## Project Layout
+
+> 前端（对话式查课表）位于 `web/`：Next.js 项目，可独立部署（例如 Vercel）。
+
+
 ```text
 timetable/
   data/
@@ -57,6 +61,14 @@ python3 scripts/extract_from_pdf.py
 ```bash
 python3 schedule.py today
 python3 schedule.py 2026-03-04
+```
+
+### 4) 运行前端（可选，推荐）
+```bash
+cd web
+npm install
+npm run dev
+# 打开 http://localhost:3000
 ```
 
 可指定数据文件路径：

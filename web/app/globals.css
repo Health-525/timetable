@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Base */
+  --background: #ffffff;
+  --foreground: #1c1c1e;
+  
+  /* Surface */
+  --surface: #f2f2f7;
+  --surface-elevated: #ffffff;
+  
+  /* Borders */
+  --border: #e5e5ea;
+  --border-subtle: #f2f2f7;
+  
+  /* Text Hierarchy */
+  --text-primary: #1c1c1e;
+  --text-secondary: #8e8e93;
+  --text-tertiary: #c7c7cc;
+  
+  /* Accent - iOS Blue */
+  --accent: #007aff;
+  --accent-hover: #0056b3;
+  --accent-pressed: #004494;
+  
+  /* User Message - iOS Green */
+  --message-user: #34c759;
+  --message-user-text: #ffffff;
+  
+  /* Assistant Message */
+  --message-assistant: #e9e9eb;
+  --message-assistant-text: #1c1c1e;
+  
+  /* Status */
+  --status-success: #34c759;
+  --status-warning: #ff9500;
+  --status-error: #ff3b30;
+  
+  /* Spacing Scale (8px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #ffffff;
+    
+    --surface: #1c1c1e;
+    --surface-elevated: #2c2c2e;
+    
+    --border: #38383a;
+    --border-subtle: #2c2c2e;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #8e8e93;
+    --text-tertiary: #48484a;
+    
+    --accent: #0a84ff;
+    --accent-hover: #409cff;
+    --accent-pressed: #5aa8ff;
+    
+    --message-user: #30d158;
+    --message-user-text: #000000;
+    
+    --message-assistant: #3a3a3c;
+    --message-assistant-text: #ffffff;
+    
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.48);
+  }
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+input, button, textarea, select {
+  font-family: inherit;
+}
+
+::placeholder {
+  font-family: inherit;
+  color: var(--text-tertiary);
+}
+
+/* Focus States */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
