@@ -11,20 +11,6 @@
 
 > 说明：浏览器通知是否能“后台准点提醒”取决于平台能力。要做到真正的安卓后台本地通知，建议配合 Capacitor/原生壳。
 
-## 截图
-
-### 今天（倒计时 + 今日课表）
-
-![今天页](./assets/screenshots/today.png)
-
-### 本周（周视图网格 + 导出日历）
-
-![本周网格](./assets/screenshots/week-grid.png)
-
-### 课程详情抽屉
-
-![课程详情抽屉](./assets/screenshots/course-drawer.png)
-
 ## 数据源
 
 默认读取：
