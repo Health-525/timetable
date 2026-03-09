@@ -23,6 +23,19 @@ export const loadSchedule = cache(async (): Promise<RawScheduleData> => {
     throw new Error(`Failed to fetch schedule: HTTP ${res.status}`);
   }
 
-  const json = (await res.json()) as unknown;
+  const text = await res.text();
+  if (!text || !text.trim()) {
+    throw new Error(`Failed to fetch schedule: empty body (url=${url})`);
+  }
+
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch (e) {
+    const snippet = text.slice(0, 200).replace(/\s+/g, " ");
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(`Failed to parse schedule JSON (url=${url}): ${msg}; body[0:200]=${snippet}`);
+  }
+
   return parseSchedule(json);
 });

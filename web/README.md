@@ -1,27 +1,28 @@
-# Table Time
+# 上早八（timetable/web）
 
-一个 **对话式课表查询** 的纯前端项目（Next.js App Router + TypeScript + Tailwind）。
+一个面向学生的课表 App（Web 版），核心目标：**下一节课别迟到**。
 
-- 你输入：`today/今天`、`明天`、`周一`、`2026-03-12`
-- 它输出：当天课程（节次时间/课程名/地点）
+## 功能
 
-## 为什么是“纯前端”
-- 所有解析都在浏览器完成：不需要后端、不存储任何个人数据。
-- 适合把课表数据放在一个公开的 JSON 地址（或局域网地址）。
+- **今天**：下一节课倒计时（含轻微呼吸动效）+ 今日课程卡片
+- **本周**：1-10 节周视图网格（课程按科目/课程名稳定配色）+ 点击课程弹出详情抽屉
+- **导出日历**：本周 `.ics` 下载（可导入系统日历/Google 日历/Outlook）
+- **提醒**：开课前 **10 分钟提醒**（浏览器通知；本地持久化，可取消）
 
-## 数据源（默认）
-默认从 timetable 项目读取：
+> 说明：浏览器通知是否能“后台准点提醒”取决于平台能力。要做到真正的安卓后台本地通知，建议配合 Capacitor/原生壳。
 
-`https://raw.githubusercontent.com/Health-525/timetable/main/data/schedule.json`
+## 数据源
 
-你可以用环境变量覆盖：
+默认读取：
 
-1) 复制一份示例：
+- `https://raw.githubusercontent.com/Health-525/timetable/main/data/schedule.json`
+
+可通过环境变量覆盖（服务端优先）：
+
 ```bash
 cp .env.local.example .env.local
 ```
 
-2) 修改 `.env.local`：
 ```env
 # 服务端优先（推荐）：不会暴露到浏览器 bundle
 SCHEDULE_URL=https://your-domain.com/schedule.json
@@ -31,27 +32,30 @@ NEXT_PUBLIC_SCHEDULE_URL=https://your-domain.com/schedule.json
 ```
 
 ## 本地运行
+
 ```bash
 npm install
-npm run dev
-# http://localhost:3000
+npm run dev -- --port 3003
+# http://127.0.0.1:3003/
 ```
 
-## 支持的输入
-- today / 今天 / 今日 / 本周
-- 明天 / 明日
-- 周末
-- 下周 / 下周一
-- 周一/周二/…（默认指“下一个该星期几”，避免和今天冲突）
-- YYYY-MM-DD（如 2026-03-12）
+## 安卓适配（Capacitor）
 
-## 兼容的数据格式
-本项目直接兼容 `timetable/data/schedule.json`（字段包括：`meta.week1_monday`、`periodTimes`、`courses[]`、`special[]`）。
+当前已生成安卓工程：`web/android/`。
+
+- `capacitor.config.ts`：appName/appId/webDir 等配置
+- `dist/index.html`：Capacitor webDir 的占位入口（后续可替换为真正的构建产物，或在开发阶段用 server.url 加载 dev server）
+
+开发阶段（真机测试最快）：建议配置 `server.url` 指向同网段可访问的 dev server（如 `http://<LAN-IP>:3003`），然后用 Android Studio 运行。
+
+## 目录结构（简）
+
+- `app/components/TimetableApp.tsx`：主 UI（今天/本周/查询）
+- `lib/schedule.ts`：数据结构与计算（周次、过滤、格式化）
+- `lib/load-schedule.ts`：拉取课表 JSON（带超时、健壮解析）
+- `lib/ics.ts`：生成周课表 ICS
 
 ## 隐私
-- 不要把原始课表 PDF 放到公网。
-- 这个前端只拉取 JSON 并在本地解析；不上传任何内容。
 
-## Pages
-- `/`：Chat 查询
-- `/about`：隐私说明
+- 前端仅拉取 JSON 并在本地渲染。
+- 不要把原始课表 PDF 放到公网（可能含个人信息）。
