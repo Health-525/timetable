@@ -1,15 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  DayItem,
-  RawScheduleData,
-  formatDayResponse,
-  getItemsForDate,
-  parseSchedule,
-} from "@/lib/schedule";
+import { DayItem, RawScheduleData, formatDayResponse, getItemsForDate, parseSchedule } from "@/lib/schedule";
 import { parseDateInput } from "@/lib/date-parser";
 
 interface Message {
@@ -36,46 +30,6 @@ const quickChips = [
   { label: "Sun", value: "周日" },
 ] as const;
 
-function WelcomeBubble() {
-  return (
-    <div className="flex justify-start">
-      <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-[var(--message-assistant)] text-[var(--message-assistant-text)] px-4 py-3 text-sm leading-relaxed">
-        <p className="font-semibold mb-1">Table Time</p>
-        <p className="opacity-80">你可以这样问：</p>
-        <ul className="mt-1 space-y-0.5 opacity-80">
-          <li>today / 今天</li>
-          <li>明天</li>
-          <li>周一/周二/…</li>
-          <li>2026-03-12</li>
-        </ul>
-      </div>
-    </div>
-  );
-}
-
-function LoadingBubble() {
-  return (
-    <div className="flex justify-start">
-      <div className="bg-[var(--message-assistant)] rounded-2xl rounded-bl-md px-4 py-3">
-        <div className="flex gap-1.5">
-          <span
-            className="w-2 h-2 rounded-full bg-[var(--text-secondary)]/60 animate-bounce"
-            style={{ animationDelay: "0ms" }}
-          />
-          <span
-            className="w-2 h-2 rounded-full bg-[var(--text-secondary)]/60 animate-bounce"
-            style={{ animationDelay: "150ms" }}
-          />
-          <span
-            className="w-2 h-2 rounded-full bg-[var(--text-secondary)]/60 animate-bounce"
-            style={{ animationDelay: "300ms" }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function HomeClient() {
   const searchParams = useSearchParams();
 
@@ -83,15 +37,20 @@ export default function HomeClient() {
     {
       id: "welcome",
       role: "assistant",
-      content: "welcome",
+      content:
+        "你好，我是课表助手。\n\n你可以这样问：\n- today / 今天\n- 明天\n- 周一/周二/…\n- 2026-03-12",
     },
   ]);
   const [input, setInput] = useState("");
   const [schedule, setSchedule] = useState<RawScheduleData | null>(null);
   const [loading, setLoading] = useState(false);
   const [autoRan, setAutoRan] = useState(false);
+  const [activeChip, setActiveChip] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scheduleUrl = process.env.NEXT_PUBLIC_SCHEDULE_URL || DEFAULT_SCHEDULE_URL;
 
@@ -120,54 +79,64 @@ export default function HomeClient() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const copyLocation = useCallback((location: string, id: string) => {
-    navigator.clipboard
-      .writeText(location)
-      .then(() => {
-        setCopiedId(id);
-        setTimeout(() => setCopiedId(null), 1200);
-      })
-      .catch(() => {
-        // ignore
-      });
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 1200);
   }, []);
 
-  const runQuery = useCallback(
-    (text: string) => {
-      if (!schedule) return;
+  const copyLocation = useCallback(
+    (location: string, id: string) => {
+      navigator.clipboard
+        .writeText(location)
+        .then(() => {
+          setCopiedId(id);
+          showToast("地点已复制");
+          setTimeout(() => setCopiedId(null), 1200);
+        })
+        .catch(() => {
+          // ignore
+        });
+    },
+    [showToast]
+  );
 
-      const targetDate = parseDateInput(text);
-      if (!targetDate) {
+  const runQuery = useMemo(
+    () =>
+      (text: string) => {
+        if (!schedule) return;
+
+        const targetDate = parseDateInput(text);
+        if (!targetDate) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `${Date.now()}-a`,
+              role: "assistant",
+              content: "我没理解这个日期。试试：today、明天、周一、YYYY-MM-DD。",
+            },
+          ]);
+          return;
+        }
+
+        const result = getItemsForDate(schedule, targetDate);
+        const answer = formatDayResponse(targetDate, result.weekNum, result.items);
+
         setMessages((prev) => [
           ...prev,
           {
             id: `${Date.now()}-a`,
             role: "assistant",
-            content: "我没理解这个日期。试试：today、明天、周一、YYYY-MM-DD。",
+            content: answer,
+            cards: result.items,
+            dateStr: targetDate.toLocaleDateString("zh-CN", {
+              month: "long",
+              day: "numeric",
+              weekday: "long",
+            }),
+            weekNum: result.weekNum,
           },
         ]);
-        return;
-      }
-
-      const result = getItemsForDate(schedule, targetDate);
-      const answer = formatDayResponse(targetDate, result.weekNum, result.items);
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `${Date.now()}-a`,
-          role: "assistant",
-          content: answer,
-          cards: result.items,
-          dateStr: targetDate.toLocaleDateString("zh-CN", {
-            month: "long",
-            day: "numeric",
-            weekday: "long",
-          }),
-          weekNum: result.weekNum,
-        },
-      ]);
-    },
+      },
     [schedule]
   );
 
@@ -191,6 +160,7 @@ export default function HomeClient() {
 
   function onChip(value: string) {
     if (!schedule || loading) return;
+    setActiveChip(value);
     setMessages((prev) => [
       ...prev,
       { id: `${Date.now()}-u`, role: "user", content: value },
@@ -202,8 +172,7 @@ export default function HomeClient() {
     }, 200);
   }
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function onSubmit() {
     if (!schedule || loading) return;
     const text = input.trim();
     if (!text) return;
@@ -218,6 +187,18 @@ export default function HomeClient() {
       runQuery(text);
       setLoading(false);
     }, 200);
+
+    // reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+  }
+
+  function onTextareaKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      onSubmit();
+    }
   }
 
   function Cards({ msg }: { msg: Message }) {
@@ -225,52 +206,56 @@ export default function HomeClient() {
 
     if (msg.cards.length === 0) {
       return (
-        <div className="mt-3 rounded-xl border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+        <div className="mt-3 rounded-xl border border-dashed border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">
           今天没有课
         </div>
       );
     }
 
     return (
-      <div className="mt-3 flex flex-col gap-2 rounded-xl bg-black/[0.03] p-2">
+      <div className="mt-3 flex flex-col gap-2">
         {msg.cards.map((item, idx) => {
           const id = `${msg.id}-${idx}`;
-          const isCopied = copiedId === id;
-          const chipClass =
+          const copied = copiedId === id;
+
+          const badge =
             item.kind === "special"
-              ? "bg-orange-500/10 text-orange-600"
-              : "bg-blue-500/10 text-blue-600";
+              ? "bg-orange-500/10 text-orange-700"
+              : "bg-blue-500/10 text-blue-700";
 
           return (
             <div
               key={id}
-              className="rounded-lg border border-black/[0.06] bg-white/70 px-3 py-3 transition-colors hover:bg-white"
-              role={item.location ? "button" : undefined}
-              tabIndex={item.location ? 0 : undefined}
-              onClick={() => item.location && copyLocation(item.location, id)}
-              title={item.location ? "点击复制地点" : undefined}
+              className="rounded-xl border border-[var(--border)] bg-white px-4 py-3"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${chipClass}`}>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge}`}>
                   {item.kind === "special"
                     ? item.timeText
                     : `第${item.periods.join("-")}节`}
                 </span>
                 {item.kind === "course" && item.timeText && (
-                  <span className="text-xs text-[var(--text-secondary)]">
+                  <span className="text-xs text-[var(--text-muted)] tabular-nums">
                     {item.timeText}
                   </span>
                 )}
               </div>
 
-              <div className="mt-2 text-sm font-semibold text-[var(--text-primary)]">
+              <div className="mt-1.5 text-[15px] font-semibold text-[var(--text-primary)]">
                 {item.title}
               </div>
 
               {item.location && (
-                <div className="mt-1.5 text-xs text-[var(--text-secondary)]">
-                  {isCopied ? "Copied" : item.location}
-                </div>
+                <button
+                  type="button"
+                  className="mt-1.5 inline-flex items-center gap-2 text-[13px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  onClick={() => copyLocation(item.location!, id)}
+                  aria-label={`复制地点 ${item.location}`}
+                >
+                  <span className="tabular-nums">
+                    {copied ? "已复制" : item.location}
+                  </span>
+                </button>
               )}
             </div>
           );
@@ -280,32 +265,40 @@ export default function HomeClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col">
-      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--background)]/90 backdrop-blur">
-        <div className="mx-auto max-w-3xl px-4 h-14 flex items-center justify-between">
-          <div className="text-base font-semibold">Table Time</div>
+    <div className="min-h-screen flex flex-col bg-[var(--surface)] text-[var(--foreground)]">
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-white/80 backdrop-blur">
+        <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between">
+          <div className="text-[15px] font-semibold tracking-tight">Table Time</div>
           <Link
             href="/about"
-            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="text-[14px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
           >
             About
           </Link>
         </div>
       </header>
 
-      <div className="sticky top-14 z-40 border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur">
-        <div className="mx-auto max-w-3xl px-4 py-2">
+      <div className="sticky top-14 z-40 border-b border-[var(--border)] bg-white/70 backdrop-blur">
+        <div className="mx-auto max-w-2xl px-4 py-2">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            {quickChips.map((c) => (
-              <button
-                key={c.value}
-                onClick={() => onChip(c.value)}
-                disabled={loading || !schedule}
-                className="whitespace-nowrap rounded-full border border-black/[0.06] bg-black/[0.03] px-3 py-1.5 text-sm font-medium hover:bg-black/[0.06] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {c.label}
-              </button>
-            ))}
+            {quickChips.map((c) => {
+              const active = activeChip === c.value;
+              return (
+                <button
+                  key={c.value}
+                  onClick={() => onChip(c.value)}
+                  disabled={loading || !schedule}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    active
+                      ? "bg-[var(--accent)] text-white border-transparent"
+                      : "bg-white text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--muted)]"
+                  }`}
+                  aria-pressed={active}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -313,23 +306,19 @@ export default function HomeClient() {
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-2xl px-4 py-6 space-y-4">
           {messages.map((msg) => {
-            if (msg.id === "welcome") {
-              return <WelcomeBubble key={msg.id} />;
-            }
-
             const isUser = msg.role === "user";
             return (
               <div key={msg.id} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
                     isUser
                       ? "rounded-br-md bg-[var(--message-user)] text-[var(--message-user-text)]"
-                      : "rounded-bl-md bg-[var(--message-assistant)] text-[var(--message-assistant-text)]"
+                      : "rounded-bl-md bg-white border border-[var(--border)] text-[var(--text-primary)]"
                   }`}
                 >
                   {msg.role === "assistant" && msg.cards ? (
                     <>
-                      <div className="text-sm font-medium opacity-90">
+                      <div className="text-[14px] font-medium text-[var(--text-muted)] mb-2">
                         {msg.dateStr}（第{msg.weekNum}周）
                       </div>
                       <Cards msg={msg} />
@@ -342,34 +331,65 @@ export default function HomeClient() {
             );
           })}
 
-          {loading && <LoadingBubble />}
+          {loading && (
+            <div className="flex justify-start">
+              <div className="rounded-2xl rounded-bl-md bg-white border border-[var(--border)] px-4 py-3">
+                <div className="flex gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[var(--text-muted)]/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-[var(--text-muted)]/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-[var(--text-muted)]/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            </div>
+          )}
+
           <div ref={bottomRef} />
         </div>
       </main>
 
-      <footer className="sticky bottom-0 z-50 border-t border-[var(--border)] bg-[var(--background)]/90 backdrop-blur">
-        <div className="mx-auto max-w-3xl px-4 py-4">
-          <form onSubmit={onSubmit} className="flex items-end gap-2">
-            <input
+      <footer className="sticky bottom-0 z-50 border-t border-[var(--border)] bg-white/80 backdrop-blur">
+        <div className="mx-auto max-w-2xl px-4 py-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSubmit();
+            }}
+            className="flex items-end gap-2"
+          >
+            <textarea
+              ref={textareaRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type a date…"
-              className="flex-1 min-h-[44px] rounded-xl border border-[var(--border)] bg-white/70 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+              onChange={(e) => {
+                setInput(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+              }}
+              onKeyDown={onTextareaKeyDown}
+              placeholder="输入日期查询..."
+              rows={1}
+              className="flex-1 min-h-[44px] max-h-[120px] resize-none rounded-xl border border-[var(--border)] bg-white px-4 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
               disabled={loading || !schedule}
             />
             <button
               type="submit"
               disabled={loading || !schedule || !input.trim()}
-              className="min-h-[44px] rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-[44px] rounded-xl bg-[var(--accent)] px-4 text-[14px] font-semibold text-white hover:opacity-95 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              Send
+              发送
             </button>
           </form>
-          <div className="mt-2 text-center text-xs text-[var(--text-secondary)]/70">
-            {schedule ? "Data loaded" : "Loading data…"}
+
+          <div className="mt-2 text-center text-[11px] text-[var(--text-muted)]">
+            {schedule ? "数据已加载" : "加载中..."}
           </div>
         </div>
       </footer>
+
+      {toast && (
+        <div className="fixed left-1/2 bottom-24 -translate-x-1/2 z-[60] rounded-full bg-black text-white px-3 py-1.5 text-[13px] shadow-lg">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

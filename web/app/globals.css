@@ -10,6 +10,8 @@
   --text-primary: #1c1c1e;
   --text-secondary: #8e8e93;
   --text-tertiary: #c7c7cc;
+  --text-muted: #6b7280;
+  --muted: #f9fafb;
   --accent: #007aff;
   --message-user: #007aff;
   --message-user-text: #ffffff;
@@ -26,6 +28,8 @@
     --text-primary: #ffffff;
     --text-secondary: #8e8e93;
     --text-tertiary: #48484a;
+    --text-muted: #9ca3af;
+    --muted: #111827;
     --accent: #0a84ff;
     --message-user: #0a84ff;
     --message-user-text: #ffffff;
@@ -79,4 +83,44 @@ input, button, textarea, select {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
+}
+
+/* Hide scrollbar for toolbar chips */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Toast animation */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) translateX(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px) translateX(-50%);
+  }
+}
+
+.toast-animate {
+  animation: toast-in 0.2s ease-out forwards;
+}
+
+.toast-animate-out {
+  animation: toast-out 0.15s ease-in forwards;
 }
