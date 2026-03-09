@@ -28,7 +28,7 @@ export default function RootLayout({
         {/* Webfont for CJK rendering in minimal environments */}
         <link
           rel="stylesheet"
-          href="https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap"
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
