@@ -148,7 +148,7 @@ export default function HomeClient() {
 
     setAutoRan(true);
     setMessages((prev) => [
-      ...prev,
+      ...prev.filter((m) => m.id !== "welcome"),
       { id: `${Date.now()}-u`, role: "user", content: q },
     ]);
     setLoading(true);
@@ -162,7 +162,7 @@ export default function HomeClient() {
     if (!schedule || loading) return;
     setActiveChip(value);
     setMessages((prev) => [
-      ...prev,
+      ...prev.filter((m) => m.id !== "welcome"),
       { id: `${Date.now()}-u`, role: "user", content: value },
     ]);
     setLoading(true);
@@ -178,7 +178,7 @@ export default function HomeClient() {
     if (!text) return;
 
     setMessages((prev) => [
-      ...prev,
+      ...prev.filter((m) => m.id !== "welcome"),
       { id: `${Date.now()}-u`, role: "user", content: text },
     ]);
     setInput("");
