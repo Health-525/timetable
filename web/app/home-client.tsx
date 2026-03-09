@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { parseSchedule, getItemsForDate, formatDayResponse, RawScheduleData, DayItem } from "@/lib/schedule";
@@ -215,6 +215,16 @@ export default function HomeClient() {
     }, 250);
   }
 
+  // 复制地点到剪贴板
+  const copyLocation = useCallback((location: string) => {
+    navigator.clipboard.writeText(location).then(() => {
+      // 可以在这里添加 toast 提示，暂时用 console
+      console.log("已复制:", location);
+    }).catch((err) => {
+      console.error("复制失败:", err);
+    });
+  }, []);
+
   // 渲染卡片视图
   function renderCards(msg: Message) {
     if (!msg.cards || msg.cards.length === 0) {
@@ -223,7 +233,7 @@ export default function HomeClient() {
         <div
           className="mt-3 p-4 rounded-2xl text-center"
           style={{
-            backgroundColor: 'var(--surface-elevated)',
+            backgroundColor: 'transparent',
             border: '1px dashed var(--border)'
           }}
         >
@@ -233,42 +243,86 @@ export default function HomeClient() {
     }
 
     return (
-      <div className="mt-3 space-y-2">
+      <div
+        className="mt-3 flex flex-col gap-2"
+        style={{
+          backgroundColor: 'rgba(0,0,0,0.03)',
+          borderRadius: '12px',
+          padding: '8px'
+        }}
+      >
         {msg.cards.map((item, idx) => (
           <div
             key={idx}
-            className="p-3 rounded-xl"
+            className="p-3 rounded-xl cursor-pointer transition-all duration-150 active:scale-[0.98]"
             style={{
-              backgroundColor: 'var(--surface-elevated)',
-              border: '1px solid var(--border)'
+              backgroundColor: 'rgba(255,255,255,0.5)',
+              border: '1px solid rgba(0,0,0,0.06)'
             }}
+            onClick={() => item.location && copyLocation(item.location)}
+            title={item.location ? "点击复制地点" : undefined}
           >
             <div className="flex items-center justify-between">
               <span
-                className="text-[13px] font-medium px-2 py-1 rounded-full"
+                className="text-[12px] font-semibold px-2.5 py-0.5 rounded-full"
                 style={{
-                  backgroundColor: item.kind === 'special' ? 'rgba(255, 149, 0, 0.15)' : 'rgba(0, 122, 255, 0.15)',
-                  color: item.kind === 'special' ? '#FF9500' : '#007AFF'
+                  backgroundColor: item.kind === 'special' ? 'rgba(255, 149, 0, 0.12)' : 'rgba(0, 122, 255, 0.12)',
+                  color: item.kind === 'special' ? '#FF9500' : '#007AFF',
+                  letterSpacing: '-0.01em'
                 }}
               >
                 {item.kind === 'special' ? item.timeText : `第${item.periods.join('-')}节`}
               </span>
               {item.timeText && item.kind === 'course' && (
-                <span className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>
                   {item.timeText}
                 </span>
               )}
             </div>
-            <p className="mt-2 text-[15px] font-medium" style={{ color: 'var(--text-primary)' }}>
+            <p className="mt-2 text-[15px] font-semibold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
               {item.title}
             </p>
             {item.location && (
-              <p className="mt-1 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-                📍 {item.location}
-              </p>
+              <div className="mt-1.5 flex items-center gap-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="2" fill="none"/>
+                </svg>
+                <span className="text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  {item.location}
+                </span>
+              </div>
             )}
           </div>
         ))}
+      </div>
+    );
+  }
+
+  // 渲染欢迎消息（气泡风格）
+  function renderWelcomeBubble() {
+    return (
+      <div className="flex justify-start">
+        <div
+          className="max-w-[85%] text-[15px] leading-[1.4] whitespace-pre-line"
+          style={{
+            padding: '12px 16px',
+            borderRadius: '18px 18px 18px 6px',
+            backgroundColor: 'var(--message-assistant)',
+            color: 'var(--message-assistant-text)',
+            fontWeight: 400,
+            letterSpacing: '-0.01em'
+          }}
+        >
+          <p className="font-semibold mb-1">你好！我是课表助手 👋</p>
+          <p className="text-[14px] opacity-90">你可以这样问：</p>
+          <ul className="mt-1 space-y-0.5 text-[14px] opacity-90">
+            <li>• today / 今天</li>
+            <li>• 明天</li>
+            <li>• 周一/周二/...</li>
+            <li>• 2026-03-12</li>
+          </ul>
+        </div>
       </div>
     );
   }
@@ -280,9 +334,9 @@ export default function HomeClient() {
     >
       {/* Header - iOS Style */}
       <header
-        className="sticky top-0 z-20 px-5 py-3 flex items-center justify-between"
+        className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between"
         style={{
-          backgroundColor: 'var(--surface)',
+          backgroundColor: 'rgba(242, 242, 247, 0.85)',
           borderBottom: '0.5px solid var(--border)',
           backdropFilter: 'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)'
@@ -303,22 +357,28 @@ export default function HomeClient() {
         </Link>
       </header>
 
-      {/* Messages Area */}
+      {/* Chips Toolbar - 二级工具栏 */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-5 space-y-3 max-w-2xl mx-auto w-full"
-        style={{ paddingBottom: 'calc(var(--space-6) + 80px)' }}
+        className="sticky top-[49px] z-10 px-4 py-2 overflow-x-auto"
+        style={{
+          backgroundColor: 'rgba(242, 242, 247, 0.72)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+          borderBottom: '0.5px solid var(--border)',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
+        }}
       >
-        {/* 快捷 Chips */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex gap-2" style={{ minWidth: 'max-content' }}>
           {quickChips.map((chip) => (
             <button
               key={chip.value}
               onClick={() => handleChipClick(chip.value)}
               disabled={loading || !schedule}
-              className="px-3 py-1.5 text-[13px] rounded-full transition-all duration-200 hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-3.5 py-1.5 text-[13px] font-medium rounded-full transition-all duration-150 hover:opacity-80 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
-                backgroundColor: 'var(--surface-elevated)',
-                border: '1px solid var(--border)',
+                backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                border: '1px solid rgba(0, 0, 0, 0.06)',
                 color: 'var(--text-primary)'
               }}
             >
@@ -326,27 +386,42 @@ export default function HomeClient() {
             </button>
           ))}
         </div>
+      </div>
 
+      {/* Messages Area */}
+      <div
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
+        style={{
+          paddingBottom: 'calc(var(--space-6) + 100px)',
+          maxWidth: '680px',
+          margin: '0 auto',
+          width: '100%'
+        }}
+      >
         {messages.map((msg) => (
+          msg.id === "welcome" ? (
+            <div key={msg.id}>{renderWelcomeBubble()}</div>
+          ) : (
           <div
             key={msg.id}
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}
           >
             <div
-              className="max-w-[80%] text-[15px] leading-[1.35] whitespace-pre-line"
+              className="max-w-[85%] text-[15px] leading-[1.4] whitespace-pre-line"
               style={{
-                padding: '10px 14px',
-                borderRadius: msg.role === "user" ? '20px 20px 6px 20px' : '16px',
+                padding: msg.role === "user" ? '10px 16px' : '12px 16px',
+                borderRadius: msg.role === "user" ? '18px 18px 6px 18px' : '18px 18px 18px 6px',
                 backgroundColor: msg.role === "user" ? 'var(--message-user)' : 'var(--message-assistant)',
                 color: msg.role === "user" ? 'var(--message-user-text)' : 'var(--message-assistant-text)',
-                boxShadow: 'var(--shadow-sm)',
                 fontWeight: 400,
                 letterSpacing: '-0.01em'
               }}
             >
               {msg.role === "assistant" && msg.cards ? (
                 <>
-                  <p className="font-medium">{msg.dateStr}（第{msg.weekNum}周）</p>
+                  <p className="font-semibold text-[14px] mb-1" style={{ opacity: 0.9 }}>
+                    {msg.dateStr}（第{msg.weekNum}周）
+                  </p>
                   {renderCards(msg)}
                 </>
               ) : (
@@ -354,19 +429,19 @@ export default function HomeClient() {
               )}
             </div>
           </div>
+          )
         ))}
 
         {loading && (
           <div className="flex justify-start">
             <div
               style={{
-                padding: '14px 16px',
-                borderRadius: '16px',
+                padding: '12px 14px',
+                borderRadius: '18px 18px 18px 6px',
                 backgroundColor: 'var(--message-assistant)',
-                boxShadow: 'var(--shadow-sm)'
               }}
             >
-              <div className="flex space-x-[6px]">
+              <div className="flex space-x-1.5">
                 <div
                   className="w-[8px] h-[8px] rounded-full animate-bounce"
                   style={{ animationDelay: "0ms" }}
@@ -392,12 +467,16 @@ export default function HomeClient() {
 
       {/* Input Area - Fixed Bottom with Frosted Glass */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-30 px-4 py-3"
+        className="fixed bottom-0 left-0 right-0 z-30 px-4 py-3.5"
         style={{
-          backgroundColor: 'var(--surface)',
+          backgroundColor: 'rgba(242, 242, 247, 0.85)',
           borderTop: '0.5px solid var(--border)',
           backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          maxWidth: '680px',
+          margin: '0 auto',
+          left: '0',
+          right: '0'
         }}
       >
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto flex gap-2 items-center">
@@ -405,11 +484,11 @@ export default function HomeClient() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a date: today / 明天 / 2026-03-12"
-            className="flex-1 px-4 py-[10px] text-[15px] rounded-full transition-all duration-200"
+            placeholder="输入日期..."
+            className="flex-1 px-4 py-2.5 text-[15px] rounded-full transition-all duration-200"
             style={{
-              backgroundColor: 'var(--surface-elevated)',
-              border: '1px solid var(--border)',
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              border: '1px solid rgba(0, 0, 0, 0.06)',
               color: 'var(--text-primary)',
             }}
             disabled={loading || !schedule}
@@ -417,17 +496,17 @@ export default function HomeClient() {
           <button
             type="submit"
             disabled={loading || !schedule || !input.trim()}
-            className="px-5 py-[10px] text-[15px] font-medium rounded-full transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+            className="px-5 py-2.5 text-[15px] font-semibold rounded-full transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
             style={{
               backgroundColor: 'var(--accent)',
               color: '#ffffff'
             }}
           >
-            Send
+            发送
           </button>
         </form>
         <p
-          className="text-center text-[11px] mt-2"
+          className="text-center text-[11px] mt-2 opacity-70"
           style={{ color: 'var(--text-secondary)' }}
         >
           数据源：{schedule ? "已加载" : "加载中..."}（可用 NEXT_PUBLIC_SCHEDULE_URL 覆盖）
