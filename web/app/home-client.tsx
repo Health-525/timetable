@@ -310,7 +310,7 @@ export default function HomeClient() {
             return (
               <div key={msg.id} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
+                  className={`max-w-[95%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
                     isUser
                       ? "rounded-br-md bg-[var(--message-user)] text-[var(--message-user-text)]"
                       : "rounded-bl-md bg-white border border-[var(--border)] text-[var(--text-primary)]"
