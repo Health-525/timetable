@@ -1,15 +1,7 @@
-import ChatClient from "@/app/components/ChatClient";
+import TimetableApp from "@/app/components/TimetableApp";
 import { loadSchedule } from "@/lib/load-schedule";
 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = (await searchParams) || {};
-  const qRaw = sp.q;
-  const q = Array.isArray(qRaw) ? qRaw[0] : qRaw;
-
+export default async function Page() {
   let schedule;
   try {
     schedule = await loadSchedule();
@@ -31,7 +23,7 @@ export default async function Page({
           </p>
           <ul className="text-[13px] mt-3 list-disc pl-5" style={{ color: "var(--text-secondary)" }}>
             <li>网络是否可访问 GitHub raw</li>
-            <li>NEXT_PUBLIC_SCHEDULE_URL 是否配置正确</li>
+            <li>SCHEDULE_URL / NEXT_PUBLIC_SCHEDULE_URL 是否配置正确</li>
             <li>目标 JSON 是否符合 timetable 项目的 data/schedule.json 格式</li>
           </ul>
         </div>
@@ -39,5 +31,5 @@ export default async function Page({
     );
   }
 
-  return <ChatClient schedule={schedule} initialQuery={typeof q === "string" ? q : undefined} />;
+  return <TimetableApp schedule={schedule} />;
 }

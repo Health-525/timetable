@@ -36,6 +36,7 @@ export interface CourseView {
   periods: number[];
   timeText?: string; // e.g. 08:10-09:50
   location?: string;
+  teacher?: string;
 }
 
 export interface SpecialView {
@@ -137,6 +138,7 @@ export function getItemsForDate(schedule: RawScheduleData, date: Date): { weekNu
       periods: c.periods || [],
       timeText,
       location: c.location,
+      teacher: c.teacher,
     });
   }
 

@@ -1,14 +1,20 @@
 {
-  "name": "table-time",
+  "name": "zaoz8",
   "version": "1.0.0",
   "private": true,
+  "description": "上早八：课表与早八提醒（Next.js + Capacitor）",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cap:copy": "cap copy android",
+    "cap:sync": "cap sync android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.2.0",
+    "@capacitor/cli": "^8.2.0",
+    "@capacitor/core": "^8.2.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

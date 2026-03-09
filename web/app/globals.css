@@ -134,3 +134,20 @@ input, button, textarea, select {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
+
+/* Micro-interaction: subtle breathing for the main countdown */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    filter: saturate(1);
+  }
+  50% {
+    transform: scale(1.02);
+    filter: saturate(1.08);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 1.8s ease-in-out infinite;
+  transform-origin: left center;
+}
