@@ -1,6 +1,7 @@
 import { RawScheduleData, getItemsForDate } from "@/lib/schedule";
+import { normalizeDate } from "@/lib/timezone";
 
-function pad2(n: number) {
+function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
 
@@ -17,15 +18,25 @@ function formatICSDate(d: Date) {
   );
 }
 
-function esc(s: string) {
+/**
+ * 生成安全的 UID
+ */
+function generateUID(startTime: Date, title: string): string {
+  const timeStr = formatICSDate(startTime);
+  // 使用课程标题的 hash 作为后缀，确保同一课程的 UID 稳定
+  const hash = title.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return `${timeStr}-${hash}@zaoz8`;
+}
+function esc(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
 }
 
 export function buildWeekICS(schedule: RawScheduleData, baseDate: Date) {
-  // baseDate is already normalized to 00:00 in caller; treat it as local.
+  // 确保使用标准化日期，避免时区问题
+  const normalizedBase = normalizeDate(baseDate);
   const weekday = ((baseDate.getDay() + 6) % 7) + 1; // 1..7 Mon..Sun
-  const monday = new Date(baseDate);
-  monday.setDate(baseDate.getDate() - (weekday - 1));
+  const monday = new Date(normalizedBase);
+  monday.setDate(normalizedBase.getDate() - (weekday - 1));
 
   const events: Array<{ start: Date; end: Date; summary: string; location?: string; description?: string }> = [];
 
@@ -33,13 +44,13 @@ export function buildWeekICS(schedule: RawScheduleData, baseDate: Date) {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
 
-    const { items } = getItemsForDate(schedule, d);
+    const { items } = getItemsForDate(schedule, normalizeDate(d));
     for (const it of items) {
       if (!it.timeText) continue;
       const [startStr, endStr] = it.timeText.split("-");
       if (!startStr || !endStr) continue;
-      const start = new Date(d);
-      const end = new Date(d);
+      const start = normalizeDate(d);
+      const end = normalizeDate(d);
       const [sh, sm] = startStr.split(":").map(Number);
       const [eh, em] = endStr.split(":").map(Number);
       if (!Number.isFinite(sh) || !Number.isFinite(sm) || !Number.isFinite(eh) || !Number.isFinite(em)) continue;
@@ -68,7 +79,7 @@ export function buildWeekICS(schedule: RawScheduleData, baseDate: Date) {
   lines.push("METHOD:PUBLISH");
 
   for (const ev of events) {
-    const uid = `${formatICSDate(ev.start)}-${Math.random().toString(16).slice(2)}@zaoz8`;
+    const uid = generateUID(ev.start, ev.summary);
     lines.push("BEGIN:VEVENT");
     lines.push(`UID:${uid}`);
     lines.push(`DTSTAMP:${formatICSDate(new Date())}`);
@@ -82,4 +93,27 @@ export function buildWeekICS(schedule: RawScheduleData, baseDate: Date) {
 
   lines.push("END:VCALENDAR");
   return lines.join("\r\n");
+}
+
+/**
+ * 验证 ICS 内容格式
+ */
+export function validateICS(icsContent: string): boolean {
+  const required = ["BEGIN:VCALENDAR", "END:VCALENDAR", "VERSION:2.0"];
+  return required.every((tag) => icsContent.includes(tag));
+}
+
+/**
+ * 下载 ICS 文件
+ */
+export function downloadICS(icsContent: string, filename: string): void {
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }

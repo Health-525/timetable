@@ -24,6 +24,12 @@ const notoSansSC = Noto_Sans_SC({
 export const metadata: Metadata = {
   title: "上早八 - 课表与早八提醒",
   description: "上早八：下一节课倒计时、本周课表、导出日历与上课提醒。",
+  applicationName: "上早八",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [{ url: "/icon.png" }],
+    apple: [{ url: "/apple-touch-icon.png" }],
+  },
 };
 
 export default function RootLayout({
