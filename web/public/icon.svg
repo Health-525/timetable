@@ -1,0 +1,38 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="96" y1="72" x2="416" y2="440" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <filter id="glow" x="-40" y="-40" width="592" height="592" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.145  0 0 0 0 0.388  0 0 0 0 0.922  0 0 0 0.35 0" result="blueGlow"/>
+      <feMerge>
+        <feMergeNode in="blueGlow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- background -->
+  <rect x="0" y="0" width="512" height="512" rx="120" fill="#FFFAF2"/>
+
+  <!-- ring -->
+  <circle cx="256" cy="276" r="180" stroke="url(#g)" stroke-width="26" opacity="0.95" filter="url(#glow)"/>
+  <circle cx="256" cy="276" r="150" fill="#FFFFFF" fill-opacity="0.78" stroke="#0F172A" stroke-opacity="0.08"/>
+
+  <!-- bells -->
+  <path d="M160 162 L202 128" stroke="#0F172A" stroke-opacity="0.35" stroke-width="18" stroke-linecap="round"/>
+  <path d="M352 162 L310 128" stroke="#0F172A" stroke-opacity="0.35" stroke-width="18" stroke-linecap="round"/>
+
+  <!-- hands -->
+  <path d="M256 276 L256 204" stroke="#2563EB" stroke-width="20" stroke-linecap="round"/>
+  <path d="M256 276 L318 312" stroke="#2563EB" stroke-width="20" stroke-linecap="round" opacity="0.85"/>
+  <circle cx="256" cy="276" r="14" fill="#2563EB"/>
+
+  <!-- 8 badge -->
+  <g transform="translate(256 396)">
+    <rect x="-58" y="-32" width="116" height="64" rx="32" fill="#2563EB"/>
+    <text x="0" y="22" text-anchor="middle" font-size="44" font-weight="800" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" fill="#FFFFFF">8</text>
+  </g>
+</svg>

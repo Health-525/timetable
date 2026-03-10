@@ -1,9 +1,14 @@
+import { getNowInTimeZone, normalizeDate } from "./timezone";
+
+/**
+ * 解析日期输入字符串
+ * 使用 Asia/Shanghai 时区避免跨时区问题
+ */
 export function parseDateInput(input: string): Date | null {
   const normalized = input.trim().toLowerCase();
-  // Use Asia/Shanghai to avoid timezone surprises
-  const nowBJ = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
-  const today = new Date(nowBJ);
-  today.setHours(0, 0, 0, 0);
+  
+  // 使用统一的时区处理函数
+  const today = normalizeDate(getNowInTimeZone("Asia/Shanghai"));
   
   // today / 今天
   if (normalized === "today" || normalized === "今天" || normalized === "今日" || normalized === "本周") {
@@ -82,9 +87,11 @@ export function parseDateInput(input: string): Date | null {
   // YYYY-MM-DD format
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (dateRegex.test(normalized)) {
-    const date = new Date(normalized);
-    if (!isNaN(date.getTime())) {
-      return date;
+    // 手动解析避免时区问题
+    const [year, month, day] = normalized.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    if (!isNaN(date.getTime()) && date.getFullYear() === year) {
+      return normalizeDate(date);
     }
   }
   
@@ -94,20 +101,29 @@ export function parseDateInput(input: string): Date | null {
     const [month, day] = normalized.split("-").map(Number);
     const date = new Date(today.getFullYear(), month - 1, day);
     if (!isNaN(date.getTime())) {
-      return date;
+      return normalizeDate(date);
     }
   }
   
   return null;
 }
 
+/**
+ * 获取周数
+ */
 export function getWeekNumber(date: Date, week1MondayStr: string): number {
   const week1Monday = new Date(week1MondayStr);
-  week1Monday.setHours(0, 0, 0, 0);
-  const targetDate = new Date(date);
-  targetDate.setHours(0, 0, 0, 0);
+  const targetDate = normalizeDate(date);
   
   const diffTime = targetDate.getTime() - week1Monday.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   return Math.floor(diffDays / 7) + 1;
+}
+
+/**
+ * 格式化日期为 YYYY-MM-DD
+ */
+export function formatDateKey(date: Date): string {
+  const d = normalizeDate(date);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }

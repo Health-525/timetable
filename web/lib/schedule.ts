@@ -1,3 +1,5 @@
+import { normalizeDate } from "./timezone";
+
 export type Weekday = 1 | 2 | 3 | 4 | 5 | 6 | 7; // 1=Mon..7=Sun
 
 export interface RawScheduleMeta {
@@ -48,6 +50,9 @@ export interface SpecialView {
 
 export type DayItem = CourseView | SpecialView;
 
+/**
+ * 解析周次规格字符串，如 "2-13" 或 "1,3,5-7"
+ */
 export function parseWeekSpec(spec: string): number[] {
   const s = String(spec || "").replace(/，/g, ",");
   const out = new Set<number>();
@@ -70,21 +75,28 @@ export function parseWeekSpec(spec: string): number[] {
   return [...out].sort((x, y) => x - y);
 }
 
+/**
+ * 获取日期对应的星期几 (1-7, 周一到周日)
+ */
 export function weekday1to7(d: Date): Weekday {
   // JS: Sunday=0..Saturday=6
   const js = d.getDay();
   return (js === 0 ? 7 : js) as Weekday;
 }
 
+/**
+ * 计算给定日期是第几周
+ */
 export function getWeekNumber(d: Date, week1MondayIso: string): number {
   const week1 = new Date(week1MondayIso);
-  week1.setHours(0, 0, 0, 0);
-  const dd = new Date(d);
-  dd.setHours(0, 0, 0, 0);
+  const dd = normalizeDate(d);
   const diffDays = Math.floor((dd.getTime() - week1.getTime()) / (1000 * 60 * 60 * 24));
   return Math.floor(diffDays / 7) + 1;
 }
 
+/**
+ * 根据节次组合时间文本
+ */
 function combinePeriodTime(periodTimes: Record<string, string> | undefined, periods: number[]): string | undefined {
   if (!periodTimes || !periods?.length) return undefined;
   const first = periodTimes[String(periods[0])] || "";
@@ -97,6 +109,9 @@ function combinePeriodTime(periodTimes: Record<string, string> | undefined, peri
   return first || last || undefined;
 }
 
+/**
+ * 验证并解析课表数据
+ */
 export function parseSchedule(raw: unknown): RawScheduleData {
   const r = raw as { meta?: { week1_monday?: unknown } } | null;
   if (!r || typeof r !== "object" || typeof r.meta?.week1_monday !== "string") {
@@ -105,6 +120,9 @@ export function parseSchedule(raw: unknown): RawScheduleData {
   return raw as RawScheduleData;
 }
 
+/**
+ * 获取指定日期的课程列表
+ */
 export function getItemsForDate(schedule: RawScheduleData, date: Date): { weekNum: number; items: DayItem[] } {
   const weekNum = getWeekNumber(date, schedule.meta.week1_monday);
   const wday = weekday1to7(date);
@@ -154,6 +172,9 @@ export function getItemsForDate(schedule: RawScheduleData, date: Date): { weekNu
   return { weekNum, items };
 }
 
+/**
+ * 格式化单日课程响应文本
+ */
 export function formatDayResponse(date: Date, weekNum: number, items: DayItem[]): string {
   const dateStr = date.toLocaleDateString("zh-CN", {
     month: "long",
