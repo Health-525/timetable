@@ -160,15 +160,20 @@ def main(argv: list[str]) -> int:
         return 0
 
     # Print specials first (time-range items)
+    special_time_windows = set()
     for s in specials:
         title = s.get('title', '')
         loc = s.get('location', '') or "(地点待补)"
         for t in (s.get('times') or []):
             st = t.get('start','')
             ed = t.get('end','')
+            if st and ed:
+                special_time_windows.add((st.strip(), ed.strip()))
             ttxt = f"{st}-{ed}".strip('-')
             print(f"- {ttxt}｜{title}｜{loc}")
 
+    # If a special item shares the same time window with a normal course, treat it as an override
+    # (e.g. “上机地点调整” for certain weeks) and hide the normal course.
     for c in matches:
         ps = c.periods
         if ps:
@@ -187,6 +192,13 @@ def main(argv: list[str]) -> int:
                     ttxt = f"{first}~{last}".strip('~')
         else:
             ptxt, ttxt = "?", ""
+
+        # override check
+        if ttxt and '-' in ttxt:
+            st, ed = [x.strip() for x in ttxt.split('-', 1)]
+            if (st, ed) in special_time_windows:
+                continue
+
         loc = c.location or "(地点待补)"
         print(f"- 第{ptxt}节 {ttxt}｜{c.title}｜{loc}")
 
