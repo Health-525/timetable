@@ -1,0 +1,22 @@
+# 这个文件要放到 jiangshu-study 仓库的 .github/workflows/notify-timetable.yml
+# 作用：每次 push 后通知 timetable 仓库触发调课解析
+
+name: notify-timetable
+
+on:
+  push:
+    paths:
+      - '调课.md'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger timetable parse-adjustments
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.TIMETABLE_DISPATCH_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/Health-525/timetable/dispatches \
+            -d '{"event_type":"obsidian-push"}'

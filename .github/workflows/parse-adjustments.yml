@@ -1,0 +1,69 @@
+name: parse-adjustments
+
+on:
+  # 每次 jiangshu-study 推送后，通过 repository_dispatch 触发
+  repository_dispatch:
+    types: [obsidian-push]
+  # 也支持手动触发测试
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout timetable
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Clone jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
+
+      - name: Check if 调课.md exists
+        id: check
+        run: |
+          if [ -f "_study/调课.md" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "调课.md 不存在，跳过"
+          fi
+
+      - name: Parse and apply adjustments
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          node scripts/parse_adjustments.js \
+            --note _study/调课.md \
+            --adj data/adjustments.json
+
+      - name: Commit adjustments.json back to timetable
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
+          git add data/adjustments.json
+          git diff --cached --quiet || git commit -m "feat: apply schedule adjustments from Obsidian"
+          git push
+
+      - name: Push updated 调课.md back to jiangshu-study
+        if: steps.check.outputs.exists == 'true'
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          cd _study
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
+          git add 调课.md
+          git diff --cached --quiet || git commit -m "chore: archive processed adjustments"
+          git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD
