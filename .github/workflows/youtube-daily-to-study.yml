@@ -43,6 +43,7 @@ jobs:
           STUDY_REPO: 'https://github.com/Health-525/jiangshu-study.git'
           OUT_DIR_REL: 'youtube-daily'
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
           MAX_ANALYZE: '5'
           TEST_LATEST: ${{ github.event.inputs.test_latest }}
           YOUTUBE_COOKIES_FILE: youtube_cookies.txt

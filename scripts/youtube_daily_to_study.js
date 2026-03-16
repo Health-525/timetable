@@ -12,6 +12,7 @@
  *   STUDY_DIR             default: ./_out/jiangshu-study
  *   OUT_DIR_REL           default: youtube-daily
  *   DEEPSEEK_API_KEY      enables caption analysis via DeepSeek
+ *   GLM_API_KEY           enables caption analysis via GLM (Zhipu AI)
  *   YOUTUBE_COOKIES_FILE  path to Netscape cookies.txt for yt-dlp
  *   MAX_ANALYZE           max videos to analyze (default 5)
  *   TEST_LATEST           set to 'true' to ignore today filter
@@ -228,9 +229,10 @@ function tryFetchCaptions({ videoUrl }) {
   return { ok: true, langFile: pick, text };
 }
 
-function deepseekChat({ apiKey, system, user }) {
+// Generic OpenAI-compatible chat (used by both DeepSeek and Qwen)
+function openaiCompatChat({ hostname, path: apiPath, apiKey, model, system, user, label }) {
   const payload = JSON.stringify({
-    model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+    model,
     messages: [
       { role: 'system', content: system },
       { role: 'user', content: user },
@@ -242,8 +244,8 @@ function deepseekChat({ apiKey, system, user }) {
     const req = https.request(
       {
         method: 'POST',
-        hostname: 'api.deepseek.com',
-        path: '/v1/chat/completions',
+        hostname,
+        path: apiPath,
         headers: {
           Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
@@ -256,32 +258,62 @@ function deepseekChat({ apiKey, system, user }) {
         res.on('end', () => {
           const txt = Buffer.concat(chunks).toString('utf8');
           if ((res.statusCode || 0) < 200 || (res.statusCode || 0) >= 300) {
-            return reject(new Error(`deepseek_http_${res.statusCode}: ${txt.slice(0, 400)}`));
+            return reject(new Error(`${label}_http_${res.statusCode}: ${txt.slice(0, 400)}`));
           }
           let obj;
           try {
             obj = JSON.parse(txt);
           } catch {
-            return reject(new Error('deepseek_invalid_json'));
+            return reject(new Error(`${label}_invalid_json`));
           }
           const content =
-            obj &&
-            obj.choices &&
-            obj.choices[0] &&
-            obj.choices[0].message &&
-            obj.choices[0].message.content;
+            obj && obj.choices && obj.choices[0] && obj.choices[0].message && obj.choices[0].message.content;
           resolve(String(content || '').trim());
         });
       }
     );
     req.on('error', reject);
-    // Increase timeout for long transcripts
-    req.setTimeout(180000, () => {
-      req.destroy(new Error('deepseek_timeout'));
-    });
+    req.setTimeout(180000, () => req.destroy(new Error(`${label}_timeout`)));
     req.write(payload);
     req.end();
   });
+}
+
+function deepseekChat({ apiKey, system, user }) {
+  return openaiCompatChat({
+    hostname: 'api.deepseek.com',
+    path: '/v1/chat/completions',
+    apiKey,
+    model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+    system,
+    user,
+    label: 'deepseek',
+  });
+}
+
+function glmChat({ apiKey, system, user }) {
+  return openaiCompatChat({
+    hostname: 'open.bigmodel.cn',
+    path: '/api/paas/v4/chat/completions',
+    apiKey,
+    model: process.env.GLM_MODEL || 'glm-4-flash',
+    system,
+    user,
+    label: 'glm',
+  });
+}
+
+// Race available LLMs; return first success
+async function llmChat({ deepseekKey, glmKey, system, user }) {
+  const tasks = [];
+  if (deepseekKey) tasks.push(deepseekChat({ apiKey: deepseekKey, system, user }).then(r => ({ r, src: 'deepseek' })));
+  if (glmKey)      tasks.push(glmChat({ apiKey: glmKey, system, user }).then(r => ({ r, src: 'glm' })));
+  if (tasks.length === 0) throw new Error('no_llm_key');
+
+  // Promise.any: resolves with first success, rejects only if all fail
+  const { r, src } = await Promise.any(tasks);
+  console.log(`[llm] success via ${src}`);
+  return r;
 }
 
 function buildTechNotesPrompt({ title, channel, url, published, transcript }) {
@@ -369,7 +401,7 @@ function writeDailyMd({ studyDir, outRel, date, grouped }) {
         if (it.analysisMd) {
           lines.push('');
           lines.push('  <details>');
-          lines.push('  <summary>字幕分析（DeepSeek）</summary>');
+          lines.push('  <summary>字幕分析（AI）</summary>');
           lines.push('');
           for (const l of String(it.analysisMd).split('\n')) lines.push('  ' + l);
           lines.push('');
@@ -389,6 +421,7 @@ async function main() {
   const pushToken = process.env.STUDY_PUSH_TOKEN;
   if (!pushToken) throw new Error('Missing env STUDY_PUSH_TOKEN');
   const deepseekKey = process.env.DEEPSEEK_API_KEY || null;
+  const glmKey = process.env.GLM_API_KEY || null;
   const maxAnalyze = Number(process.env.MAX_ANALYZE || 5);
 
   const repo = process.env.STUDY_REPO || 'https://github.com/Health-525/jiangshu-study.git';
@@ -469,33 +502,41 @@ async function main() {
     console.log(`[mode] scheduled: date=${date} matched=${todayItems.length}`);
   }
 
-  // Caption analysis (only when DEEPSEEK_API_KEY is set)
-  if (deepseekKey) {
-    let count = 0;
+  // Caption analysis: fetch captions serially (avoid 429), then analyze in parallel
+  if (deepseekKey || glmKey) {
+    // Step 1: fetch captions serially, collect items that have transcripts
+    const toAnalyze = [];
     for (const it of todayItems) {
-      if (count >= maxAnalyze) break;
+      if (toAnalyze.length >= maxAnalyze) break;
       const cap = tryFetchCaptions({ videoUrl: it.link });
       if (!cap.ok) continue;
-      const { system, user } = buildTechNotesPrompt({
-        title: it.title,
-        channel: it.channelTitle || 'Unknown Channel',
-        url: it.link,
-        published: it.published,
-        transcript: cap.text,
-      });
-      try {
-        const md = await deepseekChat({ apiKey: deepseekKey, system, user });
-        if (md) {
-          it.analysisMd = md;
-          count++;
-          console.log(`[analysis] done (${count}/${maxAnalyze}): ${it.title}`);
-        }
-      } catch (e) {
-        console.log(`[analysis] failed for "${it.title}": ${e.message}`);
-      }
+      toAnalyze.push({ it, cap });
     }
+    console.log(`[analysis] ${toAnalyze.length} items with captions, analyzing in parallel...`);
+
+    // Step 2: analyze all in parallel
+    await Promise.all(
+      toAnalyze.map(async ({ it, cap }, idx) => {
+        const { system, user } = buildTechNotesPrompt({
+          title: it.title,
+          channel: it.channelTitle || 'Unknown Channel',
+          url: it.link,
+          published: it.published,
+          transcript: cap.text,
+        });
+        try {
+          const md = await llmChat({ deepseekKey, glmKey, system, user });
+          if (md) {
+            it.analysisMd = md;
+            console.log(`[analysis] done (${idx + 1}/${toAnalyze.length}): ${it.title}`);
+          }
+        } catch (e) {
+          console.log(`[analysis] failed for "${it.title}": ${e.errors ? e.errors.map(x => x.message).join(', ') : e.message}`);
+        }
+      })
+    );
   } else {
-    console.log('[analysis] skipped: no DEEPSEEK_API_KEY');
+    console.log('[analysis] skipped: no DEEPSEEK_API_KEY or GLM_API_KEY');
   }
 
   const grouped = {};
