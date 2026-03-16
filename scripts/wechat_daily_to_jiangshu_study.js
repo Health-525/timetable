@@ -18,12 +18,14 @@ const path = require('path');
 const https = require('https');
 const { execSync } = require('child_process');
 
-function todayUTC() {
-  const d = new Date();
-  const yyyy = d.getUTCFullYear();
-  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(d.getUTCDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+function todayShanghai() {
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  return fmt.format(new Date()); // YYYY-MM-DD
 }
 
 function readUrls(filePath) {
@@ -55,6 +57,7 @@ function request({ hostname, path: reqPath, headers, body }) {
       }
     );
     req.on('error', reject);
+    req.setTimeout(30000, () => req.destroy(new Error('coze_timeout')));
     req.write(JSON.stringify(body));
     req.end();
   });
@@ -168,7 +171,7 @@ async function main() {
     items.push({ url, summary });
   }
 
-  const date = todayUTC();
+  const date = todayShanghai();
   const outPath = writeDailyMd({ studyDir, date, items });
   console.log('Wrote:', outPath);
 

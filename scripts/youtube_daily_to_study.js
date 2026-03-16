@@ -8,14 +8,19 @@
  *   STUDY_PUSH_TOKEN  GitHub token with repo write access to Health-525/jiangshu-study
  *
  * Optional env:
- *   STUDY_REPO   default: https://github.com/Health-525/jiangshu-study.git
- *   STUDY_DIR    default: ./_out/jiangshu-study
- *   OUT_DIR_REL  default: youtube-daily
+ *   STUDY_REPO            default: https://github.com/Health-525/jiangshu-study.git
+ *   STUDY_DIR             default: ./_out/jiangshu-study
+ *   OUT_DIR_REL           default: youtube-daily
+ *   DEEPSEEK_API_KEY      enables caption analysis via DeepSeek
+ *   YOUTUBE_COOKIES_FILE  path to Netscape cookies.txt for yt-dlp
+ *   MAX_ANALYZE           max videos to analyze (default 5)
+ *   TEST_LATEST           set to 'true' to ignore today filter
  */
 
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const http = require('http');
 const os = require('os');
 const { execSync, spawnSync } = require('child_process');
 
@@ -24,7 +29,7 @@ function todayShanghai() {
     timeZone: 'Asia/Shanghai',
     year: 'numeric',
     month: '2-digit',
-    day: '2-digit'
+    day: '2-digit',
   });
   return fmt.format(new Date()); // YYYY-MM-DD
 }
@@ -37,17 +42,36 @@ function readLines(p) {
     .filter((l) => l && !l.startsWith('#'));
 }
 
-function httpGet(url) {
+// HTTP GET with redirect follow (YouTube channel pages 301/302)
+function httpGet(url, _redirects) {
+  const redirects = _redirects || 0;
+  if (redirects > 5) return Promise.reject(new Error('too_many_redirects'));
+  const mod = url.startsWith('https') ? https : http;
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
-      const chunks = [];
-      res.on('data', (d) => chunks.push(d));
-      res.on('end', () => {
-        resolve({ status: res.statusCode || 0, body: Buffer.concat(chunks).toString('utf8') });
-      });
-    });
+    const req = mod.get(
+      url,
+      {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        },
+      },
+      (res) => {
+        // Follow redirects
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          res.resume();
+          resolve(httpGet(res.headers.location, redirects + 1));
+          return;
+        }
+        const chunks = [];
+        res.on('data', (d) => chunks.push(d));
+        res.on('end', () => {
+          resolve({ status: res.statusCode || 0, body: Buffer.concat(chunks).toString('utf8') });
+        });
+      }
+    );
     req.on('error', reject);
-    req.setTimeout(15000, () => req.destroy(new Error('timeout')));
+    req.setTimeout(20000, () => req.destroy(new Error('timeout')));
   });
 }
 
@@ -69,33 +93,37 @@ function escapeXml(s) {
 
 function parseAtomEntries(xml) {
   const entries = [];
+  // Extract feed-level channel title (first <title> before any <entry>)
+  const beforeFirstEntry = xml.split('<entry>')[0] || xml;
+  const channelTitle = escapeXml(
+    (beforeFirstEntry.match(/<title[^>]*>([\s\S]*?)<\/title>/) || [])[1] || ''
+  ).trim();
+
   const entryMatches = pickAll(/<entry>([\s\S]*?)<\/entry>/g, xml);
   for (const em of entryMatches) {
     const block = em[1];
-    const title = escapeXml((block.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '').trim();
+    const title = escapeXml((block.match(/<title[^>]*>([\s\S]*?)<\/title>/) || [])[1] || '').trim();
     const link = ((block.match(/<link[^>]*href="([^"]+)"[^>]*>/) || [])[1] || '').trim();
     const published = ((block.match(/<published>([^<]+)<\/published>/) || [])[1] || '').trim();
-    const channelTitle = escapeXml((xml.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '').trim();
     if (title && link) entries.push({ title, link, published, channelTitle });
   }
   return entries;
 }
 
 async function resolveChannelId(handleUrl) {
-  // If URL already contains /channel/UCxxxx, extract directly.
+  // Direct /channel/UCxxxx URL
   const direct = handleUrl.match(/\/channel\/(UC[A-Za-z0-9_-]+)/);
   if (direct) return direct[1];
 
-  // For @handle URLs, probe the channel page.
+  // @handle or other URL: fetch page and extract channel ID
   const r = await httpGet(handleUrl);
   if (r.status >= 400) throw new Error(`channel_page_http_${r.status}`);
 
-  // Try multiple patterns YouTube has used over time.
   for (const pat of [
     /"externalId"\s*:\s*"(UC[A-Za-z0-9_-]+)"/,
     /"channelId"\s*:\s*"(UC[A-Za-z0-9_-]+)"/,
-    /\/channel\/(UC[A-Za-z0-9_-]+)/,
     /"browseId"\s*:\s*"(UC[A-Za-z0-9_-]+)"/,
+    /\/channel\/(UC[A-Za-z0-9_-]+)/,
   ]) {
     const m = r.body.match(pat);
     if (m && m[1]) return m[1];
@@ -111,6 +139,7 @@ function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
 }
 
+// Use shell:true so globs expand; pass paths as args to avoid injection
 function safeExec(cmd, opts = {}) {
   execSync(cmd, { stdio: 'inherit', shell: true, ...opts });
 }
@@ -122,19 +151,19 @@ function vttToText(vtt) {
     .filter((l) => {
       if (!l.trim()) return false;
       if (/^WEBVTT/.test(l)) return false;
-      // 时间轴行：HH:MM:SS.mmm --> HH:MM:SS.mmm ...
+      // Timestamp lines: HH:MM:SS.mmm --> ...
       if (/^\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->/.test(l)) return false;
       if (/^\d{2}:\d{2}[.,]\d{3}\s*-->/.test(l)) return false;
-      // NOTE/STYLE/REGION 块头
+      // Block headers
       if (/^(NOTE|STYLE|REGION)(\s|$)/.test(l)) return false;
-      // 纯数字序号（SRT 风格混入）
+      // Numeric cue IDs
       if (/^\d+$/.test(l.trim())) return false;
       return true;
     })
     .map((l) => l.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim())
     .filter(Boolean);
 
-  // YouTube 自动字幕每句会滚动重复，去重相邻相同行
+  // YouTube auto-captions repeat lines as they scroll; deduplicate adjacent
   const deduped = [];
   for (const l of lines) {
     if (deduped.length === 0 || deduped[deduped.length - 1] !== l) {
@@ -145,7 +174,6 @@ function vttToText(vtt) {
 }
 
 function tryFetchCaptions({ videoUrl }) {
-  // Requires yt-dlp available in PATH (workflow will install it).
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ytcap-'));
   const outTpl = path.join(tmp, '%(id)s.%(ext)s');
   const args = [
@@ -154,12 +182,11 @@ function tryFetchCaptions({ videoUrl }) {
     '--write-auto-subs',
     '--sub-format', 'vtt',
     '--sub-langs', 'zh.*,en',
-    // 伪装 User-Agent，降低 bot 检测概率
-    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    '--user-agent',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     '--sleep-interval', '2',
     '--max-sleep-interval', '5',
     '-o', outTpl,
-    videoUrl
   ];
 
   const cookiesFile = process.env.YOUTUBE_COOKIES_FILE;
@@ -170,11 +197,13 @@ function tryFetchCaptions({ videoUrl }) {
     console.log('[captions] no cookies file, may hit bot detection');
   }
 
+  args.push(videoUrl);
+
   console.log(`[captions] fetching: ${videoUrl}`);
-  const r = spawnSync('yt-dlp', args, { encoding: 'utf8', timeout: 60000 });
+  const r = spawnSync('yt-dlp', args, { encoding: 'utf8', timeout: 90000 });
   if (r.status !== 0) {
     const detail = (r.stderr || '').slice(0, 800);
-    console.log(`[captions] yt_dlp_failed status=${r.status} detail=${detail}`);
+    console.log(`[captions] yt_dlp_failed status=${r.status}\n${detail}`);
     return { ok: false, reason: 'yt_dlp_failed', detail };
   }
 
@@ -184,9 +213,9 @@ function tryFetchCaptions({ videoUrl }) {
     return { ok: false, reason: 'no_captions' };
   }
 
-  // Prefer zh if present.
-  const pick = files.find((f) => /zh/i.test(f)) || files[0];
-  console.log(`[captions] picked file: ${pick}`);
+  // Prefer zh; fall back to first available
+  const pick = files.find((f) => /\.zh/i.test(f)) || files[0];
+  console.log(`[captions] picked: ${pick}`);
   const vtt = fs.readFileSync(path.join(tmp, pick), 'utf8');
   const text = vttToText(vtt);
   if (!text.trim()) {
@@ -197,14 +226,13 @@ function tryFetchCaptions({ videoUrl }) {
 }
 
 function deepseekChat({ apiKey, system, user }) {
-  // OpenAI-compatible style endpoint.
   const payload = JSON.stringify({
     model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
     messages: [
       { role: 'system', content: system },
-      { role: 'user', content: user }
+      { role: 'user', content: user },
     ],
-    temperature: 0.2
+    temperature: 0.2,
   });
 
   return new Promise((resolve, reject) => {
@@ -216,8 +244,8 @@ function deepseekChat({ apiKey, system, user }) {
         headers: {
           Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(payload)
-        }
+          'Content-Length': Buffer.byteLength(payload),
+        },
       },
       (res) => {
         const chunks = [];
@@ -233,13 +261,21 @@ function deepseekChat({ apiKey, system, user }) {
           } catch {
             return reject(new Error('deepseek_invalid_json'));
           }
-          const content = obj && obj.choices && obj.choices[0] && obj.choices[0].message && obj.choices[0].message.content;
+          const content =
+            obj &&
+            obj.choices &&
+            obj.choices[0] &&
+            obj.choices[0].message &&
+            obj.choices[0].message.content;
           resolve(String(content || '').trim());
         });
       }
     );
     req.on('error', reject);
-    req.setTimeout(30000, () => req.destroy(new Error('deepseek_timeout')));
+    // Increase timeout for long transcripts
+    req.setTimeout(60000, () => {
+      req.destroy(new Error('deepseek_timeout'));
+    });
     req.write(payload);
     req.end();
   });
@@ -247,9 +283,9 @@ function deepseekChat({ apiKey, system, user }) {
 
 function buildTechNotesPrompt({ title, channel, url, published, transcript }) {
   const system = [
-    '你是资深工程师与技术写作者。输出中文、条理清晰、偏“技术笔记”。',
-    '只允许基于字幕内容总结，不得编造。遇到不确定就明确写“未提及/无法从字幕确定”。',
-    '允许提炼术语解释，但必须是“字幕里出现的概念”的简短释义（不扩展到百科）。'
+    '你是资深工程师与技术写作者。输出中文、条理清晰、偏"技术笔记"。',
+    '只允许基于字幕内容总结，不得编造。遇到不确定就明确写"未提及/无法从字幕确定"。',
+    '允许提炼术语解释，但必须是"字幕里出现的概念"的简短释义（不扩展到百科）。',
   ].join('\n');
 
   const user = [
@@ -297,11 +333,11 @@ function buildTechNotesPrompt({ title, channel, url, published, transcript }) {
     '- [ ] …',
     '',
     '## 引用片段（最多5条）',
-    '- “原话…”（mm:ss）',
+    '- "原话…"（mm:ss）',
     '',
     '约束：',
     '- 代码/命令必须用 ``` 包起来',
-    '- 没出现就写“无/未提及”，不要硬补'
+    '- 没出现就写"无/未提及"，不要硬补',
   ].join('\n');
 
   return { system, user };
@@ -323,7 +359,9 @@ function writeDailyMd({ studyDir, outRel, date, grouped }) {
     for (const ch of channels) {
       lines.push(`## ${ch}`);
       for (const it of grouped[ch]) {
-        const t = it.published ? `（${it.published.replace('T', ' ').replace('Z', '')}）` : '';
+        const t = it.published
+          ? `（${it.published.replace('T', ' ').replace('Z', ' UTC')}）`
+          : '';
         lines.push(`- [${it.title}](${it.link}) ${t}`.trim());
         if (it.analysisMd) {
           lines.push('');
@@ -358,11 +396,14 @@ async function main() {
   const channelUrls = readLines(channelsFile);
   if (channelUrls.length === 0) throw new Error('No channels in youtube/channels.txt');
 
-  // clone study
+  // Clone jiangshu-study with token
   ensureDir(path.dirname(studyDir));
-  if (fs.existsSync(studyDir)) safeExec(`rm -rf ${JSON.stringify(studyDir)}`);
+  if (fs.existsSync(studyDir)) {
+    // Use execSync directly to avoid shell quoting issues with the path
+    execSync(`rm -rf "${studyDir}"`, { stdio: 'inherit', shell: true });
+  }
   const authed = repo.replace('https://', `https://x-access-token:${pushToken}@`);
-  safeExec(`git clone --depth 1 ${JSON.stringify(authed)} ${JSON.stringify(studyDir)}`);
+  execSync(`git clone --depth 1 "${authed}" "${studyDir}"`, { stdio: 'inherit', shell: true });
 
   const allItems = [];
   for (const url of channelUrls) {
@@ -375,50 +416,57 @@ async function main() {
     }
     const feedUrl = feedUrlForChannelId(channelId);
     console.log(`[feed] fetching channelId=${channelId} url=${url}`);
-    const feed = await httpGet(feedUrl);
+    let feed;
+    try {
+      feed = await httpGet(feedUrl);
+    } catch (e) {
+      console.log(`[feed] fetch error url=${url} reason=${e.message}`);
+      continue;
+    }
     if (feed.status >= 400) {
       console.log(`[feed] skip status=${feed.status} url=${url} channelId=${channelId}`);
       continue;
     }
     const entries = parseAtomEntries(feed.body);
-    if (entries.length === 0) {
-      console.log(`[feed] empty url=${url} channelId=${channelId} (maybe blocked/404 HTML despite 200)`);
-    }
+    console.log(`[feed] got ${entries.length} entries for ${channelId}`);
     for (const e of entries) allItems.push(e);
   }
 
   const date = todayShanghai();
-  const testLatest = String(process.env.TEST_LATEST || '').toLowerCase() === 'true' || String(process.env.TEST_LATEST || '') === '1';
+  const testLatest =
+    String(process.env.TEST_LATEST || '').toLowerCase() === 'true' ||
+    String(process.env.TEST_LATEST || '') === '1';
 
   let todayItems;
   if (testLatest) {
-    // Manual test mode: pick the latest item per channel, regardless of publish date.
+    // Pick the latest item per channel regardless of publish date
     const latestByChannel = new Map();
     for (const it of allItems) {
       const key = it.channelTitle || 'Unknown Channel';
       const prev = latestByChannel.get(key);
-      if (!prev) {
-        latestByChannel.set(key, it);
-        continue;
-      }
-      if (String(it.published || '').localeCompare(String(prev.published || '')) > 0) {
+      if (!prev || String(it.published || '') > String(prev.published || '')) {
         latestByChannel.set(key, it);
       }
     }
     todayItems = Array.from(latestByChannel.values());
-    console.log(`[mode] TEST_LATEST enabled: channels_with_items=${todayItems.length}`);
+    console.log(`[mode] TEST_LATEST: channels_with_items=${todayItems.length}`);
     if (todayItems.length === 0) throw new Error('TEST_LATEST produced 0 items (all feeds empty/blocked)');
   } else {
-    // Scheduled mode: filter to today's date in Asia/Shanghai by comparing YYYY-MM-DD of published.
     todayItems = allItems.filter((it) => {
       if (!it.published) return false;
       const d = new Date(it.published);
-      const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' });
+      const fmt = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
       return fmt.format(d) === date;
     });
+    console.log(`[mode] scheduled: date=${date} matched=${todayItems.length}`);
   }
 
-  // Optional: caption analysis (only if DEEPSEEK_API_KEY is provided).
+  // Caption analysis (only when DEEPSEEK_API_KEY is set)
   if (deepseekKey) {
     let count = 0;
     for (const it of todayItems) {
@@ -430,18 +478,21 @@ async function main() {
         channel: it.channelTitle || 'Unknown Channel',
         url: it.link,
         published: it.published,
-        transcript: cap.text
+        transcript: cap.text,
       });
       try {
         const md = await deepseekChat({ apiKey: deepseekKey, system, user });
         if (md) {
           it.analysisMd = md;
           count++;
+          console.log(`[analysis] done (${count}/${maxAnalyze}): ${it.title}`);
         }
-      } catch {
-        // Non-fatal: keep list output even if analysis fails.
+      } catch (e) {
+        console.log(`[analysis] failed for "${it.title}": ${e.message}`);
       }
     }
+  } else {
+    console.log('[analysis] skipped: no DEEPSEEK_API_KEY');
   }
 
   const grouped = {};
@@ -457,8 +508,12 @@ async function main() {
   const outPath = writeDailyMd({ studyDir, outRel, date, grouped });
   console.log('Wrote:', outPath);
 
-  safeExec(`git add "${outRel}/"`, { cwd: studyDir });
-  safeExec(`git -c user.name="timetable-bot" -c user.email="timetable-bot@users.noreply.github.com" commit -m "youtube-daily: ${date}" || true`, { cwd: studyDir });
+  // Commit & push
+  safeExec(`git add "${outRel}"`, { cwd: studyDir });
+  safeExec(
+    `git -c user.name="timetable-bot" -c user.email="timetable-bot@users.noreply.github.com" commit -m "youtube-daily: ${date}" || true`,
+    { cwd: studyDir }
+  );
   safeExec('git push origin HEAD', { cwd: studyDir });
 }
 
