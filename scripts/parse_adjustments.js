@@ -66,10 +66,11 @@ function appendArchive(content, adj) {
     `- 原节次：${srcPeriodStr}`,
     `- 目标星期：${WEEKDAY_REV[adj.targetWeekday]}`,
     `- 目标节次：${dstPeriodStr}`,
+    adj.targetLocation ? `- 目标教室：${adj.targetLocation}` : null,
     `- 类型：${adj.mode === 'longterm' ? '长期' : '单次'}`,
     `- 周次：${adj.startWeek}`,
     '',
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
   return content.replace(
     /(##\s*已处理记录\s*\n)(<!-- 自动归档[^>]*-->\s*\n?)?/,
@@ -154,6 +155,7 @@ function main() {
     sourcePeriods: srcPeriods,
     targetWeekday: dstWeekday,
     targetPeriods: dstPeriods,
+    targetLocation: f['目标教室'] || undefined,
     mode,
     startWeek: week,
     specificWeek: mode === 'once' ? week : undefined,
