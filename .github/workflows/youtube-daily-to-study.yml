@@ -1,0 +1,30 @@
+name: youtube-daily-to-study
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 07:00 Asia/Shanghai = 23:00 UTC (previous day)
+    - cron: '0 23 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout timetable
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run pipeline (YouTube RSS -> jiangshu-study)
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+          STUDY_REPO: 'https://github.com/Health-525/jiangshu-study.git'
+          OUT_DIR_REL: 'youtube-daily'
+        run: |
+          node scripts/youtube_daily_to_study.js

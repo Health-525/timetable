@@ -1,0 +1,3 @@
+# 每行一个公众号文章 URL（mp.weixin.qq.com/s/...）
+# 你可以随时追加；工作流每天会逐行总结并写入 jiangshu-study/公众号推送/YYYY-MM-DD.md
+# https://mp.weixin.qq.com/s/xxxx
