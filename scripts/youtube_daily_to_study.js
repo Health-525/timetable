@@ -82,14 +82,25 @@ function parseAtomEntries(xml) {
 }
 
 async function resolveChannelId(handleUrl) {
-  // Use a lightweight probe: fetch the channel page and extract externalId if present.
+  // If URL already contains /channel/UCxxxx, extract directly.
+  const direct = handleUrl.match(/\/channel\/(UC[A-Za-z0-9_-]+)/);
+  if (direct) return direct[1];
+
+  // For @handle URLs, probe the channel page.
   const r = await httpGet(handleUrl);
   if (r.status >= 400) throw new Error(`channel_page_http_${r.status}`);
-  const m = r.body.match(/"externalId"\s*:\s*"(UC[^"]+)"/);
-  if (m && m[1]) return m[1];
-  const m2 = r.body.match(/"channelId"\s*:\s*"(UC[^"]+)"/);
-  if (m2 && m2[1]) return m2[1];
-  throw new Error('channel_id_not_found');
+
+  // Try multiple patterns YouTube has used over time.
+  for (const pat of [
+    /"externalId"\s*:\s*"(UC[A-Za-z0-9_-]+)"/,
+    /"channelId"\s*:\s*"(UC[A-Za-z0-9_-]+)"/,
+    /\/channel\/(UC[A-Za-z0-9_-]+)/,
+    /"browseId"\s*:\s*"(UC[A-Za-z0-9_-]+)"/,
+  ]) {
+    const m = r.body.match(pat);
+    if (m && m[1]) return m[1];
+  }
+  throw new Error(`channel_id_not_found for ${handleUrl}`);
 }
 
 function feedUrlForChannelId(channelId) {
@@ -105,13 +116,32 @@ function safeExec(cmd, opts = {}) {
 }
 
 function vttToText(vtt) {
-  return String(vtt || '')
+  const lines = String(vtt || '')
     .replace(/\r\n/g, '\n')
     .split('\n')
-    .filter((l) => l && !/^WEBVTT/.test(l) && !/^\d{2}:\d{2}:\d{2}\.\d{3}/.test(l) && !/^\d{2}:\d{2}\.\d{3}/.test(l) && !/^\d+$/.test(l))
-    .map((l) => l.replace(/<[^>]+>/g, '').trim())
-    .filter(Boolean)
-    .join('\n');
+    .filter((l) => {
+      if (!l.trim()) return false;
+      if (/^WEBVTT/.test(l)) return false;
+      // 时间轴行：HH:MM:SS.mmm --> HH:MM:SS.mmm ...
+      if (/^\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->/.test(l)) return false;
+      if (/^\d{2}:\d{2}[.,]\d{3}\s*-->/.test(l)) return false;
+      // NOTE/STYLE/REGION 块头
+      if (/^(NOTE|STYLE|REGION)(\s|$)/.test(l)) return false;
+      // 纯数字序号（SRT 风格混入）
+      if (/^\d+$/.test(l.trim())) return false;
+      return true;
+    })
+    .map((l) => l.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim())
+    .filter(Boolean);
+
+  // YouTube 自动字幕每句会滚动重复，去重相邻相同行
+  const deduped = [];
+  for (const l of lines) {
+    if (deduped.length === 0 || deduped[deduped.length - 1] !== l) {
+      deduped.push(l);
+    }
+  }
+  return deduped.join('\n');
 }
 
 function tryFetchCaptions({ videoUrl }) {
@@ -122,26 +152,47 @@ function tryFetchCaptions({ videoUrl }) {
     '--skip-download',
     '--write-subs',
     '--write-auto-subs',
-    '--sub-format',
-    'vtt',
-    '--sub-langs',
-    'zh.*,en',
-    '-o',
-    outTpl,
+    '--sub-format', 'vtt',
+    '--sub-langs', 'zh.*,en',
+    // 伪装 User-Agent，降低 bot 检测概率
+    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    '--sleep-interval', '2',
+    '--max-sleep-interval', '5',
+    '-o', outTpl,
     videoUrl
   ];
 
-  const r = spawnSync('yt-dlp', args, { encoding: 'utf8' });
-  if (r.status !== 0) return { ok: false, reason: 'yt_dlp_failed', detail: (r.stderr || '').slice(0, 500) };
+  const cookiesFile = process.env.YOUTUBE_COOKIES_FILE;
+  if (cookiesFile && fs.existsSync(cookiesFile)) {
+    args.push('--cookies', cookiesFile);
+    console.log(`[captions] using cookies: ${cookiesFile}`);
+  } else {
+    console.log('[captions] no cookies file, may hit bot detection');
+  }
+
+  console.log(`[captions] fetching: ${videoUrl}`);
+  const r = spawnSync('yt-dlp', args, { encoding: 'utf8', timeout: 60000 });
+  if (r.status !== 0) {
+    const detail = (r.stderr || '').slice(0, 800);
+    console.log(`[captions] yt_dlp_failed status=${r.status} detail=${detail}`);
+    return { ok: false, reason: 'yt_dlp_failed', detail };
+  }
 
   const files = fs.readdirSync(tmp).filter((f) => f.endsWith('.vtt'));
-  if (files.length === 0) return { ok: false, reason: 'no_captions' };
+  if (files.length === 0) {
+    console.log(`[captions] no_captions for ${videoUrl}`);
+    return { ok: false, reason: 'no_captions' };
+  }
 
   // Prefer zh if present.
   const pick = files.find((f) => /zh/i.test(f)) || files[0];
+  console.log(`[captions] picked file: ${pick}`);
   const vtt = fs.readFileSync(path.join(tmp, pick), 'utf8');
   const text = vttToText(vtt);
-  if (!text.trim()) return { ok: false, reason: 'captions_empty' };
+  if (!text.trim()) {
+    console.log(`[captions] captions_empty for ${videoUrl}`);
+    return { ok: false, reason: 'captions_empty' };
+  }
   return { ok: true, langFile: pick, text };
 }
 
@@ -315,8 +366,15 @@ async function main() {
 
   const allItems = [];
   for (const url of channelUrls) {
-    const channelId = await resolveChannelId(url);
+    let channelId;
+    try {
+      channelId = await resolveChannelId(url);
+    } catch (e) {
+      console.log(`[channel] skip resolve failed url=${url} reason=${e.message}`);
+      continue;
+    }
     const feedUrl = feedUrlForChannelId(channelId);
+    console.log(`[feed] fetching channelId=${channelId} url=${url}`);
     const feed = await httpGet(feedUrl);
     if (feed.status >= 400) {
       console.log(`[feed] skip status=${feed.status} url=${url} channelId=${channelId}`);
