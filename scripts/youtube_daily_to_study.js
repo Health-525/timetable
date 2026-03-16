@@ -16,7 +16,8 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const { execSync } = require('child_process');
+const os = require('os');
+const { execSync, spawnSync } = require('child_process');
 
 function todayShanghai() {
   const fmt = new Intl.DateTimeFormat('en-CA', {
@@ -103,6 +104,158 @@ function safeExec(cmd, opts = {}) {
   execSync(cmd, { stdio: 'inherit', ...opts });
 }
 
+function vttToText(vtt) {
+  return String(vtt || '')
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .filter((l) => l && !/^WEBVTT/.test(l) && !/^\d{2}:\d{2}:\d{2}\.\d{3}/.test(l) && !/^\d{2}:\d{2}\.\d{3}/.test(l) && !/^\d+$/.test(l))
+    .map((l) => l.replace(/<[^>]+>/g, '').trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
+function tryFetchCaptions({ videoUrl }) {
+  // Requires yt-dlp available in PATH (workflow will install it).
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ytcap-'));
+  const outTpl = path.join(tmp, '%(id)s.%(ext)s');
+  const args = [
+    '--skip-download',
+    '--write-subs',
+    '--write-auto-subs',
+    '--sub-format',
+    'vtt',
+    '--sub-langs',
+    'zh.*,en',
+    '-o',
+    outTpl,
+    videoUrl
+  ];
+
+  const r = spawnSync('yt-dlp', args, { encoding: 'utf8' });
+  if (r.status !== 0) return { ok: false, reason: 'yt_dlp_failed', detail: (r.stderr || '').slice(0, 500) };
+
+  const files = fs.readdirSync(tmp).filter((f) => f.endsWith('.vtt'));
+  if (files.length === 0) return { ok: false, reason: 'no_captions' };
+
+  // Prefer zh if present.
+  const pick = files.find((f) => /zh/i.test(f)) || files[0];
+  const vtt = fs.readFileSync(path.join(tmp, pick), 'utf8');
+  const text = vttToText(vtt);
+  if (!text.trim()) return { ok: false, reason: 'captions_empty' };
+  return { ok: true, langFile: pick, text };
+}
+
+function deepseekChat({ apiKey, system, user }) {
+  // OpenAI-compatible style endpoint.
+  const payload = JSON.stringify({
+    model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user }
+    ],
+    temperature: 0.2
+  });
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      {
+        method: 'POST',
+        hostname: 'api.deepseek.com',
+        path: '/v1/chat/completions',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        }
+      },
+      (res) => {
+        const chunks = [];
+        res.on('data', (d) => chunks.push(d));
+        res.on('end', () => {
+          const txt = Buffer.concat(chunks).toString('utf8');
+          if ((res.statusCode || 0) < 200 || (res.statusCode || 0) >= 300) {
+            return reject(new Error(`deepseek_http_${res.statusCode}: ${txt.slice(0, 400)}`));
+          }
+          let obj;
+          try {
+            obj = JSON.parse(txt);
+          } catch {
+            return reject(new Error('deepseek_invalid_json'));
+          }
+          const content = obj && obj.choices && obj.choices[0] && obj.choices[0].message && obj.choices[0].message.content;
+          resolve(String(content || '').trim());
+        });
+      }
+    );
+    req.on('error', reject);
+    req.setTimeout(30000, () => req.destroy(new Error('deepseek_timeout')));
+    req.write(payload);
+    req.end();
+  });
+}
+
+function buildTechNotesPrompt({ title, channel, url, published, transcript }) {
+  const system = [
+    '你是资深工程师与技术写作者。输出中文、条理清晰、偏“技术笔记”。',
+    '只允许基于字幕内容总结，不得编造。遇到不确定就明确写“未提及/无法从字幕确定”。',
+    '允许提炼术语解释，但必须是“字幕里出现的概念”的简短释义（不扩展到百科）。'
+  ].join('\n');
+
+  const user = [
+    `标题：${title}`,
+    `频道：${channel}`,
+    `链接：${url}`,
+    `发布时间：${published || ''}`,
+    '',
+    '字幕：',
+    transcript,
+    '',
+    '请输出 Markdown，严格按以下结构（标题必须一致）：',
+    '',
+    `# ${title}`,
+    '',
+    '## TL;DR（3句）',
+    '- …',
+    '- …',
+    '- …',
+    '',
+    '## 关键信息（元数据）',
+    `- 渠道：${channel}`,
+    `- 发布时间：${published || ''}`,
+    `- 原链接：${url}`,
+    '- 字幕质量：good|noisy|incomplete（你判断）',
+    '',
+    '## 核心结论（最多5条）',
+    '- （每条一句话，尽量带时间点 mm:ss）',
+    '',
+    '## 过程/方法（如果有）',
+    '- 输入/前提：',
+    '- 步骤：',
+    '- 输出/结果：',
+    '',
+    '## 关键术语速记（最多8条）',
+    '- 术语：一句话解释（必须能从字幕推断/或字幕原话）',
+    '',
+    '## 常见坑/边界条件（最多5条）',
+    '- …',
+    '',
+    '## 可复用模板/清单（如果有）',
+    '- （命令/检查清单/决策要点，能直接抄走用）',
+    '',
+    '## 行动项（3条）',
+    '- [ ] …',
+    '',
+    '## 引用片段（最多5条）',
+    '- “原话…”（mm:ss）',
+    '',
+    '约束：',
+    '- 代码/命令必须用 ``` 包起来',
+    '- 没出现就写“无/未提及”，不要硬补'
+  ].join('\n');
+
+  return { system, user };
+}
+
 function writeDailyMd({ studyDir, outRel, date, grouped }) {
   const outDir = path.join(studyDir, outRel);
   ensureDir(outDir);
@@ -121,6 +274,16 @@ function writeDailyMd({ studyDir, outRel, date, grouped }) {
       for (const it of grouped[ch]) {
         const t = it.published ? `（${it.published.replace('T', ' ').replace('Z', '')}）` : '';
         lines.push(`- [${it.title}](${it.link}) ${t}`.trim());
+        if (it.analysisMd) {
+          lines.push('');
+          lines.push('  <details>');
+          lines.push('  <summary>字幕分析（DeepSeek）</summary>');
+          lines.push('');
+          for (const l of String(it.analysisMd).split('\n')) lines.push('  ' + l);
+          lines.push('');
+          lines.push('  </details>');
+          lines.push('');
+        }
       }
       lines.push('');
     }
@@ -133,6 +296,8 @@ function writeDailyMd({ studyDir, outRel, date, grouped }) {
 async function main() {
   const pushToken = process.env.STUDY_PUSH_TOKEN;
   if (!pushToken) throw new Error('Missing env STUDY_PUSH_TOKEN');
+  const deepseekKey = process.env.DEEPSEEK_API_KEY || null;
+  const maxAnalyze = Number(process.env.MAX_ANALYZE || 5);
 
   const repo = process.env.STUDY_REPO || 'https://github.com/Health-525/jiangshu-study.git';
   const studyDir = process.env.STUDY_DIR || path.join(process.cwd(), '_out', 'jiangshu-study');
@@ -167,6 +332,32 @@ async function main() {
     const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' });
     return fmt.format(d) === date;
   });
+
+  // Optional: caption analysis (only if DEEPSEEK_API_KEY is provided).
+  if (deepseekKey) {
+    let count = 0;
+    for (const it of todayItems) {
+      if (count >= maxAnalyze) break;
+      const cap = tryFetchCaptions({ videoUrl: it.link });
+      if (!cap.ok) continue;
+      const { system, user } = buildTechNotesPrompt({
+        title: it.title,
+        channel: it.channelTitle || 'Unknown Channel',
+        url: it.link,
+        published: it.published,
+        transcript: cap.text
+      });
+      try {
+        const md = await deepseekChat({ apiKey: deepseekKey, system, user });
+        if (md) {
+          it.analysisMd = md;
+          count++;
+        }
+      } catch {
+        // Non-fatal: keep list output even if analysis fails.
+      }
+    }
+  }
 
   const grouped = {};
   for (const it of todayItems) {
