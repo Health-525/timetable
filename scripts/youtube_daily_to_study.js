@@ -184,8 +184,9 @@ function tryFetchCaptions({ videoUrl }) {
     '--sub-langs', 'zh.*,en',
     '--user-agent',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    '--sleep-interval', '2',
-    '--max-sleep-interval', '5',
+    '--sleep-interval', '5',
+    '--max-sleep-interval', '15',
+    '--retry-sleep', 'http:10',
     // Solve YouTube n-challenge / signature via EJS + Node.js runtime
     '--remote-components', 'ejs:github',
     '-o', outTpl,
@@ -275,7 +276,7 @@ function deepseekChat({ apiKey, system, user }) {
     );
     req.on('error', reject);
     // Increase timeout for long transcripts
-    req.setTimeout(60000, () => {
+    req.setTimeout(180000, () => {
       req.destroy(new Error('deepseek_timeout'));
     });
     req.write(payload);
