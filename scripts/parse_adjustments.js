@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * 读取 jiangshu-study/调课.md，解析调课记录，
+ * 读取 jiangshu-study/调课.md（YAML frontmatter 格式），解析调课记录，
  * 更新 timetable/data/adjustments.json，
- * 并将已处理的条目归档。
+ * 并将已处理的条目归档到 ## 已处理记录 区域。
  *
  * Usage:
  *   node scripts/parse_adjustments.js --note <调课.md路径> --adj <adjustments.json路径>
@@ -35,107 +35,46 @@ function parseArgs(argv) {
   return out;
 }
 
-function parsePendingBlocks(content) {
-  const pendingMatch = content.match(/##\s*待处理([\s\S]*?)(?=##\s*已处理|$)/);
-  if (!pendingMatch) return [];
-
-  const pendingSection = pendingMatch[1];
-  const blockRegex = /###\s*(调课-[^\n]+)\n([\s\S]*?)(?=###\s*调课-|$)/g;
-  const blocks = [];
-  let m;
-
-  while ((m = blockRegex.exec(pendingSection)) !== null) {
-    const id = m[1].trim();
-    const body = m[2];
-
-    if (body.trim().startsWith('<!--')) continue;
-
-    const fields = {};
-    const fieldRegex = /^-\s*(\S+?)：\s*(.+)$/gm;
-    let fm;
-    while ((fm = fieldRegex.exec(body)) !== null) {
-      fields[fm[1].trim()] = fm[2].trim();
-    }
-
-    const required = ['课程', '原星期', '原节次', '目标星期', '目标节次', '类型', '周次'];
-    const missing = required.filter((k) => !fields[k]);
-    if (missing.length > 0) {
-      console.log(`[skip] ${id} 缺少字段: ${missing.join(', ')}`);
-      continue;
-    }
-
-    const srcWeekday = WEEKDAY_MAP[fields['原星期']];
-    const dstWeekday = WEEKDAY_MAP[fields['目标星期']];
-    const srcPeriods = PERIOD_MAP[fields['原节次']];
-    const dstPeriods = PERIOD_MAP[fields['目标节次']];
-    const mode = fields['类型'] === '长期' ? 'longterm' : 'once';
-    const week = parseInt(fields['周次'], 10);
-
-    if (!srcWeekday || !dstWeekday) {
-      console.log(`[skip] ${id} 星期格式错误`);
-      continue;
-    }
-    if (!srcPeriods || !dstPeriods) {
-      console.log(`[skip] ${id} 节次格式错误`);
-      continue;
-    }
-    if (isNaN(week) || week < 1) {
-      console.log(`[skip] ${id} 周次格式错误`);
-      continue;
-    }
-
-    blocks.push({
-      id,
-      raw: m[0],
-      adjustment: {
-        id: `adj-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        courseTitle: fields['课程'],
-        sourceWeekday: srcWeekday,
-        sourcePeriods: srcPeriods,
-        targetWeekday: dstWeekday,
-        targetPeriods: dstPeriods,
-        mode,
-        startWeek: week,
-        specificWeek: mode === 'once' ? week : undefined,
-        createdAt: new Date().toISOString(),
-        note: `来自Obsidian调课记录 ${id}`,
-      },
-    });
+function parseFrontmatter(content) {
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) return null;
+  const raw = match[1];
+  const fields = {};
+  for (const line of raw.split(/\r?\n/)) {
+    const m = line.match(/^(\S+?):\s*(.*)$/);
+    if (m) fields[m[1].trim()] = m[2].trim();
   }
-  return blocks;
+  return { fields, raw: match[0] };
 }
 
-function archiveBlocks(content, processedBlocks) {
-  if (processedBlocks.length === 0) return content;
+function resetFrontmatter(content) {
+  return content.replace(
+    /^---\r?\n[\s\S]*?\r?\n---/,
+    `---\n课程:\n原星期:\n原节次:\n目标星期:\n目标节次:\n类型:\n周次:\n状态: 待处理\n---`
+  );
+}
 
-  let updated = content;
+function appendArchive(content, adj) {
+  const date = new Date().toLocaleDateString('zh-CN');
+  const srcPeriodStr = PERIOD_REV[adj.sourcePeriods.join(',')] || adj.sourcePeriods.join('-');
+  const dstPeriodStr = PERIOD_REV[adj.targetPeriods.join(',')] || adj.targetPeriods.join('-');
 
-  for (const block of processedBlocks) {
-    updated = updated.replace(block.raw, '');
+  const entry = [
+    `### ${adj.id}（${date}）`,
+    `- 课程：${adj.courseTitle}`,
+    `- 原星期：${WEEKDAY_REV[adj.sourceWeekday]}`,
+    `- 原节次：${srcPeriodStr}`,
+    `- 目标星期：${WEEKDAY_REV[adj.targetWeekday]}`,
+    `- 目标节次：${dstPeriodStr}`,
+    `- 类型：${adj.mode === 'longterm' ? '长期' : '单次'}`,
+    `- 周次：${adj.startWeek}`,
+    '',
+  ].join('\n');
 
-    const adj = block.adjustment;
-    const srcPeriodStr = PERIOD_REV[adj.sourcePeriods.join(',')] || adj.sourcePeriods.join('-');
-    const dstPeriodStr = PERIOD_REV[adj.targetPeriods.join(',')] || adj.targetPeriods.join('-');
-
-    const archiveEntry = [
-      `### ${block.id}（已处理 ${new Date().toLocaleDateString('zh-CN')}）`,
-      `- 课程：${adj.courseTitle}`,
-      `- 原星期：${WEEKDAY_REV[adj.sourceWeekday]}`,
-      `- 原节次：${srcPeriodStr}`,
-      `- 目标星期：${WEEKDAY_REV[adj.targetWeekday]}`,
-      `- 目标节次：${dstPeriodStr}`,
-      `- 类型：${adj.mode === 'longterm' ? '长期' : '单次'}`,
-      `- 周次：${adj.startWeek}`,
-      '',
-    ].join('\n');
-
-    updated = updated.replace(
-      /##\s*已处理\n(<!-- 自动归档.*?-->)?/,
-      `## 已处理\n<!-- 自动归档，请勿手动修改此区域 -->\n\n${archiveEntry}`
-    );
-  }
-
-  return updated;
+  return content.replace(
+    /(##\s*已处理记录\s*\n)(<!-- 自动归档[^>]*-->\s*\n?)?/,
+    `$1<!-- 自动归档，请勿手动修改此区域 -->\n\n${entry}`
+  );
 }
 
 function loadAdjustments(adjPath) {
@@ -167,28 +106,73 @@ function main() {
   }
 
   const content = fs.readFileSync(note, 'utf8');
-  const pending = parsePendingBlocks(content);
+  const fm = parseFrontmatter(content);
 
-  if (pending.length === 0) {
-    console.log('[done] 没有待处理的调课记录');
+  if (!fm) {
+    console.log('[done] 没有找到 frontmatter，跳过');
     return;
   }
 
-  console.log(`[found] 发现 ${pending.length} 条待处理记录`);
+  const f = fm.fields;
+
+  if (f['状态'] !== '待处理') {
+    console.log(`[done] 状态为「${f['状态']}」，无需处理`);
+    return;
+  }
+
+  const required = ['课程', '原星期', '原节次', '目标星期', '目标节次', '类型', '周次'];
+  const missing = required.filter((k) => !f[k]);
+  if (missing.length > 0) {
+    console.log(`[skip] 缺少字段: ${missing.join(', ')}`);
+    return;
+  }
+
+  const srcWeekday = WEEKDAY_MAP[f['原星期']];
+  const dstWeekday = WEEKDAY_MAP[f['目标星期']];
+  const srcPeriods = PERIOD_MAP[f['原节次']];
+  const dstPeriods = PERIOD_MAP[f['目标节次']];
+  const mode = f['类型'] === '长期' ? 'longterm' : 'once';
+  const week = parseInt(f['周次'], 10);
+
+  if (!srcWeekday || !dstWeekday) {
+    console.log(`[skip] 星期格式错误`);
+    return;
+  }
+  if (!srcPeriods || !dstPeriods) {
+    console.log(`[skip] 节次格式错误（支持: 1-2 / 3-4 / 5-6 / 7-8 / 9-10）`);
+    return;
+  }
+  if (isNaN(week) || week < 1) {
+    console.log(`[skip] 周次格式错误`);
+    return;
+  }
+
+  const adjustment = {
+    id: `adj-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    courseTitle: f['课程'],
+    sourceWeekday: srcWeekday,
+    sourcePeriods: srcPeriods,
+    targetWeekday: dstWeekday,
+    targetPeriods: dstPeriods,
+    mode,
+    startWeek: week,
+    specificWeek: mode === 'once' ? week : undefined,
+    createdAt: new Date().toISOString(),
+    note: `来自Obsidian调课记录`,
+  };
 
   const existing = loadAdjustments(adj);
-  const newAdjs = [...existing, ...pending.map((b) => b.adjustment)];
-  saveAdjustments(adj, newAdjs);
-  console.log(`[saved] adjustments.json 已更新，共 ${newAdjs.length} 条`);
+  saveAdjustments(adj, [...existing, adjustment]);
+  console.log(`[saved] adjustments.json 已更新，共 ${existing.length + 1} 条`);
 
-  const updatedContent = archiveBlocks(content, pending);
-  fs.writeFileSync(note, updatedContent, 'utf8');
-  console.log(`[archived] 调课.md 已归档 ${pending.length} 条`);
+  let updated = appendArchive(content, adjustment);
+  updated = resetFrontmatter(updated);
+  fs.writeFileSync(note, updated, 'utf8');
+  console.log(`[archived] 调课.md 已归档并重置`);
 
-  for (const b of pending) {
-    const a = b.adjustment;
-    console.log(`  ✓ ${b.id}: ${a.courseTitle} ${a.mode === 'once' ? `第${a.startWeek}周` : `第${a.startWeek}周起`}`);
-  }
+  console.log(
+    `  ✓ ${adjustment.courseTitle}：${WEEKDAY_REV[srcWeekday]} ${f['原节次']} → ${WEEKDAY_REV[dstWeekday]} ${f['目标节次']}，${mode === 'once' ? `第${week}周` : `第${week}周起`}`
+  );
 }
 
 main();
