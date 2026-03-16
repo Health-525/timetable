@@ -318,8 +318,14 @@ async function main() {
     const channelId = await resolveChannelId(url);
     const feedUrl = feedUrlForChannelId(channelId);
     const feed = await httpGet(feedUrl);
-    if (feed.status >= 400) continue;
+    if (feed.status >= 400) {
+      console.log(`[feed] skip status=${feed.status} url=${url} channelId=${channelId}`);
+      continue;
+    }
     const entries = parseAtomEntries(feed.body);
+    if (entries.length === 0) {
+      console.log(`[feed] empty url=${url} channelId=${channelId} (maybe blocked/404 HTML despite 200)`);
+    }
     for (const e of entries) allItems.push(e);
   }
 
@@ -342,6 +348,8 @@ async function main() {
       }
     }
     todayItems = Array.from(latestByChannel.values());
+    console.log(`[mode] TEST_LATEST enabled: channels_with_items=${todayItems.length}`);
+    if (todayItems.length === 0) throw new Error('TEST_LATEST produced 0 items (all feeds empty/blocked)');
   } else {
     // Scheduled mode: filter to today's date in Asia/Shanghai by comparing YYYY-MM-DD of published.
     todayItems = allItems.filter((it) => {
