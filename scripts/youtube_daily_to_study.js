@@ -112,7 +112,7 @@ function ensureDir(p) {
 }
 
 function safeExec(cmd, opts = {}) {
-  execSync(cmd, { stdio: 'inherit', ...opts });
+  execSync(cmd, { stdio: 'inherit', shell: true, ...opts });
 }
 
 function vttToText(vtt) {
@@ -457,9 +457,9 @@ async function main() {
   const outPath = writeDailyMd({ studyDir, outRel, date, grouped });
   console.log('Wrote:', outPath);
 
-  safeExec('git add youtube-daily/*.md', { cwd: studyDir });
+  safeExec(`git add "${outRel}/"`, { cwd: studyDir });
   safeExec(`git -c user.name="timetable-bot" -c user.email="timetable-bot@users.noreply.github.com" commit -m "youtube-daily: ${date}" || true`, { cwd: studyDir });
-  safeExec('git push', { cwd: studyDir });
+  safeExec('git push origin HEAD', { cwd: studyDir });
 }
 
 main().catch((e) => {

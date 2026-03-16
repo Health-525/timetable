@@ -108,7 +108,7 @@ async function runCoze({ workflowId, url, apiKey }) {
 }
 
 function safeExec(cmd, opts = {}) {
-  return execSync(cmd, { stdio: 'inherit', ...opts });
+  return execSync(cmd, { stdio: 'inherit', shell: true, ...opts });
 }
 
 function ensureDir(p) {
@@ -174,9 +174,9 @@ async function main() {
 
   // Commit & push
   safeExec('git status -sb', { cwd: studyDir });
-  safeExec('git add 公众号推送/*.md', { cwd: studyDir });
+  safeExec('git add "公众号推送/"', { cwd: studyDir });
   safeExec(`git -c user.name="timetable-bot" -c user.email="timetable-bot@users.noreply.github.com" commit -m "wechat-daily: ${date}" || true`, { cwd: studyDir });
-  safeExec('git push', { cwd: studyDir });
+  safeExec('git push origin HEAD', { cwd: studyDir });
 }
 
 main().catch((e) => {
