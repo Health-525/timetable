@@ -2,6 +2,11 @@ name: youtube-daily-to-study
 
 on:
   workflow_dispatch:
+    inputs:
+      test_latest:
+        description: 'Manual test: analyze latest video per channel (ignores today filter)'
+        required: false
+        default: 'false'
   schedule:
     # 07:00 Asia/Shanghai = 23:00 UTC (previous day)
     - cron: '0 23 * * *'
@@ -38,5 +43,6 @@ jobs:
           OUT_DIR_REL: 'youtube-daily'
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           MAX_ANALYZE: '5'
+          TEST_LATEST: ${{ github.event.inputs.test_latest }}
         run: |
           node scripts/youtube_daily_to_study.js

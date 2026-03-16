@@ -324,14 +324,33 @@ async function main() {
   }
 
   const date = todayShanghai();
+  const testLatest = String(process.env.TEST_LATEST || '').toLowerCase() === 'true' || String(process.env.TEST_LATEST || '') === '1';
 
-  // Filter to today's date in Asia/Shanghai by comparing YYYY-MM-DD of published.
-  const todayItems = allItems.filter((it) => {
-    if (!it.published) return false;
-    const d = new Date(it.published);
-    const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' });
-    return fmt.format(d) === date;
-  });
+  let todayItems;
+  if (testLatest) {
+    // Manual test mode: pick the latest item per channel, regardless of publish date.
+    const latestByChannel = new Map();
+    for (const it of allItems) {
+      const key = it.channelTitle || 'Unknown Channel';
+      const prev = latestByChannel.get(key);
+      if (!prev) {
+        latestByChannel.set(key, it);
+        continue;
+      }
+      if (String(it.published || '').localeCompare(String(prev.published || '')) > 0) {
+        latestByChannel.set(key, it);
+      }
+    }
+    todayItems = Array.from(latestByChannel.values());
+  } else {
+    // Scheduled mode: filter to today's date in Asia/Shanghai by comparing YYYY-MM-DD of published.
+    todayItems = allItems.filter((it) => {
+      if (!it.published) return false;
+      const d = new Date(it.published);
+      const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' });
+      return fmt.format(d) === date;
+    });
+  }
 
   // Optional: caption analysis (only if DEEPSEEK_API_KEY is provided).
   if (deepseekKey) {
