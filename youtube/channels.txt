@@ -1,0 +1,3 @@
+# One YouTube channel per line (channel URL or @handle URL)
+# Examples:
+https://www.youtube.com/@tech-shrimp
