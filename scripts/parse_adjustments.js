@@ -42,7 +42,13 @@ function parseFrontmatter(content) {
   const fields = {};
   for (const line of raw.split(/\r?\n/)) {
     const m = line.match(/^(\S+?):\s*(.*)$/);
-    if (m) fields[m[1].trim()] = m[2].trim();
+    if (!m) continue;
+    const k = m[1].trim();
+    let v = m[2].trim();
+    // Normalize simple quoted scalars like "5" or '周一' -> 5 / 周一
+    const q = v.match(/^["']([\s\S]*)["']$/);
+    if (q) v = String(q[1]).trim();
+    fields[k] = v;
   }
   return { fields, raw: match[0] };
 }
