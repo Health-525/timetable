@@ -33,7 +33,7 @@ jobs:
       - name: Check if 调课.md exists
         id: check
         run: |
-          if [ -f "_study/调课.md" ]; then
+          if [ -f "_study/09-日常处理/调课.md" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
@@ -44,7 +44,7 @@ jobs:
         if: steps.check.outputs.exists == 'true'
         run: |
           node scripts/parse_adjustments.js \
-            --note _study/调课.md \
+            --note _study/09-日常处理/调课.md \
             --adj data/adjustments.json
 
       - name: Commit adjustments.json back to timetable
@@ -64,6 +64,6 @@ jobs:
           cd _study
           git config user.name "timetable-bot"
           git config user.email "timetable-bot@users.noreply.github.com"
-          git add 调课.md
+          git add 09-日常处理/调课.md
           git diff --cached --quiet || git commit -m "chore: archive processed adjustments"
           git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD
