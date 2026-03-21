@@ -129,8 +129,11 @@ function renderAssignmentsList(assignments) {
       urgency = `🟢 还剩 ${diffDays} 天`;
     }
 
-    lines.push(`### ${a.course} · ${a.title}`);
-    lines.push(`- 截止：${deadlineStr} ${urgency}`);
+    lines.push(`### ${a.course}`);
+    lines.push(`- 作业内容：${a.title}`);
+    lines.push(`- 截止：${deadlineStr}`);
+    lines.push(`- ${urgency}`);
+    lines.push(`- [ ] 完成 <!-- id:${a.id} -->`);
     lines.push('');
   }
 
@@ -160,6 +163,21 @@ function main() {
   let content = fs.readFileSync(note, 'utf8');
   const assignments = loadAssignments(data);
   let savedCount = 0;
+
+  // 检测已勾选的完成复选框，归档对应作业
+  const doneMatches = [...content.matchAll(/- \[x\] 完成 <!-- id:([^>]+) -->/gi)];
+  let archiveCount = 0;
+  for (const m of doneMatches) {
+    const id = m[1].trim();
+    const assignment = assignments.find(a => a.id === id);
+    if (assignment && !assignment.done) {
+      assignment.done = true;
+      assignment.submittedAt = new Date().toISOString();
+      archiveCount++;
+      console.log(`[done] 已归档：${assignment.course} · ${assignment.title}`);
+    }
+  }
+  if (archiveCount > 0) saveAssignments(data, assignments);
 
   // 循环处理所有追加块，直到没有可处理的为止
   while (true) {
