@@ -106,7 +106,8 @@
     "course": "数值分析",
     "title": "小白公子演示一下",
     "deadline": "2026-03-24T09:28:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-21T09:28:47.692Z"
+    "done": true,
+    "createdAt": "2026-03-21T09:28:47.692Z",
+    "submittedAt": "2026-03-21T09:29:23.139Z"
   }
 ]
