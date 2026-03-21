@@ -1,0 +1,221 @@
+name: 生成课表
+
+on:
+  schedule:
+    # 每天北京时间 06:00 = UTC 22:00（前一天）
+    - cron: "0 22 * * *"
+  repository_dispatch:
+    types: [timetable-push]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取 jiangshu-study 仓库
+        uses: actions/checkout@v4
+        with:
+          repository: Health-525/jiangshu-study
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: 拉取 timetable 数据
+        uses: actions/checkout@v4
+        with:
+          repository: Health-525/timetable
+          path: _timetable
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 生成课表.md
+        run: |
+          python3 - <<'PY'
+          import json, re
+          from datetime import date, datetime, timedelta
+          from zoneinfo import ZoneInfo
+          from pathlib import Path
+
+          TZ = ZoneInfo('Asia/Shanghai')
+          repo = Path('.')
+          tt = Path('_timetable')
+          data = json.loads((tt/'data'/'schedule.json').read_text(encoding='utf-8'))
+
+          week1 = date.fromisoformat(data['meta']['week1_monday'])
+          period_times = data.get('periodTimes', {})
+
+          ABBR = {
+              '大数据技术基础': '大数据基础',
+              'Python数据处理与分析': 'Python数据',
+              '数据结构与算法': '数据结构',
+              '多元统计分析': '多元统计',
+              '数值分析': '数值分析',
+              '数学模型与数学软件': '数学模型',
+              '毛泽东思想和中国特色社会主义理论体系概论': '毛概',
+              '马克思主义基本原理': '马原',
+          }
+          def abbr(title: str) -> str:
+              for k, v in ABBR.items():
+                  if k in title:
+                      return v
+              if '体育' in title:
+                  return '体育'
+              return title[:6]
+
+          def short_loc(loc: str) -> str:
+              loc = re.sub(r'[（(][^）)]*[）)]', '', loc).strip()
+              return loc
+
+          def week_index(d: date) -> int:
+              return (d - week1).days // 7 + 1
+
+          def in_week(spec: str, w: int) -> bool:
+              for part in spec.split(','):
+                  part = part.strip()
+                  if not part:
+                      continue
+                  if '-' in part:
+                      a, b = part.split('-', 1)
+                      if int(a) <= w <= int(b):
+                          return True
+                  else:
+                      if int(part) == w:
+                          return True
+              return False
+
+          TIME_RE = re.compile(r'(\d{2}:\d{2})')
+          def start_time(s: str) -> str:
+              m = TIME_RE.search(s)
+              return m.group(1) if m else s.strip()
+
+          courses = data.get('courses', [])
+          now = datetime.now(TZ)
+          today = now.date()
+          monday = today - timedelta(days=today.weekday())
+          sunday = monday + timedelta(days=6)
+          w = week_index(monday)
+
+          adj_path = tt / 'data' / 'adjustments.json'
+          adjustments = json.loads(adj_path.read_text(encoding='utf-8')) if adj_path.exists() else []
+
+          def apply_adjustments(courses, adjustments, w):
+              result = []
+              for c in courses:
+                  if not in_week(c.get('weeks', ''), w):
+                      continue
+                  wd = int(c.get('weekday'))
+                  periods = [int(x) for x in c.get('periods', [])]
+                  if not periods:
+                      continue
+                  hit = None
+                  for adj in adjustments:
+                      if adj.get('courseTitle', '') not in c.get('title', ''):
+                          continue
+                      mode = adj.get('mode', 'once')
+                      start_week = adj.get('startWeek', 0)
+                      specific_week = adj.get('specificWeek')
+                      if mode == 'once' and specific_week != w:
+                          continue
+                      if mode == 'longterm' and w < start_week:
+                          continue
+                      src_wd = adj.get('sourceWeekday')
+                      src_periods = adj.get('sourcePeriods', [])
+                      if src_wd == wd and sorted(src_periods) == sorted(periods):
+                          hit = adj
+                          break
+                  if hit:
+                      new_wd = hit.get('targetWeekday', wd)
+                      new_periods = hit.get('targetPeriods', periods)
+                      new_loc = hit.get('targetLocation') or c.get('location', '')
+                      result.append({**c, 'weekday': new_wd, 'periods': new_periods, 'location': new_loc})
+                  else:
+                      result.append(c)
+              return result
+
+          courses = apply_adjustments(courses, adjustments, w)
+
+          by_day = {i: [] for i in range(1, 8)}
+          for c in courses:
+              wd = int(c.get('weekday'))
+              periods = [int(x) for x in c.get('periods', [])]
+              if not periods:
+                  continue
+              ps = min(periods)
+              t = (f"{period_times.get(str(ps),'')[:5]}"
+                   if str(ps) in period_times else f"第{ps}节")
+              by_day[wd].append((ps, t, c.get('title', ''), c.get('location', '')))
+
+          for wd in by_day:
+              by_day[wd].sort(key=lambda x: x[0])
+
+          wd_today = today.weekday() + 1
+          today_entries = by_day.get(wd_today, [])
+
+          DAY_NAMES = ['周一','周二','周三','周四','周五','周六','周日']
+
+          def day_label(d: date) -> str:
+              return f"{DAY_NAMES[d.weekday()]}（{d.strftime('%m-%d')}）"
+
+          def render_table(entries: list) -> list[str]:
+              rows = ['| 时间  | 课程       | 地点       |',
+                      '|-------|------------|------------|']
+              for _ps, t, title, loc in entries:
+                  rows.append(f"| {start_time(t)} | {abbr(title)} | {short_loc(loc)} |")
+              return rows
+
+          lines = []
+          lines += ['# 课程表', '', f"> 更新时间：{now.strftime('%Y-%m-%d %H:%M')}（北京时间）", '']
+          lines += ['---', '']
+
+          today_label = f"{DAY_NAMES[today.weekday()]}（{today.strftime('%m-%d')}）· 第{week_index(today)}周"
+          lines += [f"## 今日 · {today_label}", '']
+          if not today_entries:
+              lines += ['> 🎉 今日无课', '']
+          else:
+              first = today_entries[0]
+              lines += [f"> 📌 共 **{len(today_entries)}** 节 · 第一节 **{start_time(first[1])}** {abbr(first[2])}（{short_loc(first[3])}）", '']
+              lines += render_table(today_entries)
+              lines.append('')
+          lines += ['---', '']
+
+          has = [f"{['一','二','三','四','五','六','日'][i]}({len(by_day[i+1])})"
+                 for i in range(7) if by_day[i+1]]
+          lines += [f"## 本周 · 第{w}周（{monday.strftime('%m-%d')} ~ {sunday.strftime('%m-%d')}）", '']
+          lines += [f"> 📅 有课日：{'　'.join(has) if has else '无'}", '']
+
+          for i in range(7):
+              d = monday + timedelta(days=i)
+              wd = d.weekday() + 1
+              entries = by_day.get(wd, [])
+              lines += ['---', '', f"### {day_label(d)}", '']
+              if not entries:
+                  lines += ['> 无课', '']
+              else:
+                  lines += render_table(entries)
+                  lines.append('')
+
+          out = repo / '09-日常处理' / '课表.md'
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text('\n'.join(lines).rstrip() + '\n', encoding='utf-8')
+          print(f"课表已生成：{out}")
+          PY
+
+      - name: 推送课表.md 到 jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          if git diff --quiet; then
+            echo "课表无变化，跳过"
+          else
+            git config user.name "timetable-bot"
+            git config user.email "timetable-bot@users.noreply.github.com"
+            git add 09-日常处理/课表.md
+            git commit -m "chore: 自动更新课表"
+            git pull --rebase
+            git push
+          fi
