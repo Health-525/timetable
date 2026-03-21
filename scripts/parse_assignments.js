@@ -173,7 +173,7 @@ function main() {
   // 解析新作业
   if (fm) {
     const f = fm.fields;
-    if (f['状态'] === '待处理' && f['课程'] && f['标题'] && f['截止日期']) {
+    if (f['课程'] && f['标题'] && f['截止日期']) {
       const newAssignment = {
         id: `a-${Date.now()}`,
         course: f['课程'],
@@ -190,7 +190,7 @@ function main() {
 
       // 重置 frontmatter
       content = resetFrontmatter(content, fm.index, fm.fullMatch, fm.isAppend);
-    } else if (f['状态'] === '待处理' && (f['课程'] || f['标题'])) {
+    } else if (f['课程'] || f['标题']) {
       console.log('[skip] frontmatter 填写不完整，跳过');
     } else {
       console.log('[info] 无新作业需要处理');
