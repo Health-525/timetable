@@ -1,10 +1,8 @@
 name: parse-adjustments
 
 on:
-  # 每次 jiangshu-study 推送后，通过 repository_dispatch 触发
   repository_dispatch:
     types: [obsidian-push]
-  # 也支持手动触发测试
   workflow_dispatch:
 
 permissions:
@@ -28,7 +26,7 @@ jobs:
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
         run: |
-          git clone --depth 1 "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
+          git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
 
       - name: Check if 调课.md exists
         id: check
@@ -64,9 +62,10 @@ jobs:
           cd _study
           git config user.name "timetable-bot"
           git config user.email "timetable-bot@users.noreply.github.com"
+          git pull --rebase "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
           git add 09-日常处理/调课.md
           git diff --cached --quiet || git commit -m "chore: archive processed adjustments"
-          git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD
+          git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
 
       - name: Parse assignments from 作业.md
         run: |
@@ -93,6 +92,7 @@ jobs:
           cd _study
           git config user.name "timetable-bot"
           git config user.email "timetable-bot@users.noreply.github.com"
+          git pull --rebase "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
           git add 09-日常处理/作业.md
           git diff --cached --quiet || git commit -m "chore: update 作业.md reminder list"
-          git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD
+          git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
