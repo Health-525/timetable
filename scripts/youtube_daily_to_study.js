@@ -106,7 +106,10 @@ function parseAtomEntries(xml) {
     const title = escapeXml((block.match(/<title[^>]*>([\s\S]*?)<\/title>/) || [])[1] || '').trim();
     const link = ((block.match(/<link[^>]*href="([^"]+)"[^>]*>/) || [])[1] || '').trim();
     const published = ((block.match(/<published>([^<]+)<\/published>/) || [])[1] || '').trim();
-    if (title && link) entries.push({ title, link, published, channelTitle });
+    // RSSHub 扩展字段
+    const description = escapeXml((block.match(/<description[^>]*>([\s\S]*?)<\/description>/) || [])[1] || '').trim();
+    const thumbnail = ((block.match(/<media:thumbnail[^>]*url="([^"]+)"/) || [])[1] || '').trim();
+    if (title && link) entries.push({ title, link, published, channelTitle, description, thumbnail });
   }
   return entries;
 }
@@ -132,8 +135,23 @@ async function resolveChannelId(handleUrl) {
   throw new Error(`channel_id_not_found for ${handleUrl}`);
 }
 
+function extractChannelPart(url) {
+  // 匹配 /channel/UCxxx
+  const m = url.match(/\/channel\/(UC[A-Za-z0-9_-]+)/);
+  if (m) return m[1];
+  // 匹配 /@handle
+  const m2 = url.match(/\/(@[A-Za-z0-9_-]+)/);
+  if (m2) return m2[1];
+  return null;
+}
+
 function feedUrlForChannelId(channelId) {
   return `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+}
+
+function feedUrlForRssHub(channelPart) {
+  // RSSHub 支持 UCxxx channel_id 或 @handle 格式
+  return `https://rsshub.app/youtube/channel/${channelPart}`;
 }
 
 function ensureDir(p) {
@@ -362,7 +380,23 @@ function writeDailyMd({ studyDir, outRel, date, grouped }) {
         const t = it.published
           ? `（${it.published.replace('T', ' ').replace('Z', ' UTC')}）`
           : '';
+        // 如果有缩略图，显示图片
+        if (it.thumbnail) {
+          lines.push(`![${it.title}](${it.thumbnail})`);
+          lines.push('');
+        }
         lines.push(`- [${it.title}](${it.link}) ${t}`.trim());
+        // 如果有描述，显示描述
+        if (it.description) {
+          lines.push('');
+          lines.push('  <details>');
+          lines.push('  <summary>视频描述</summary>');
+          lines.push('');
+          for (const l of String(it.description).split('\n')) lines.push('  ' + l);
+          lines.push('');
+          lines.push('  </details>');
+          lines.push('');
+        }
         if (it.analysisMd) {
           lines.push('');
           lines.push('  <details>');
@@ -408,15 +442,23 @@ async function main() {
 
   const allItems = [];
   for (const url of channelUrls) {
-    let channelId;
-    try {
-      channelId = await resolveChannelId(url);
-    } catch (e) {
-      console.log(`[channel] skip resolve failed url=${url} reason=${e.message}`);
+    // 使用 RSSHub：如果是 @handle，先解析成 channel_id
+    let channelPart = extractChannelPart(url);
+    if (!channelPart) {
+      console.log(`[channel] skip invalid url=${url}`);
       continue;
     }
-    const feedUrl = feedUrlForChannelId(channelId);
-    console.log(`[feed] fetching channelId=${channelId} url=${url}`);
+    // RSSHub 需要 channel_id (UCxxx)，@handle 不兼容，需要解析
+    if (channelPart.startsWith('@')) {
+      try {
+        channelPart = await resolveChannelId(url);
+      } catch (e) {
+        console.log(`[channel] skip resolve failed url=${url} reason=${e.message}`);
+        continue;
+      }
+    }
+    const feedUrl = feedUrlForRssHub(channelPart);
+    console.log(`[feed] fetching channelPart=${channelPart} url=${url}`);
     let feed;
     try {
       feed = await httpGet(feedUrl);
@@ -425,11 +467,11 @@ async function main() {
       continue;
     }
     if (feed.status >= 400) {
-      console.log(`[feed] skip status=${feed.status} url=${url} channelId=${channelId}`);
+      console.log(`[feed] skip status=${feed.status} url=${url} channelPart=${channelPart}`);
       continue;
     }
     const entries = parseAtomEntries(feed.body);
-    console.log(`[feed] got ${entries.length} entries for ${channelId}`);
+    console.log(`[feed] got ${entries.length} entries for ${channelPart}`);
     for (const e of entries) allItems.push(e);
   }
 
