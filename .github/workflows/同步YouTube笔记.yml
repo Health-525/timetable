@@ -1,14 +1,14 @@
-name: youtube-daily-to-study
+name: 同步YouTube笔记
 
 on:
   workflow_dispatch:
     inputs:
       test_latest:
-        description: 'Manual test: analyze latest video per channel (ignores today filter)'
+        description: '手动测试：分析每个频道最新视频（忽略今日过滤）'
         required: false
         default: 'false'
   schedule:
-    # 07:00 Asia/Shanghai = 23:00 UTC (previous day)
+    # 每天北京时间 07:00 = UTC 23:00（前一天）
     - cron: '0 23 * * *'
 
 permissions:
@@ -18,26 +18,26 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout timetable
+      - name: 拉取 timetable 仓库
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Setup yt-dlp (with EJS challenge solver)
+      - name: 安装 yt-dlp
         uses: AnimMouse/setup-yt-dlp@v3
         with:
           ejs-node: true
 
-      - name: Write YouTube cookies
+      - name: 写入 YouTube Cookies
         env:
           YOUTUBE_COOKIES: ${{ secrets.YOUTUBE_COOKIES }}
         run: |
           printf '%s' "$YOUTUBE_COOKIES" > youtube_cookies.txt
 
-      - name: Run pipeline (YouTube RSS -> jiangshu-study)
+      - name: 运行 YouTube 笔记同步脚本
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
           STUDY_REPO: 'https://github.com/Health-525/jiangshu-study.git'

@@ -1,8 +1,8 @@
-name: parse-assignments
+name: 处理调课
 
 on:
   repository_dispatch:
-    types: [assignments-push]
+    types: [adjustments-push]
   workflow_dispatch:
 
 permissions:
@@ -12,42 +12,51 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout timetable
+      - name: 拉取 timetable 仓库
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.STUDY_PUSH_TOKEN }}
 
-      - name: Setup Node
+      - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Clone jiangshu-study
+      - name: 克隆 jiangshu-study
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
         run: |
           git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
 
-      - name: Parse assignments from 作业.md
+      - name: 检查调课.md是否存在
+        id: check
         run: |
-          if [ -f "_study/09-日常处理/作业.md" ]; then
-            node scripts/parse_assignments.js \
-              --note _study/09-日常处理/作业.md \
-              --data data/assignments.json
+          if [ -f "_study/09-日常处理/调课.md" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "作业.md 不存在，跳过"
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "调课.md 不存在，跳过"
           fi
 
-      - name: Commit assignments.json
+      - name: 解析调课.md，更新 adjustments.json
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          node scripts/parse_adjustments.js \
+            --note _study/09-日常处理/调课.md \
+            --adj data/adjustments.json
+
+      - name: 提交 adjustments.json 到 timetable
+        if: steps.check.outputs.exists == 'true'
         run: |
           git config user.name "timetable-bot"
           git config user.email "timetable-bot@users.noreply.github.com"
-          git add data/assignments.json
-          git diff --cached --quiet || git commit -m "feat: update assignments from Obsidian"
+          git add data/adjustments.json
+          git diff --cached --quiet || git commit -m "feat: apply schedule adjustments from Obsidian"
           git pull --rebase origin main
           git push
 
-      - name: Push updated 作业.md back to jiangshu-study
+      - name: 将更新后的调课.md 推送回 jiangshu-study
+        if: steps.check.outputs.exists == 'true'
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
         run: |
@@ -55,6 +64,6 @@ jobs:
           git config user.name "timetable-bot"
           git config user.email "timetable-bot@users.noreply.github.com"
           git pull --rebase "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
-          git add 09-日常处理/作业.md
-          git diff --cached --quiet || git commit -m "chore: update 作业.md reminder list"
+          git add 09-日常处理/调课.md
+          git diff --cached --quiet || git commit -m "chore: archive processed adjustments"
           git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
