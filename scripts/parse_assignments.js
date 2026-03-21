@@ -77,7 +77,7 @@ function resetFrontmatter(content, index, fullMatch, isAppend) {
     // 追加块直接删除
     return content.slice(0, index).trimEnd() + '\n';
   }
-  const reset = `---\n课程:\n标题:\n截止日期:\n备注:\n状态: 待处理\n---`;
+  const reset = `---\n课程:\n作业内容:\n截止日期:\n状态: 待处理\n---`;
   return content.slice(0, index) + reset + content.slice(index + fullMatch.length);
 }
 
@@ -131,7 +131,6 @@ function renderAssignmentsList(assignments) {
 
     lines.push(`### ${a.course} · ${a.title}`);
     lines.push(`- 截止：${deadlineStr} ${urgency}`);
-    if (a.note) lines.push(`- 备注：${a.note}`);
     lines.push('');
   }
 
@@ -167,11 +166,11 @@ function main() {
     const fm = parseFrontmatter(content);
     if (!fm) break;
     const f = fm.fields;
-    if (f['课程'] && f['标题'] && f['截止日期']) {
+    if (f['课程'] && (f['作业内容'] || f['标题']) && f['截止日期']) {
       const newAssignment = {
         id: `a-${Date.now()}-${savedCount}`,
         course: f['课程'],
-        title: f['标题'],
+        title: f['作业内容'] || f['标题'],
         deadline: parseDeadline(f['截止日期']),
         note: f['备注'] || undefined,
         done: false,
@@ -181,7 +180,7 @@ function main() {
       savedCount++;
       console.log(`[saved] 新作业已保存：${newAssignment.course} · ${newAssignment.title}`);
       content = resetFrontmatter(content, fm.index, fm.fullMatch, fm.isAppend);
-    } else if (f['课程'] || f['标题']) {
+    } else if (f['课程'] || f['作业内容'] || f['标题']) {
       console.log('[skip] frontmatter 填写不完整，跳过');
       break;
     } else {
