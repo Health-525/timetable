@@ -21,6 +21,31 @@ function parseArgs(argv) {
   return out;
 }
 
+function parseDeadline(str) {
+  if (!str) return null;
+  // 标准格式：2026-03-21 13:48
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(str.trim())) {
+    return new Date(str.trim().replace(' ', 'T') + ':00+08:00').toISOString();
+  }
+  // 中文格式：2026年3月21日 13:48 或 2026年3月21日13:48
+  const m = str.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{2}):(\d{2})/);
+  if (m) {
+    const [, y, mo, d, h, mi] = m;
+    const iso = `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}T${h}:${mi}:00+08:00`;
+    return new Date(iso).toISOString();
+  }
+  // 兜底：直接尝试解析
+  const d = new Date(str);
+  return isNaN(d) ? null : d.toISOString();
+}
+
+function parseNeedsPhoto(str) {
+  if (!str || str.trim() === '' || str.trim() === 'false') return false;
+  if (str.trim() === 'true') return true;
+  // 有内容（如图片文件名 IMG_1018）视为 true
+  return true;
+}
+
 function parseFrontmatter(content) {
   // 找最后一个 frontmatter 块（填写区域）
   const matches = [...content.matchAll(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/gm)];
@@ -129,8 +154,8 @@ function main() {
         id: `a-${Date.now()}`,
         course: f['课程'],
         title: f['标题'],
-        deadline: new Date(f['截止日期'].replace(' ', 'T') + ':00+08:00').toISOString(),
-        needsPhoto: f['需要图片'] === 'true',
+        deadline: parseDeadline(f['截止日期']),
+        needsPhoto: parseNeedsPhoto(f['需要图片']),
         note: f['备注'] || undefined,
         done: false,
         createdAt: new Date().toISOString(),
