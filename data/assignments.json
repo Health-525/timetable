@@ -5,8 +5,9 @@
     "title": "上机作业",
     "deadline": "2026-03-27T15:59:00.000Z",
     "needsPhoto": false,
-    "done": false,
-    "createdAt": "2026-03-21T05:25:38.276Z"
+    "done": true,
+    "createdAt": "2026-03-21T05:25:38.276Z",
+    "submittedAt": "2026-03-21T08:25:54.684Z"
   },
   {
     "id": "a-1774079361861-0",
@@ -14,8 +15,9 @@
     "title": "第三章习题",
     "deadline": "2026-03-28T15:59:00.000Z",
     "needsPhoto": false,
-    "done": false,
-    "createdAt": "2026-03-21T07:49:21.861Z"
+    "done": true,
+    "createdAt": "2026-03-21T07:49:21.861Z",
+    "submittedAt": "2026-03-21T08:25:54.684Z"
   },
   {
     "id": "a-1774079448029-0",
@@ -23,39 +25,52 @@
     "title": "h",
     "deadline": "2026-03-21T07:50:00.000Z",
     "needsPhoto": false,
-    "done": false,
-    "createdAt": "2026-03-21T07:50:48.029Z"
+    "done": true,
+    "createdAt": "2026-03-21T07:50:48.029Z",
+    "submittedAt": "2026-03-21T08:25:54.679Z"
   },
   {
     "id": "a-1774080044559-0",
     "course": "Python数据处理与分析",
     "title": "写的",
     "deadline": "2026-03-21T08:00:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-21T08:00:44.559Z"
+    "done": true,
+    "createdAt": "2026-03-21T08:00:44.559Z",
+    "submittedAt": "2026-03-21T08:25:54.683Z"
   },
   {
     "id": "a-1774080575197-0",
     "course": "多元统计分析",
     "title": "哈哈",
     "deadline": "2026-03-23T08:05:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-21T08:09:35.198Z"
+    "done": true,
+    "createdAt": "2026-03-21T08:09:35.198Z",
+    "submittedAt": "2026-03-21T08:25:54.684Z"
   },
   {
     "id": "a-1774081345228-0",
     "course": "Python数据处理与分析",
     "title": "课本作业",
     "deadline": "2026-03-24T08:22:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-21T08:22:25.228Z"
+    "done": true,
+    "createdAt": "2026-03-21T08:22:25.228Z",
+    "submittedAt": "2026-03-21T08:25:54.684Z"
   },
   {
     "id": "a-1774081399143-0",
     "course": "大数据技术基础",
     "title": "得到",
     "deadline": "2026-03-21T08:22:00.000Z",
+    "done": true,
+    "createdAt": "2026-03-21T08:23:19.143Z",
+    "submittedAt": "2026-03-21T08:25:54.684Z"
+  },
+  {
+    "id": "a-1774081554684-0",
+    "course": "马原",
+    "title": "好好学习",
+    "deadline": "2026-03-31T08:25:00.000Z",
     "done": false,
-    "createdAt": "2026-03-21T08:23:19.143Z"
+    "createdAt": "2026-03-21T08:25:54.685Z"
   }
 ]
