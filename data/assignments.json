@@ -18,5 +18,14 @@
     "createdAt": "2026-02-28T07:30:00Z",
     "done": false,
     "note": "把 VERCEL_TOKEN 添加到作业配置或 CI Secret，注意不要直接在仓库明文提交。"
+  },
+  {
+    "id": "a-1774070738275",
+    "course": "数值分析",
+    "title": "上机作业",
+    "deadline": "2026-03-27T15:59:00.000Z",
+    "needsPhoto": false,
+    "done": false,
+    "createdAt": "2026-03-21T05:25:38.276Z"
   }
 ]

@@ -23,7 +23,7 @@ function parseArgs(argv) {
 
 function parseFrontmatter(content) {
   // 找最后一个 frontmatter 块（填写区域）
-  const matches = [...content.matchAll(/^---\r?\n([\s\S]*?)\r?\n---/gm)];
+  const matches = [...content.matchAll(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/gm)];
   if (matches.length === 0) return null;
   const match = matches[matches.length - 1];
   const fields = {};
