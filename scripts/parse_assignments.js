@@ -39,13 +39,6 @@ function parseDeadline(str) {
   return isNaN(d) ? null : d.toISOString();
 }
 
-function parseNeedsPhoto(str) {
-  if (!str || str.trim() === '' || str.trim() === 'false') return false;
-  if (str.trim() === 'true') return true;
-  // 有内容（如图片文件名 IMG_1018）视为 true
-  return true;
-}
-
 function parseFrontmatter(content) {
   // 找最后一个 frontmatter 块（填写区域，支持有无 --- 包裹）
   const matches = [...content.matchAll(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/gm)];
@@ -84,7 +77,7 @@ function resetFrontmatter(content, index, fullMatch, isAppend) {
     // 追加块直接删除
     return content.slice(0, index).trimEnd() + '\n';
   }
-  const reset = `---\n课程:\n标题:\n截止日期:\n需要图片: false\n备注:\n状态: 待处理\n---`;
+  const reset = `---\n课程:\n标题:\n截止日期:\n备注:\n状态: 待处理\n---`;
   return content.slice(0, index) + reset + content.slice(index + fullMatch.length);
 }
 
@@ -136,11 +129,8 @@ function renderAssignmentsList(assignments) {
       urgency = `🟢 还剩 ${diffDays} 天`;
     }
 
-    const photoTag = a.needsPhoto ? ' 📷需上传图片' : '';
-    const noteStr = a.note ? `\n  > ${a.note}` : '';
-
     lines.push(`### ${a.course} · ${a.title}`);
-    lines.push(`- 截止：${deadlineStr} ${urgency}${photoTag}`);
+    lines.push(`- 截止：${deadlineStr} ${urgency}`);
     if (a.note) lines.push(`- 备注：${a.note}`);
     lines.push('');
   }
@@ -183,7 +173,6 @@ function main() {
         course: f['课程'],
         title: f['标题'],
         deadline: parseDeadline(f['截止日期']),
-        needsPhoto: parseNeedsPhoto(f['需要图片']),
         note: f['备注'] || undefined,
         done: false,
         createdAt: new Date().toISOString(),
