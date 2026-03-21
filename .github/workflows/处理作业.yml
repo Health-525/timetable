@@ -27,6 +27,9 @@ jobs:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
         run: |
           git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
+          cd _study
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
 
       - name: 解析作业.md，更新 assignments.json
         run: |
@@ -52,12 +55,8 @@ jobs:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
         run: |
           cd _study
-          git config user.name "timetable-bot"
-          git config user.email "timetable-bot@users.noreply.github.com"
           git add 09-日常处理/作业.md
-          git diff --cached --quiet || git stash
+          git diff --cached --quiet && echo "无变化，跳过" && exit 0
+          git commit -m "chore: update 作业.md reminder list"
           git pull --rebase "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
-          git stash pop 2>/dev/null || true
-          git add 09-日常处理/作业.md
-          git diff --cached --quiet || git commit -m "chore: update 作业.md reminder list"
           git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
