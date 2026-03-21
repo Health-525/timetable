@@ -47,19 +47,43 @@ function parseNeedsPhoto(str) {
 }
 
 function parseFrontmatter(content) {
-  // 找最后一个 frontmatter 块（填写区域）
+  // 找最后一个 frontmatter 块（填写区域，支持有无 --- 包裹）
   const matches = [...content.matchAll(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/gm)];
-  if (matches.length === 0) return null;
-  const match = matches[matches.length - 1];
-  const fields = {};
-  for (const line of match[1].split(/\r?\n/)) {
-    const m = line.match(/^(\S+?):\s*(.*)$/);
-    if (m) fields[m[1].trim()] = m[2].trim();
+
+  // 同时查找无 --- 包裹的追加块（手机快捷指令写入格式）
+  // 格式：课程：xxx（有实际内容）\n标题：xxx\n...
+  const appendMatch = content.match(/\n(课程[：:]\s*\S[^\n]*\n标题[：:][^\n]*\n[\s\S]*?)$/m);
+
+  let match = null;
+  let isAppend = false;
+
+  if (appendMatch) {
+    // 优先处理追加块
+    match = { index: content.indexOf(appendMatch[0]) + 1, fullMatch: appendMatch[0].trimStart(), fields: {} };
+    isAppend = true;
+    for (const line of appendMatch[1].split(/\r?\n/)) {
+      const m = line.match(/^([^：:]+)[：:]\s*(.*)$/);
+      if (m) match.fields[m[1].trim()] = m[2].trim();
+    }
+  } else if (matches.length > 0) {
+    const last = matches[matches.length - 1];
+    const fields = {};
+    for (const line of last[1].split(/\r?\n/)) {
+      const m = line.match(/^([^：:]+)[：:]\s*(.*)$/);
+      if (m) fields[m[1].trim()] = m[2].trim();
+    }
+    match = { fields, fullMatch: last[0], index: last.index };
   }
-  return { fields, fullMatch: match[0], index: match.index };
+
+  if (!match) return null;
+  return { fields: match.fields, fullMatch: match.fullMatch, index: match.index, isAppend };
 }
 
-function resetFrontmatter(content, index, fullMatch) {
+function resetFrontmatter(content, index, fullMatch, isAppend) {
+  if (isAppend) {
+    // 追加块直接删除
+    return content.slice(0, index).trimEnd() + '\n';
+  }
   const reset = `---\n课程:\n标题:\n截止日期:\n需要图片: false\n备注:\n状态: 待处理\n---`;
   return content.slice(0, index) + reset + content.slice(index + fullMatch.length);
 }
@@ -165,7 +189,7 @@ function main() {
       console.log(`[saved] 新作业已保存：${newAssignment.course} · ${newAssignment.title}`);
 
       // 重置 frontmatter
-      content = resetFrontmatter(content, fm.index, fm.fullMatch);
+      content = resetFrontmatter(content, fm.index, fm.fullMatch, fm.isAppend);
     } else if (f['状态'] === '待处理' && (f['课程'] || f['标题'])) {
       console.log('[skip] frontmatter 填写不完整，跳过');
     } else {
