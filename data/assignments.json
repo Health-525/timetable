@@ -9,30 +9,12 @@
     "createdAt": "2026-03-21T05:25:38.276Z"
   },
   {
-    "id": "a-1774077727942",
-    "course": "数值分析",
-    "title": "作业",
-    "deadline": "2026-03-21T07:18:00.000Z",
-    "needsPhoto": false,
-    "done": false,
-    "createdAt": "2026-03-21T07:22:07.944Z"
-  },
-  {
-    "id": "a-1774078432551-0",
-    "course": "大数据技术基础",
-    "title": "测试",
-    "deadline": "2026-03-21T07:22:00.000Z",
-    "needsPhoto": false,
-    "done": false,
-    "createdAt": "2026-03-21T07:33:52.552Z"
-  },
-  {
-    "id": "a-1774079092875-0",
+    "id": "a-1774079260936-0",
     "course": "Python数据处理与分析",
     "title": "测试",
     "deadline": "2026-03-21T07:44:00.000Z",
     "needsPhoto": false,
     "done": false,
-    "createdAt": "2026-03-21T07:44:52.875Z"
+    "createdAt": "2026-03-21T07:47:40.938Z"
   }
 ]
