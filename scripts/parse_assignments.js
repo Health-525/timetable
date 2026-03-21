@@ -45,7 +45,7 @@ function parseFrontmatter(content) {
 
   // 同时查找无 --- 包裹的追加块（手机快捷指令写入格式）
   // 格式：课程：xxx（有实际内容）\n标题：xxx\n...
-  const appendMatch = content.match(/\n(课程[：:]\s*\S[^\n]*\n标题[：:][^\n]*\n[\s\S]*?)$/m);
+  const appendMatch = content.match(/\n(课程[：:]\s*\S[^\n]*\n(?:作业内容|标题)[：:][^\n]*\n[\s\S]*?)$/m);
 
   let match = null;
   let isAppend = false;
