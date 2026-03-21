@@ -115,7 +115,9 @@ function renderAssignmentsList(assignments) {
   const lines = [];
   for (const a of pending) {
     const deadline = new Date(a.deadline);
-    const diffMs = deadline - now;
+    // 用北京时间计算天数差，避免UTC时区偏差
+    const nowBJ = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
+    const diffMs = deadline - nowBJ;
     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     const deadlineStr = deadline.toLocaleString('zh-CN', {
       timeZone: 'Asia/Shanghai',
@@ -167,15 +169,17 @@ function main() {
   }
 
   let content = fs.readFileSync(note, 'utf8');
-  const fm = parseFrontmatter(content);
   const assignments = loadAssignments(data);
+  let savedCount = 0;
 
-  // 解析新作业
-  if (fm) {
+  // 循环处理所有追加块，直到没有可处理的为止
+  while (true) {
+    const fm = parseFrontmatter(content);
+    if (!fm) break;
     const f = fm.fields;
     if (f['课程'] && f['标题'] && f['截止日期']) {
       const newAssignment = {
-        id: `a-${Date.now()}`,
+        id: `a-${Date.now()}-${savedCount}`,
         course: f['课程'],
         title: f['标题'],
         deadline: parseDeadline(f['截止日期']),
@@ -185,16 +189,21 @@ function main() {
         createdAt: new Date().toISOString(),
       };
       assignments.push(newAssignment);
-      saveAssignments(data, assignments);
+      savedCount++;
       console.log(`[saved] 新作业已保存：${newAssignment.course} · ${newAssignment.title}`);
-
-      // 重置 frontmatter
       content = resetFrontmatter(content, fm.index, fm.fullMatch, fm.isAppend);
     } else if (f['课程'] || f['标题']) {
       console.log('[skip] frontmatter 填写不完整，跳过');
+      break;
     } else {
       console.log('[info] 无新作业需要处理');
+      break;
     }
+  }
+
+  if (savedCount > 0) {
+    saveAssignments(data, assignments);
+    console.log(`[total] 共保存 ${savedCount} 条新作业`);
   }
 
   // 重新渲染提醒列表
