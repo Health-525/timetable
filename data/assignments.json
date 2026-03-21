@@ -97,7 +97,8 @@
     "course": "数据结构与算法",
     "title": "我这个是一个测试",
     "deadline": "2026-03-31T08:29:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-21T08:29:27.722Z"
+    "done": true,
+    "createdAt": "2026-03-21T08:29:27.722Z",
+    "submittedAt": "2026-03-21T09:02:42.711Z"
   }
 ]
