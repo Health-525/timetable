@@ -24,12 +24,12 @@ timetable/
 │   ├── adjustments.json    # 调课记录（Actions 自动写入）
 │   └── assignments.json    # 作业记录（Actions 自动写入）
 ├── scripts/
+│   ├── schedule.js             # CLI 查课表
 │   ├── parse_assignments.js    # 解析作业
 │   ├── parse_adjustments.js    # 解析调课
 │   ├── youtube_daily_to_study.js  # YouTube 笔记同步
 │   └── extract_from_pdf.py     # 从 PDF 提取课表
-├── web/                    # Next.js 前端（可选，Vercel 部署）
-└── schedule.py             # CLI 查课表
+└── web/                    # Next.js 前端（已弃用）
 ```
 
 ---
@@ -104,17 +104,17 @@ timetable 对应 workflow 执行
 
 ```bash
 # 安装依赖
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+cd scripts && npm install
 
 # 查今日课表
-python3 schedule.py today
+node scripts/schedule.js today
 
 # 查指定日期
-python3 schedule.py 2026-03-27
+node scripts/schedule.js 2026-03-27
 
-# 启动前端
-cd web && npm install && npm run dev
+# 设置自定义课表路径
+set TIMETABLE_SCHEDULE=path/to/schedule.json
+node scripts/schedule.js today
 ```
 
 ---
