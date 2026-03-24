@@ -123,9 +123,10 @@ function renderRunningSection(records) {
   const morningProgress = Math.min(100, Math.round((morningCount / TARGET_MORNING) * 100));
   const totalProgress = Math.min(100, Math.round((total / TARGET_TOTAL) * 100));
 
-  // 进度条
+  // 进度条（每格代表10%，但至少显示1格如果进度>0）
   const bar = (percent) => {
-    const filled = Math.floor(percent / 10);
+    if (percent === 0) return '░'.repeat(10);
+    const filled = Math.max(1, Math.round(percent / 10));
     return '█'.repeat(filled) + '░'.repeat(10 - filled);
   };
 
