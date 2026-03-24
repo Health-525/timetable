@@ -1,0 +1,62 @@
+name: 处理阳光长跑
+
+on:
+  repository_dispatch:
+    types: [running-push]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取 timetable 仓库
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 克隆 jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
+          cd _study
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
+
+      - name: 解析阳光长跑.md，更新 running.json
+        run: |
+          if [ -f "_study/09-日常处理/阳光长跑.md" ]; then
+            node scripts/parse_running.js \
+              --note _study/09-日常处理/阳光长跑.md \
+              --data data/running.json
+          else
+            echo "阳光长跑.md 不存在，跳过"
+          fi
+
+      - name: 提交 running.json 到 timetable
+        run: |
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
+          git add data/running.json
+          git diff --cached --quiet || git commit -m "feat: update running from Obsidian"
+          git pull --rebase origin main
+          git push
+
+      - name: 将更新后的阳光长跑.md 推送回 jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          cd _study
+          git add 09-日常处理/阳光长跑.md
+          git diff --cached --quiet && echo "无变化，跳过" && exit 0
+          git commit -m "chore: update 阳光长跑.md heatmap"
+          git pull --rebase "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
+          git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
