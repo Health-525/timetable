@@ -108,11 +108,15 @@ function renderAssignmentsList(assignments) {
   const lines = [];
   for (const a of pending) {
     const deadline = new Date(a.deadline);
-    // 统一使用北京时间计算，避免时区偏差
+
+    // 简单计算：目标日期 - 今天日期
     const nowBJ = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
     const deadlineBJ = new Date(deadline.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
-    const diffMs = deadlineBJ - nowBJ;
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    const today = new Date(nowBJ.getFullYear(), nowBJ.getMonth(), nowBJ.getDate());
+    const deadlineDay = new Date(deadlineBJ.getFullYear(), deadlineBJ.getMonth(), deadlineBJ.getDate());
+    const diffDays = Math.round((deadlineDay - today) / (1000 * 60 * 60 * 24));
+
     const deadlineStr = deadline.toLocaleDateString('zh-CN', {
       timeZone: 'Asia/Shanghai',
       month: 'long', day: 'numeric',
@@ -123,6 +127,9 @@ function renderAssignmentsList(assignments) {
     if (diffDays < 0) {
       calloutType = 'danger';
       urgency = '⚠️ 已逾期';
+    } else if (diffDays === 0) {
+      calloutType = 'danger';
+      urgency = '🔴 今天截止';
     } else if (diffDays <= 2) {
       calloutType = 'danger';
       urgency = `🔴 还剩 ${diffDays} 天`;
