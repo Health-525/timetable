@@ -51,17 +51,16 @@ function parseDate(str) {
 }
 
 function parseRunningTrigger(content) {
-  // 查找 Emoji 开关：⭕ 我今天跑步了 或 ✅ 我今天跑步了
-  const match = content.match(/[⭕✅]\s*我今天跑步了/);
+  // 查找复选框：- [x] 🏃 今天跑步
+  const match = content.match(/- \[x\]\s*🏃\s*今天跑步/);
   if (!match) return { triggered: false };
 
-  const triggered = match[0].startsWith('✅');
-  return { triggered, matchText: match[0], matchIndex: match.index };
+  return { triggered: true, matchText: match[0], matchIndex: match.index };
 }
 
 function resetRunningTrigger(content, matchIndex, matchText) {
-  // 重置为未触发状态
-  return content.slice(0, matchIndex) + '⭕ 我今天跑步了' + content.slice(matchIndex + matchText.length);
+  // 重置为未勾选状态
+  return content.slice(0, matchIndex) + '- [ ] 🏃 今天跑步' + content.slice(matchIndex + matchText.length);
 }
 
 function loadRunningData(dataPath) {
