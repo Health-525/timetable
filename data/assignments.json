@@ -139,7 +139,16 @@
     "course": "Push transmitted 32 bytes to origin/main.",
     "title": "能源经济大赛答辩",
     "deadline": "2026-04-24T05:16:00.000Z",
+    "done": true,
+    "createdAt": "2026-03-24T05:16:44.610Z",
+    "submittedAt": "2026-03-24T05:37:09.413Z"
+  },
+  {
+    "id": "a-1774330629419-0",
+    "course": "其他",
+    "title": "能源经济大赛答辩",
+    "deadline": "2026-04-01T05:36:00.000Z",
     "done": false,
-    "createdAt": "2026-03-24T05:16:44.610Z"
+    "createdAt": "2026-03-24T05:37:09.419Z"
   }
 ]
