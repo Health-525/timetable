@@ -108,9 +108,10 @@ function renderAssignmentsList(assignments) {
   const lines = [];
   for (const a of pending) {
     const deadline = new Date(a.deadline);
-    // 用北京时间计算天数差，避免UTC时区偏差
+    // 统一使用北京时间计算，避免时区偏差
     const nowBJ = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
-    const diffMs = deadline - nowBJ;
+    const deadlineBJ = new Date(deadline.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
+    const diffMs = deadlineBJ - nowBJ;
     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     const deadlineStr = deadline.toLocaleString('zh-CN', {
       timeZone: 'Asia/Shanghai',

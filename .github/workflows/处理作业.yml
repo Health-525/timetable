@@ -3,6 +3,9 @@ name: 处理作业
 on:
   repository_dispatch:
     types: [assignments-push]
+  schedule:
+    # 每天 6:00 UTC (北京时间 14:00) 更新倒计时
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
