@@ -102,7 +102,7 @@ function renderAssignmentsList(assignments) {
     .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
   if (pending.length === 0) {
-    return '> 🎉 暂无待完成作业';
+    return '> [!tip] 🎉 暂无待完成作业';
   }
 
   const lines = [];
@@ -113,28 +113,30 @@ function renderAssignmentsList(assignments) {
     const deadlineBJ = new Date(deadline.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
     const diffMs = deadlineBJ - nowBJ;
     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    const deadlineStr = deadline.toLocaleString('zh-CN', {
+    const deadlineStr = deadline.toLocaleDateString('zh-CN', {
       timeZone: 'Asia/Shanghai',
-      month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit',
+      month: 'long', day: 'numeric',
     });
 
+    let calloutType = '';
     let urgency = '';
     if (diffDays < 0) {
+      calloutType = 'danger';
       urgency = '⚠️ 已逾期';
     } else if (diffDays <= 2) {
+      calloutType = 'danger';
       urgency = `🔴 还剩 ${diffDays} 天`;
     } else if (diffDays <= 5) {
+      calloutType = 'warning';
       urgency = `🟡 还剩 ${diffDays} 天`;
     } else {
+      calloutType = 'tip';
       urgency = `🟢 还剩 ${diffDays} 天`;
     }
 
-    lines.push(`### ${a.course}`);
-    lines.push(`- 作业内容：${a.title}`);
-    lines.push(`- 截止：${deadlineStr}`);
-    lines.push(`- ${urgency}`);
-    lines.push(`- [ ] 完成 <!-- id:${a.id} -->`);
+    lines.push(`> [!${calloutType}] ${a.course} · ${a.title}`);
+    lines.push(`> 截止：${deadlineStr} · ${urgency}`);
+    lines.push(`> - [ ] 完成 <!-- id:${a.id} -->`);
     lines.push('');
   }
 
