@@ -50,21 +50,18 @@ function parseDate(str) {
   return isNaN(d) ? null : d;
 }
 
-function parseFrontmatter(content) {
-  const matches = [...content.matchAll(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/gm)];
-  if (matches.length === 0) return null;
-  const last = matches[matches.length - 1];
-  const fields = {};
-  for (const line of last[1].split(/\r?\n/)) {
-    const m = line.match(/^([^：:]+)[：:]\s*(.*)$/);
-    if (m) fields[m[1].trim()] = m[2].trim();
-  }
-  return { fields, fullMatch: last[0], index: last.index };
+function parseRunningTrigger(content) {
+  // 查找 Emoji 开关：⭕ 我今天跑步了 或 ✅ 我今天跑步了
+  const match = content.match(/[⭕✅]\s*我今天跑步了/);
+  if (!match) return { triggered: false };
+
+  const triggered = match[0].startsWith('✅');
+  return { triggered, matchText: match[0], matchIndex: match.index };
 }
 
-function resetFrontmatter(content, index, fullMatch) {
-  const reset = `---\n日期:\n---`;
-  return content.slice(0, index) + reset + content.slice(index + fullMatch.length);
+function resetRunningTrigger(content, matchIndex, matchText) {
+  // 重置为未触发状态
+  return content.slice(0, matchIndex) + '⭕ 我今天跑步了' + content.slice(matchIndex + matchText.length);
 }
 
 function loadRunningData(dataPath) {
@@ -184,41 +181,40 @@ function main() {
     ];
   }
 
-  const fm = parseFrontmatter(content);
+  // 解析 Emoji 开关
+  const trigger = parseRunningTrigger(content);
 
-  if (fm && fm.fields['日期']) {
-    const inputDate = fm.fields['日期'].trim();
-    const parsedDate = parseDate(inputDate);
+  if (trigger.triggered) {
+    const now = getBeijingTime();
+    const dateStr = formatDate(now);
 
-    if (parsedDate) {
-      const dateStr = formatDate(parsedDate);
+    // 检查是否已记录今天
+    if (!runningData.records.find(r => r.date === dateStr)) {
+      const hour = now.getHours();
+      const type = hour < 8 ? 'morning' : 'free';
 
-      if (!runningData.records.find(r => r.date === dateStr)) {
-        const now = getBeijingTime();
-        const hour = now.getHours();
-        const type = hour < 8 ? 'morning' : 'free';
+      runningData.records.push({
+        date: dateStr,
+        type,
+        createdAt: now.toISOString(),
+      });
 
-        runningData.records.push({
-          date: dateStr,
-          type,
-          createdAt: now.toISOString(),
-        });
+      const typeName = type === 'morning' ? '晨跑' : '自由跑';
+      console.log(`[saved] ${dateStr} - ${typeName}`);
 
-        const typeName = type === 'morning' ? '晨跑' : '自由跑';
-        console.log(`[saved] ${dateStr} - ${typeName}`);
-
-        content = resetFrontmatter(content, fm.index, fm.fullMatch);
-        saveRunningData(data, runningData);
-      } else {
-        console.log(`[skip] ${dateStr} 已记录过`);
-      }
+      // 重置开关
+      content = resetRunningTrigger(content, trigger.matchIndex, trigger.matchText);
+      saveRunningData(data, runningData);
     } else {
-      console.log('[skip] 日期格式无效');
+      console.log(`[skip] ${dateStr} 已记录过`);
+      // 仍然重置开关
+      content = resetRunningTrigger(content, trigger.matchIndex, trigger.matchText);
     }
   } else {
     console.log('[info] 无新记录需要处理');
   }
 
+  // 重新渲染
   const rendered = renderRunningSection(runningData.records);
   content = updateRunningSection(content, rendered);
 
