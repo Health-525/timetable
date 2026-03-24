@@ -8,6 +8,7 @@
  * - 北京时间 8:00 前推送 → 晨跑
  * - 其他时间 → 自由跑
  * - 学期：2026-03-23 开始，共 7 周 70 天
+ * - 目标：50 次（其中晨跑 10 次）
  */
 
 const fs = require('fs');
@@ -15,8 +16,9 @@ const path = require('path');
 
 // 学期配置
 const SEMESTER_START = new Date('2026-03-23T00:00:00+08:00');
-const TOTAL_DAYS = 70;
 const TOTAL_WEEKS = 7;
+const TARGET_MORNING = 10;
+const TARGET_TOTAL = 50;
 
 function parseArgs(argv) {
   const out = { note: null, data: null };
@@ -40,7 +42,6 @@ function formatDate(date) {
 
 function parseDate(str) {
   if (!str) return null;
-  // 格式：2026-03-24 或 2026年3月24日
   const m = str.match(/(\d{4})[-年](\d{1,2})[-月](\d{1,2})/);
   if (m) {
     return new Date(`${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}T00:00:00+08:00`);
@@ -50,18 +51,14 @@ function parseDate(str) {
 }
 
 function parseFrontmatter(content) {
-  // 查找最后一个 frontmatter 块
   const matches = [...content.matchAll(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/gm)];
-
   if (matches.length === 0) return null;
-
   const last = matches[matches.length - 1];
   const fields = {};
   for (const line of last[1].split(/\r?\n/)) {
     const m = line.match(/^([^：:]+)[：:]\s*(.*)$/);
     if (m) fields[m[1].trim()] = m[2].trim();
   }
-
   return { fields, fullMatch: last[0], index: last.index };
 }
 
@@ -92,17 +89,11 @@ function generateHeatmap(records) {
   const lines = [];
   for (let week = 0; week < TOTAL_WEEKS; week++) {
     const weekDays = [];
-    const dates = [];
-
     for (let day = 0; day < 7; day++) {
       const dayOffset = week * 7 + day;
       const date = new Date(SEMESTER_START);
       date.setDate(date.getDate() + dayOffset);
-
       const dateStr = formatDate(date);
-      const displayDate = `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-      dates.push(displayDate);
-
       const type = recordMap.get(dateStr);
       if (type === 'morning') {
         weekDays.push('🟩');
@@ -112,64 +103,60 @@ function generateHeatmap(records) {
         weekDays.push('⬜');
       }
     }
-
-    lines.push(`第${week + 1}周  ${dates.join(' ')}`);
-    lines.push(`       ${weekDays.join('    ')}`);
-    if (week < TOTAL_WEEKS - 1) lines.push('');
+    lines.push(`W${week + 1} ${weekDays.join('')}`);
   }
-
   return lines.join('\n');
 }
 
-function generateHistoryTable(records) {
-  if (records.length === 0) return '| - | - | - |';
-
-  const lines = ['| 日期 | 类型 | 时间 |', '|:---|:---|:---|'];
-
-  // 按日期倒序
+function generateHistoryList(records) {
+  if (records.length === 0) return '_暂无记录_';
+  const lines = [];
   const sorted = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
-
   for (const r of sorted) {
+    const icon = r.type === 'morning' ? '🌅' : '🏃';
     const type = r.type === 'morning' ? '晨跑' : '自由跑';
-    const time = r.type === 'morning' ? '早上' : '下午';
-    lines.push(`| ${r.date} | ${type} | ${time} |`);
+    const dateDisplay = r.date.slice(5);
+    lines.push(`${icon} ${dateDisplay} ${type}`);
   }
-
   return lines.join('\n');
 }
 
 function renderRunningSection(records) {
   const morningCount = records.filter(r => r.type === 'morning').length;
-  const freeCount = records.filter(r => r.type === 'free').length;
   const total = records.length;
-  const progress = ((total / TOTAL_DAYS) * 100).toFixed(1);
+  const morningProgress = Math.min(100, Math.round((morningCount / TARGET_MORNING) * 100));
+  const totalProgress = Math.min(100, Math.round((total / TARGET_TOTAL) * 100));
 
-  const statsTable = [
-    '| 指标 | 数值 |',
-    '|:---|:---|',
-    `| 晨跑 | ${morningCount} 次 |`,
-    `| 自由跑 | ${freeCount} 次 |`,
-    `| 总计 | ${total} / ${TOTAL_DAYS} 次 |`,
-    `| 进度 | ${progress}% |`,
-  ].join('\n');
+  // 进度条
+  const bar = (percent) => {
+    const filled = Math.floor(percent / 10);
+    return '█'.repeat(filled) + '░'.repeat(10 - filled);
+  };
 
   const heatmap = generateHeatmap(records);
-  const historyTable = generateHistoryTable(records);
+  const historyList = generateHistoryList(records);
 
-  return `## 📊 统计\n\n${statsTable}\n\n## 🔥 热力图\n\n\`\`\`\n${heatmap}\n\`\`\`\n\n图例：🟩 晨跑 | 🟨 自由跑 | ⬜ 未跑`;
+  return `> [!tip] 📊 进度
+>
+> **晨跑** ${morningCount}/${TARGET_MORNING} \`${bar(morningProgress)}\` ${morningProgress}%
+> **总计** ${total}/${TARGET_TOTAL} \`${bar(totalProgress)}\` ${totalProgress}%
+
+## 🔥 热力图
+
+\`\`\`
+${heatmap}
+\`\`\`
+🟩晨跑 🟨自由 ⬜未跑
+
+## 📝 记录
+
+${historyList}`;
 }
 
 function updateRunningSection(content, rendered) {
   return content.replace(
     /<!-- RUNNING_START -->[\s\S]*?<!-- RUNNING_END -->/,
     `<!-- RUNNING_START -->\n\n${rendered}\n\n<!-- RUNNING_END -->`
-  );
-}
-
-function updateHistorySection(content, historyTable) {
-  return content.replace(
-    /## 📝 历史记录[\s\S]*?$/,
-    `## 📝 历史记录\n\n${historyTable}`
   );
 }
 
@@ -189,7 +176,7 @@ function main() {
   let content = fs.readFileSync(note, 'utf8');
   const runningData = loadRunningData(data);
 
-  // 初始化已有记录（用户说已经跑了两次自由跑）
+  // 初始化已有记录
   if (runningData.records.length === 0) {
     runningData.records = [
       { date: '2026-03-23', type: 'free', createdAt: '2026-03-23T12:00:00+08:00' },
@@ -197,7 +184,6 @@ function main() {
     ];
   }
 
-  // 解析 frontmatter
   const fm = parseFrontmatter(content);
 
   if (fm && fm.fields['日期']) {
@@ -207,9 +193,7 @@ function main() {
     if (parsedDate) {
       const dateStr = formatDate(parsedDate);
 
-      // 检查是否已记录
       if (!runningData.records.find(r => r.date === dateStr)) {
-        // 判断晨跑/自由跑（根据推送时间，即当前北京时间）
         const now = getBeijingTime();
         const hour = now.getHours();
         const type = hour < 8 ? 'morning' : 'free';
@@ -223,7 +207,6 @@ function main() {
         const typeName = type === 'morning' ? '晨跑' : '自由跑';
         console.log(`[saved] ${dateStr} - ${typeName}`);
 
-        // 重置 frontmatter
         content = resetFrontmatter(content, fm.index, fm.fullMatch);
         saveRunningData(data, runningData);
       } else {
@@ -236,12 +219,8 @@ function main() {
     console.log('[info] 无新记录需要处理');
   }
 
-  // 重新渲染
   const rendered = renderRunningSection(runningData.records);
   content = updateRunningSection(content, rendered);
-
-  const historyTable = generateHistoryTable(runningData.records);
-  content = updateHistorySection(content, historyTable);
 
   fs.writeFileSync(note, content, 'utf8');
   console.log('[done] 阳光长跑.md 已更新');
