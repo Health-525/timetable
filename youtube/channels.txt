@@ -1,16 +1,37 @@
 # One YouTube channel per line (channel URL or @handle URL)
-# Examples:
+# AI / ML / LLM 相关频道
+
+# --- 中文AI博主 ---
 https://www.youtube.com/@tech-shrimp
 https://www.youtube.com/@qiuzhi2046
 
-https://www.youtube.com/@3blue1brown
-
-# --- AI / CS / Math (international) ---
-https://www.youtube.com/@Computerphile
+# --- AI论文/研究 ---
 https://www.youtube.com/@TwoMinutePapers
-https://www.youtube.com/@AndrejKarpathy
 https://www.youtube.com/@YannicKilcher
+https://www.youtube.com/@AndrejKarpathy
+https://www.youtube.com/@AIExplained
+https://www.youtube.com/@ArxivInsights
+https://www.youtube.com/@DeepLearningDOTai
+
+# --- AI教育/教程 ---
 https://www.youtube.com/@statquest
-https://www.youtube.com/@fireship
-https://www.youtube.com/@ThePrimeagen
+https://www.youtube.com/@sentdex
+https://www.youtube.com/@KrishNaik
+https://www.youtube.com/@JeremyHoward
+https://www.youtube.com/@NicholasRenotte
+https://www.youtube.com/@AssemblyAI
+
+# --- AI新闻/动态 ---
+https://www.youtube.com/@MatthewBerman
+https://www.youtube.com/@AllAboutAI
+https://www.youtube.com/@TinaHuang1
+https://www.youtube.com/@LiamOttley
+https://www.youtube.com/@AICodeKing
+
+# --- AI访谈/讨论 ---
 https://www.youtube.com/@LexClips
+https://www.youtube.com/@lexfridman
+
+# --- 数学/基础（AI相关）---
+https://www.youtube.com/@3blue1brown
+https://www.youtube.com/@Computerphile
