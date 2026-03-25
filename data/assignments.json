@@ -156,7 +156,8 @@
     "course": "大数据技术基础",
     "title": "滚滚滚",
     "deadline": "2026-03-25T13:23:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-25T13:24:03.522Z"
+    "done": true,
+    "createdAt": "2026-03-25T13:24:03.522Z",
+    "submittedAt": "2026-03-25T13:24:51.681Z"
   }
 ]
