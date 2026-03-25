@@ -1,37 +1,37 @@
-# One YouTube channel per line (channel URL or @handle URL)
-# AI / ML / LLM 相关频道
+# YouTube 频道订阅列表
+# 格式：URL # 频道名称
 
-# --- 中文AI博主 ---
-https://www.youtube.com/@tech-shrimp
-https://www.youtube.com/@qiuzhi2046
+# 中文AI博主
+https://www.youtube.com/@tech-shrimp     # 技术虾
+https://www.youtube.com/@qiuzhi2046      # 秋芝2046
 
-# --- AI论文/研究 ---
-https://www.youtube.com/@TwoMinutePapers
-https://www.youtube.com/@YannicKilcher
-https://www.youtube.com/@AndrejKarpathy
-https://www.youtube.com/@AIExplained
-https://www.youtube.com/@ArxivInsights
-https://www.youtube.com/@DeepLearningDOTai
+# AI论文/研究
+https://www.youtube.com/@TwoMinutePapers # Two Minute Papers
+https://www.youtube.com/@YannicKilcher   # Yannic Kilcher
+https://www.youtube.com/@AndrejKarpathy  # Andrej Karpathy
+https://www.youtube.com/@AIExplained     # AI Explained
+https://www.youtube.com/@ArxivInsights   # Arxiv Insights
+https://www.youtube.com/@DeepLearningDOTai # DeepLearning.AI
 
-# --- AI教育/教程 ---
-https://www.youtube.com/@statquest
-https://www.youtube.com/@sentdex
-https://www.youtube.com/@KrishNaik
-https://www.youtube.com/@JeremyHoward
-https://www.youtube.com/@NicholasRenotte
-https://www.youtube.com/@AssemblyAI
+# AI教育/教程
+https://www.youtube.com/@statquest       # StatQuest
+https://www.youtube.com/@sentdex         # Sentdex
+https://www.youtube.com/@KrishNaik       # Krish Naik
+https://www.youtube.com/@JeremyHoward    # Jeremy Howard
+https://www.youtube.com/@NicholasRenotte # Nicholas Renotte
+https://www.youtube.com/@AssemblyAI      # AssemblyAI
 
-# --- AI新闻/动态 ---
-https://www.youtube.com/@MatthewBerman
-https://www.youtube.com/@AllAboutAI
-https://www.youtube.com/@TinaHuang1
-https://www.youtube.com/@LiamOttley
-https://www.youtube.com/@AICodeKing
+# AI新闻/动态
+https://www.youtube.com/@MatthewBerman   # Matthew Berman
+https://www.youtube.com/@AllAboutAI      # All About AI
+https://www.youtube.com/@TinaHuang1      # Tina Huang
+https://www.youtube.com/@LiamOttley      # Liam Ottley
+https://www.youtube.com/@AICodeKing      # AI Code King
 
-# --- AI访谈/讨论 ---
-https://www.youtube.com/@LexClips
-https://www.youtube.com/@lexfridman
+# AI访谈
+https://www.youtube.com/@LexClips        # Lex Clips（剪辑）
+https://www.youtube.com/@lexfridman      # Lex Fridman（完整）
 
-# --- 数学/基础（AI相关）---
-https://www.youtube.com/@3blue1brown
-https://www.youtube.com/@Computerphile
+# 数学/CS基础
+https://www.youtube.com/@3blue1brown     # 3Blue1Brown
+https://www.youtube.com/@Computerphile   # Computerphile
