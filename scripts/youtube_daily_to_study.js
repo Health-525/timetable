@@ -353,28 +353,26 @@ function writeDailyMd({ studyDir, outRel, date, grouped }) {
   lines.push('');
 
   const channels = Object.keys(grouped);
+  const totalVideos = channels.reduce((sum, ch) => sum + grouped[ch].length, 0);
+
   if (channels.length === 0) {
     lines.push('今日无更新。');
   } else {
+    lines.push(`> 共 ${channels.length} 个频道，${totalVideos} 个视频`);
+    lines.push('');
+
     for (const ch of channels) {
-      lines.push(`## ${ch}`);
       for (const it of grouped[ch]) {
-        const t = it.published
-          ? `（${it.published.replace('T', ' ').replace('Z', ' UTC')}）`
-          : '';
-        lines.push(`- [${it.title}](${it.link}) ${t}`.trim());
+        lines.push(`### [${it.title}](${it.link})`);
+        lines.push(`> ${ch}`);
         if (it.analysisMd) {
           lines.push('');
-          lines.push('  <details>');
-          lines.push('  <summary>字幕分析（AI）</summary>');
-          lines.push('');
-          for (const l of String(it.analysisMd).split('\n')) lines.push('  ' + l);
-          lines.push('');
-          lines.push('  </details>');
-          lines.push('');
+          for (const l of String(it.analysisMd).split('\n')) lines.push(l);
         }
+        lines.push('');
+        lines.push('---');
+        lines.push('');
       }
-      lines.push('');
     }
   }
 
