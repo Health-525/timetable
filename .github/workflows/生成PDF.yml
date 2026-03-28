@@ -1,0 +1,97 @@
+name: 生成PDF
+
+on:
+  repository_dispatch:
+    types: [pdf-export]
+  workflow_dispatch:
+    inputs:
+      files:
+        description: '指定转换文件（逗号分隔的相对路径，留空则转换所有变更MD）'
+        required: false
+        default: ''
+
+concurrency:
+  group: pdf-export
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取 timetable 仓库
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 克隆 jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
+          cd _study
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
+
+      - name: 安装 md-to-pdf
+        run: npm install md-to-pdf --no-save
+
+      - name: 安装中文字体
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-noto-cjk
+
+      - name: 确定待转换文件
+        id: targets
+        env:
+          INPUT_FILES: ${{ github.event.inputs.files || github.event.client_payload.files }}
+        run: |
+          if [ -n "$INPUT_FILES" ]; then
+            # 手动指定文件，转为 _study/ 下的绝对路径
+            FILES=$(echo "$INPUT_FILES" | tr ',' '\n' | sed 's|^|_study/|' | tr '\n' ',' | sed 's/,$//')
+            echo "mode=specified" >> $GITHUB_OUTPUT
+            echo "files=$FILES" >> $GITHUB_OUTPUT
+            echo "指定文件: $FILES"
+          else
+            # 未指定：转换仓库内所有 MD（排除 _pdf 目录和特殊文件）
+            FILES=$(find _study -name "*.md" \
+              ! -path "_study/_pdf/*" \
+              ! -path "_study/.obsidian/*" \
+              ! -path "_study/.git/*" \
+              ! -name "README.md" \
+              | tr '\n' ',' | sed 's/,$//')
+            echo "mode=all" >> $GITHUB_OUTPUT
+            echo "files=$FILES" >> $GITHUB_OUTPUT
+            COUNT=$(echo "$FILES" | tr ',' '\n' | wc -l)
+            echo "全量转换，共 $COUNT 个文件"
+          fi
+
+      - name: 转换 MD → PDF
+        run: |
+          node scripts/md-to-pdf.js \
+            --files "${{ steps.targets.outputs.files }}" \
+            --out _study/_pdf \
+            --base _study
+
+      - name: 推送 PDF 到 jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          cd _study
+          git add _pdf/
+          if git diff --cached --quiet; then
+            echo "PDF 无变化，跳过"
+          else
+            CHANGED=$(git diff --cached --name-only | wc -l)
+            git commit -m "feat: 生成 PDF（${CHANGED} 个文件）"
+            git pull --rebase "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
+            git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
+            echo "PDF 已推送到 jiangshu-study/_pdf/"
+          fi
