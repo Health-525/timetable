@@ -176,7 +176,8 @@
     "course": "其他",
     "title": "法规规范",
     "deadline": "2026-03-28T09:34:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-28T09:37:04.466Z"
+    "done": true,
+    "createdAt": "2026-03-28T09:37:04.466Z",
+    "submittedAt": "2026-03-28T09:43:59.270Z"
   }
 ]
