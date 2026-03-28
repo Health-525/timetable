@@ -202,17 +202,25 @@ function main() {
     const periodTimes = data.periodTimes || {};
     const courses = data.courses || [];
 
-    // 获取当前时间（北京时间）
+    // 获取当前北京时间（全程 UTC 方法，不依赖运行环境时区）
     const now = new Date();
-    const tzOffset = 8 * 60; // UTC+8 in minutes
-    const beijingTime = new Date(now.getTime() + (tzOffset + now.getTimezoneOffset()) * 60000);
-    const today = new Date(beijingTime.getFullYear(), beijingTime.getMonth(), beijingTime.getDate());
+    const CST_OFFSET_MS = 8 * 60 * 60 * 1000;
+    const bjMs = now.getTime() + CST_OFFSET_MS;
+    const bjDate = new Date(bjMs);
+    const bjYear  = bjDate.getUTCFullYear();
+    const bjMonth = bjDate.getUTCMonth();   // 0-based
+    const bjDay   = bjDate.getUTCDate();
+    const bjHour  = bjDate.getUTCHours();
+    const bjMin   = bjDate.getUTCMinutes();
 
-    // 计算本周周一和周日
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
+    const today = new Date(Date.UTC(bjYear, bjMonth, bjDay));
+
+    // 计算本周周一和周日（全程用 UTC 方法）
+    // getUTCDay(): 0=周日, 1=周一 ... 6=周六
+    const todayUTCDay = today.getUTCDay(); // 0=Sun
+    const daysFromMonday = todayUTCDay === 0 ? 6 : todayUTCDay - 1;
+    const monday = new Date(today.getTime() - daysFromMonday * 86400000);
+    const sunday = new Date(monday.getTime() + 6 * 86400000);
 
     const w = weekIndex(monday, week1Monday);
 
@@ -241,7 +249,7 @@ function main() {
     }
 
     // 今天的课程
-    const wdToday = today.getDay() === 0 ? 7 : today.getDay();
+    const wdToday = todayUTCDay === 0 ? 7 : todayUTCDay;
     const todayEntries = byDay[wdToday];
 
     const DAY_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
@@ -250,14 +258,14 @@ function main() {
     const lines = [];
 
     // 头部
-    const updateTime = `${beijingTime.getFullYear()}-${String(beijingTime.getMonth() + 1).padStart(2, '0')}-${String(beijingTime.getDate()).padStart(2, '0')} ${String(beijingTime.getHours()).padStart(2, '0')}:${String(beijingTime.getMinutes()).padStart(2, '0')}`;
+    const updateTime = `${bjYear}-${String(bjMonth + 1).padStart(2, '0')}-${String(bjDay).padStart(2, '0')} ${String(bjHour).padStart(2, '0')}:${String(bjMin).padStart(2, '0')}`;
 
     lines.push('# 课程表', '');
     lines.push(`> 更新时间：${updateTime}（北京时间）`, '');
     lines.push('---', '');
 
     // 今日课表
-    const todayLabel = `${DAY_NAMES[wdToday - 1]}（${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}）· 第${weekIndex(today, week1Monday)}周`;
+    const todayLabel = `${DAY_NAMES[wdToday - 1]}（${String(bjMonth + 1).padStart(2, '0')}-${String(bjDay).padStart(2, '0')}）· 第${weekIndex(today, week1Monday)}周`;
     lines.push(`## 今日 · ${todayLabel}`, '');
 
     if (todayEntries.length === 0) {

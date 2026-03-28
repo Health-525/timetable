@@ -61,7 +61,10 @@ function resetFrontmatter(content) {
 }
 
 function appendArchive(content, adj) {
-  const date = new Date().toLocaleDateString('zh-CN');
+  const now = new Date();
+  const bjMs = now.getTime() + 8 * 60 * 60 * 1000;
+  const bj = new Date(bjMs);
+  const date = `${bj.getUTCFullYear()}/${bj.getUTCMonth() + 1}/${bj.getUTCDate()}`;
   const srcPeriodStr = PERIOD_REV[adj.sourcePeriods.join(',')] || adj.sourcePeriods.join('-');
   const dstPeriodStr = PERIOD_REV[adj.targetPeriods.join(',')] || adj.targetPeriods.join('-');
 

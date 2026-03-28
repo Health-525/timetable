@@ -94,8 +94,39 @@ function saveAssignments(dataPath, assignments) {
   fs.writeFileSync(dataPath, JSON.stringify(assignments, null, 2) + '\n', 'utf8');
 }
 
+const CST_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+/**
+ * 获取当前北京时间的午夜 UTC ms（用于 diffDays 计算）
+ * 全程用 UTC 方法，不依赖运行环境时区。
+ */
+function getBJMidnightMs() {
+  const bjMs = Date.now() + CST_OFFSET_MS;
+  const bj = new Date(bjMs);
+  return Date.UTC(bj.getUTCFullYear(), bj.getUTCMonth(), bj.getUTCDate());
+}
+
+/**
+ * 将 ISO deadline 转为北京时间的午夜 UTC ms
+ */
+function getDeadlineBJMidnightMs(isoStr) {
+  const d = new Date(isoStr);
+  const bjMs = d.getTime() + CST_OFFSET_MS;
+  const bj = new Date(bjMs);
+  return Date.UTC(bj.getUTCFullYear(), bj.getUTCMonth(), bj.getUTCDate());
+}
+
+/**
+ * 将 ISO deadline 格式化为北京时间的"M月D日"
+ */
+function formatDeadlineBJ(isoStr) {
+  const d = new Date(isoStr);
+  const bjMs = d.getTime() + CST_OFFSET_MS;
+  const bj = new Date(bjMs);
+  return `${bj.getUTCMonth() + 1}月${bj.getUTCDate()}日`;
+}
+
 function renderAssignmentsList(assignments) {
-  const now = new Date();
   // 只显示未完成的
   const pending = assignments
     .filter(a => !a.done)
@@ -105,22 +136,13 @@ function renderAssignmentsList(assignments) {
     return '> [!tip] 🎉 暂无待完成作业';
   }
 
+  const todayMidnight = getBJMidnightMs();
   const lines = [];
+
   for (const a of pending) {
-    const deadline = new Date(a.deadline);
-
-    // 简单计算：目标日期 - 今天日期
-    const nowBJ = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
-    const deadlineBJ = new Date(deadline.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
-
-    const today = new Date(nowBJ.getFullYear(), nowBJ.getMonth(), nowBJ.getDate());
-    const deadlineDay = new Date(deadlineBJ.getFullYear(), deadlineBJ.getMonth(), deadlineBJ.getDate());
-    const diffDays = Math.round((deadlineDay - today) / (1000 * 60 * 60 * 24));
-
-    const deadlineStr = deadline.toLocaleDateString('zh-CN', {
-      timeZone: 'Asia/Shanghai',
-      month: 'long', day: 'numeric',
-    });
+    const deadlineMidnight = getDeadlineBJMidnightMs(a.deadline);
+    const diffDays = Math.round((deadlineMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+    const deadlineStr = formatDeadlineBJ(a.deadline);
 
     let calloutType = '';
     let urgency = '';
