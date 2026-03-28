@@ -81,19 +81,26 @@ function appendArchive(content, adj) {
     '',
   ].filter(Boolean).join('\n');
 
-  return content.replace(
+  const replaced = content.replace(
     /(##\s*已处理记录\s*\n)(<!-- 自动归档[^>]*-->\s*\n?)?/,
     `$1<!-- 自动归档，请勿手动修改此区域 -->\n\n${entry}`
   );
+  if (replaced === content) {
+    throw new Error('调课.md 中未找到"## 已处理记录"标题，归档失败。请检查模板是否完整。');
+  }
+  return replaced;
 }
 
 function loadAdjustments(adjPath) {
   if (!fs.existsSync(adjPath)) return [];
+  const raw = fs.readFileSync(adjPath, 'utf8');
   try {
-    const data = JSON.parse(fs.readFileSync(adjPath, 'utf8'));
+    const data = JSON.parse(raw);
     return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
+  } catch (e) {
+    const backup = adjPath + '.bak.' + Date.now();
+    fs.copyFileSync(adjPath, backup);
+    throw new Error(`adjustments.json 解析失败，已备份至 ${backup}：${e.message}`);
   }
 }
 

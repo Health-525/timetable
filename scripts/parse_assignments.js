@@ -83,10 +83,16 @@ function resetFrontmatter(content, index, fullMatch, isAppend) {
 
 function loadAssignments(dataPath) {
   if (!fs.existsSync(dataPath)) return [];
+  const raw = fs.readFileSync(dataPath, 'utf8');
   try {
-    const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    const data = JSON.parse(raw);
     return Array.isArray(data) ? data : [];
-  } catch { return []; }
+  } catch (e) {
+    // JSON 损坏时备份原文件，抛出错误阻止覆盖写入
+    const backup = dataPath + '.bak.' + Date.now();
+    fs.copyFileSync(dataPath, backup);
+    throw new Error(`assignments.json 解析失败，已备份至 ${backup}：${e.message}`);
+  }
 }
 
 function saveAssignments(dataPath, assignments) {
