@@ -8,6 +8,10 @@ on:
     types: [timetable-push]
   workflow_dispatch:
 
+concurrency:
+  group: timetable-push
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -41,8 +45,6 @@ jobs:
             09-日常处理/课表.md
 
       - name: 推送课表.md 到 jiangshu-study
-        env:
-          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
         run: |
           if git diff --quiet; then
             echo "课表无变化，跳过"

@@ -5,6 +5,11 @@ on:
     types: [running-push]
   workflow_dispatch:
 
+# 同一时间只允许一个实例运行，新触发会取消正在排队的旧实例
+concurrency:
+  group: running-push
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -16,6 +21,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: 配置 git 身份
+        run: |
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
 
       - name: 安装 Node.js
         uses: actions/setup-node@v4
@@ -43,12 +53,14 @@ jobs:
 
       - name: 提交 running.json 到 timetable
         run: |
-          git config user.name "timetable-bot"
-          git config user.email "timetable-bot@users.noreply.github.com"
           git add data/running.json
-          git diff --cached --quiet || git commit -m "feat: update running from Obsidian"
-          git pull --rebase origin main
-          git push
+          if git diff --cached --quiet; then
+            echo "running.json 无变化，跳过"
+          else
+            git commit -m "feat: update running from Obsidian"
+            git pull --rebase origin main
+            git push
+          fi
 
       - name: 将更新后的阳光长跑.md 推送回 jiangshu-study
         env:
@@ -56,7 +68,10 @@ jobs:
         run: |
           cd _study
           git add 09-日常处理/阳光长跑.md
-          git diff --cached --quiet && echo "无变化，跳过" && exit 0
-          git commit -m "chore: update 阳光长跑.md heatmap"
-          git pull --rebase "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
-          git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
+          if git diff --cached --quiet; then
+            echo "阳光长跑.md 无变化，跳过"
+          else
+            git commit -m "chore: update 阳光长跑.md heatmap"
+            git pull --rebase "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
+            git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
+          fi
