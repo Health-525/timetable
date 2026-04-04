@@ -58,8 +58,8 @@ jobs:
             echo "running.json 无变化，跳过"
           else
             git commit -m "feat: update running from Obsidian"
-            git pull --rebase origin main
-            git push
+            git pull --rebase --no-autostash origin main || echo "Pull failed, will force push"
+            git push --force-with-lease
           fi
 
       - name: 将更新后的阳光长跑.md 推送回 jiangshu-study
@@ -72,6 +72,6 @@ jobs:
             echo "阳光长跑.md 无变化，跳过"
           else
             git commit -m "chore: update 阳光长跑.md heatmap"
-            git pull --rebase "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
-            git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
+            git pull --rebase --no-autostash "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main || echo "Pull failed, will force push"
+            git push --force-with-lease "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
           fi

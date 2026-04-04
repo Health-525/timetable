@@ -1,1 +1,57 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Output directories
 _out/
+_out_temp/
+
+# Logs
+logs/
+*.log
+
+# Local configuration
+.env
+.env.local
+.env.*.local
+*.local
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# YouTube cookies (sensitive data)
+youtube_cookies.txt
+youtube_cookies.json
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/

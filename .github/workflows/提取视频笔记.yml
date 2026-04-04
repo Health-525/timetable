@@ -12,7 +12,11 @@ on:
         default: 'youtube-daily'
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: video-fetch
+  cancel-in-progress: false
 
 jobs:
   run:
