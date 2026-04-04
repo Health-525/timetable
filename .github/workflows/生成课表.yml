@@ -53,6 +53,7 @@ jobs:
             git config user.email "timetable-bot@users.noreply.github.com"
             git add 09-日常处理/课表.md
             git commit -m "chore: 自动更新课表"
-            git pull --rebase --no-autostash || echo "Pull failed, will force push"
-            git push --force-with-lease
+            git fetch origin main
+            git rebase --no-autostash origin/main || echo "Rebase failed, will force push"
+            git push
           fi

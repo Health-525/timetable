@@ -74,6 +74,7 @@ jobs:
             echo "作业.md 无变化，跳过"
           else
             git commit -m "chore: update 作业.md reminder list"
-            git pull --rebase --no-autostash "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main || echo "Pull failed, will force push"
-            git push --force-with-lease "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
+            git fetch "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
+            git rebase --no-autostash origin/main || echo "Rebase failed, will force push"
+            git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
           fi
