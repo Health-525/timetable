@@ -187,5 +187,13 @@
     "deadline": "2026-03-31T10:04:00.000Z",
     "done": false,
     "createdAt": "2026-03-28T22:19:31.086Z"
+  },
+  {
+    "id": "a-1775283557000-0",
+    "course": "测试课程",
+    "title": "这是一个测试作业 - 验证 GitHub Actions 修复",
+    "deadline": "2026-12-31T15:59:00.000Z",
+    "done": false,
+    "createdAt": "2026-04-04T06:19:17.000Z"
   }
 ]
