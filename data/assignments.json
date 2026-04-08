@@ -151,8 +151,9 @@
     "course": "其他",
     "title": "能源经济大赛答辩",
     "deadline": "2026-04-01T05:36:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-24T05:37:09.419Z"
+    "done": true,
+    "createdAt": "2026-03-24T05:37:09.419Z",
+    "submittedAt": "2026-04-08T02:45:06.243Z"
   },
   {
     "id": "a-1774445043521-0",
@@ -168,8 +169,9 @@
     "course": "多元统计分析",
     "title": "ppt证明",
     "deadline": "2026-03-31T09:50:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-26T22:19:21.895Z"
+    "done": true,
+    "createdAt": "2026-03-26T22:19:21.895Z",
+    "submittedAt": "2026-04-08T02:45:06.239Z"
   },
   {
     "id": "a-1774690624464-0",
@@ -185,23 +187,26 @@
     "course": "多元统计分析",
     "title": "个很好",
     "deadline": "2026-03-31T10:04:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-28T22:19:31.086Z"
+    "done": true,
+    "createdAt": "2026-03-28T22:19:31.086Z",
+    "submittedAt": "2026-04-08T02:45:06.243Z"
   },
   {
     "id": "a-1775283557000-0",
     "course": "测试课程",
     "title": "这是一个测试作业 - 验证 GitHub Actions 修复",
     "deadline": "2026-12-31T15:59:00.000Z",
-    "done": false,
-    "createdAt": "2026-04-04T06:19:17.000Z"
+    "done": true,
+    "createdAt": "2026-04-04T06:19:17.000Z",
+    "submittedAt": "2026-04-08T02:45:06.243Z"
   },
   {
     "id": "a-1775285430608-0",
     "course": "验证修复测试",
     "title": "测试 git push 策略修复是否生效",
     "deadline": "2026-12-31T15:59:00.000Z",
-    "done": false,
-    "createdAt": "2026-04-04T06:50:30.608Z"
+    "done": true,
+    "createdAt": "2026-04-04T06:50:30.608Z",
+    "submittedAt": "2026-04-08T02:45:06.243Z"
   }
 ]
