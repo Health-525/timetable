@@ -176,7 +176,7 @@ function renderTable(entries) {
  * @returns {string}
  */
 function dayLabel(d) {
-    const DAY_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    const DAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${DAY_NAMES[d.getDay()]}（${month}-${day}）`;
