@@ -1,4 +1,4 @@
-name: 同步YouTube笔记
+name: 同步YouTube笔记（已暂停）
 
 on:
   workflow_dispatch:
@@ -7,9 +7,6 @@ on:
         description: '手动测试：分析每个频道最新视频（忽略今日过滤）'
         required: false
         default: 'false'
-  schedule:
-    # 每天北京时间 07:00 = UTC 23:00（前一天）
-    - cron: '0 23 * * *'
 
 permissions:
   contents: write
@@ -20,6 +17,7 @@ concurrency:
 
 jobs:
   run:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: 拉取 timetable 仓库
