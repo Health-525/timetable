@@ -15,6 +15,7 @@ env/
 # Output directories
 _out/
 _out_temp/
+_study/
 
 # Logs
 logs/
