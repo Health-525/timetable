@@ -45,42 +45,61 @@ function fmtDateStr(y, m, d) {
 
 const WEEKDAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
-// ── Git 变更提取 ──────────────────────────────────────────────
-function getGitLog(studyDir) {
+// ── Git 变更提取（含 diff 内容）───────────────────────────────
+function getGitChanges(studyDir) {
   const bj = beijingNow();
-  // 今天 00:00 北京时间 = 昨天 16:00 UTC
   const midnightBJ = new Date(Date.UTC(bj.year, bj.month - 1, bj.day));
   const since = midnightBJ.toISOString();
 
-  let out = '';
+  // 第一步：拿今天的 commit 和文件列表
+  let logOut = '';
   try {
-    out = execSync(
+    logOut = execSync(
       `git -c core.quotepath=false log --since="${since}" --pretty=format:"%h|%s" --name-only`,
       { cwd: studyDir, encoding: 'utf8', timeout: 15000 }
     ).trim();
-  } catch {
-    return [];
-  }
+  } catch { return { commits: [], files: [], diffs: {} }; }
 
-  if (!out) return [];
+  if (!logOut) return { commits: [], files: [], diffs: {} };
 
-  const lines = out.split(/\r?\n/);
-  const changes = [];
+  const lines = logOut.split(/\r?\n/);
+  const commits = [];
+  const fileSet = new Set();
   let current = null;
 
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) { current = null; continue; }
-    // commit hash|message
-    const commitMatch = line.match(/^([a-f0-9]{7,40})\|(.+)$/);
-    if (commitMatch) {
-      current = { hash: commitMatch[1], message: commitMatch[2].trim(), files: [] };
-      changes.push(current);
+    const m = line.match(/^([a-f0-9]{7,40})\|(.+)$/);
+    if (m) {
+      current = { hash: m[1], message: m[2].trim(), files: [] };
+      commits.push(current);
     } else if (current) {
       current.files.push(line);
+      fileSet.add(line);
     }
   }
-  return changes;
+
+  // 第二步：对每个文件获取今天的 diff（截断防止过大）
+  const diffs = {};
+  for (const file of fileSet) {
+    try {
+      const raw = execSync(
+        `git -c core.quotepath=false log -p --since="${since}" -- "${file}"`,
+        { cwd: studyDir, encoding: 'utf8', timeout: 10000, maxBuffer: 512 * 1024 }
+      );
+      // 只保留实际变更行（+/-），去掉 commit 元信息和 diff 头
+      const changeLines = raw.split(/\r?\n/)
+        .filter(l => /^[+-]/.test(l) && !/^[+-]{3}/.test(l) && !/^\+\+\+ /.test(l) && !/^--- /.test(l))
+        .slice(0, 60)  // 最多 60 行变更
+        .join('\n');
+      if (changeLines.trim()) {
+        diffs[file] = changeLines.slice(0, 3000); // 最多 3000 字符
+      }
+    } catch { /* 跳过获取失败的文件 */ }
+  }
+
+  return { commits, files: [...fileSet], diffs };
 }
 
 // ── 课程摘要（只读 schedule.json） ────────────────────────────
@@ -185,6 +204,58 @@ function getTodayRunning(runningPath) {
   };
 }
 
+// ── LLM 变更描述（可选） ────────────────────────────────────────
+async function summarizeChanges(diffs) {
+  const deepseekKey = process.env.DEEPSEEK_API_KEY;
+  const glmKey = process.env.GLM_API_KEY;
+  if (!deepseekKey && !glmKey) return {};
+  const files = Object.keys(diffs);
+  if (files.length === 0) return {};
+
+  const system = '你是代码仓库分析助手。用户会提供 git diff 内容，请用简洁的中文描述每个文件改了什么。注意：不要猜测，只根据 diff 内容描述。';
+
+  const parts = [];
+  for (const [file, diff] of Object.entries(diffs)) {
+    parts.push(`### ${file}\n\`\`\`diff\n${diff.slice(0, 1500)}\n\`\`\``);
+  }
+
+  const user = [
+    '请描述以下每个文件的变更。输出 JSON，key 是文件路径，value 是一句话中文描述：',
+    '',
+    ...parts,
+  ].join('\n');
+
+  const tasks = [];
+  if (deepseekKey) {
+    tasks.push(llmCall({
+      hostname: 'api.deepseek.com', apiPath: '/v1/chat/completions',
+      apiKey: deepseekKey, model: 'deepseek-chat',
+      system, user,
+    }).then(r => ({ r, src: 'deepseek' })));
+  }
+  if (glmKey) {
+    tasks.push(llmCall({
+      hostname: 'open.bigmodel.cn', apiPath: '/api/paas/v4/chat/completions',
+      apiKey: glmKey, model: 'glm-4-flash',
+      system, user,
+    }).then(r => ({ r, src: 'glm' })));
+  }
+
+  try {
+    const { r, src } = await Promise.any(tasks);
+    console.log(`[llm] 变更描述成功 (${src})`);
+    // 尝试解析 JSON；如果 LLM 没按规矩来，用原始文本
+    try {
+      const parsed = JSON.parse(r);
+      if (typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+    } catch {}
+    return { _raw: r };
+  } catch {
+    console.log('[llm] 变更描述失败，使用 commit message');
+    return {};
+  }
+}
+
 // ── LLM 总结（可选，无 API Key 则跳过） ────────────────────────
 async function generateAiSummary({ courses, assignments, changes, running }) {
   // 优先用 DEEPSEEK_API_KEY，其次 GLM_API_KEY
@@ -193,9 +264,7 @@ async function generateAiSummary({ courses, assignments, changes, running }) {
   const glmKey = process.env.GLM_API_KEY;
   if (!deepseekKey && !glmKey) return null;
 
-  const changeLines = changes.flatMap(c =>
-    c.files.map(f => `- ${f}`)
-  ).slice(0, 15);
+  const changeLines = changes.files.slice(0, 15);
 
   const system = '你是学生的学习助手。根据今天的活动数据，用2-3句话写一段温和的复盘小结。语气像朋友，不要官腔，不要编造数据中没有的内容。50字以内。';
 
@@ -286,7 +355,7 @@ function llmCall({ hostname, apiPath, apiKey, model, system, user }) {
 }
 
 // ── Markdown 生成 ──────────────────────────────────────────────
-function buildMarkdown({ dateStr, weekday, changes, courses, assignments, running, aiSummary }) {
+function buildMarkdown({ dateStr, weekday, changes, fileSummaries, courses, assignments, running, aiSummary }) {
   const lines = [];
   const [y, m, d] = dateStr.split('-');
 
@@ -297,22 +366,25 @@ function buildMarkdown({ dateStr, weekday, changes, courses, assignments, runnin
   // 变更记录（核心）
   lines.push('## 🔄 今日变更');
   lines.push('');
-  if (changes.length === 0) {
+  if (changes.files.length === 0) {
     lines.push('> 今日无 Git 提交记录');
   } else {
-    for (const c of changes) {
-      for (const f of c.files) {
-        // 根据文件路径判断操作类型
-        const isNew = c.message.includes('新增') || c.message.includes('add');
-        const isDone = c.message.includes('完成') || c.message.includes('归档') ||
-                       c.message.includes('打卡') || c.message.includes('跑步');
-        const icon = isDone ? '✅' : isNew ? '➕' : '✏️';
-        lines.push(`- ${icon} ${f} — ${c.message}`);
+    for (const f of changes.files) {
+      const desc = (fileSummaries && fileSummaries[f]) || '';
+      const isNew = changes.diffs[f] && /^\+/.test(changes.diffs[f]) &&
+                    !changes.diffs[f].includes('\n-');
+      const icon = isNew ? '➕' : '✏️';
+      if (desc) {
+        lines.push(`- ${icon} **${f}** — ${desc}`);
+      } else {
+        lines.push(`- ${icon} ${f}`);
       }
     }
   }
   lines.push('');
-  lines.push(`> 共 ${changes.length} 次提交 · ${changes.reduce((s, c) => s + c.files.length, 0)} 个文件变更`);
+  const totalFiles = changes.files.length;
+  const commitCount = changes.commits.length;
+  lines.push(`> 共 ${commitCount} 次提交 · ${totalFiles} 个文件变更`);
   lines.push('');
 
   // 今日课程（从schedule.json取，如果有）
@@ -385,27 +457,33 @@ async function main() {
 
   console.log(`[daily] 生成日报：${dateStr} ${weekday}`);
 
-  // 1. 提取 Git 变更
+  // 1. 提取 Git 变更（含 diff）
   console.log('[daily] 提取 Git 变更...');
-  let changes = [];
+  let changes = { commits: [], files: [], diffs: {} };
   if (fs.existsSync(studyDir)) {
-    changes = getGitLog(studyDir);
+    changes = getGitChanges(studyDir);
   } else {
     console.log('[daily] 本地无 jiangshu-study 仓库，Git 变更将为空');
   }
-  console.log(`[daily] 找到 ${changes.length} 次提交`);
+  console.log(`[daily] 找到 ${changes.commits.length} 次提交，${changes.files.length} 个文件`);
 
-  // 2. 读取今日数据（只读，不修改）
+  // 2. LLM 总结每项变更（有 diff 才调）
+  let fileSummaries = {};
+  if (Object.keys(changes.diffs).length > 0) {
+    fileSummaries = await summarizeChanges(changes.diffs);
+  }
+
+  // 3. 读取今日数据（只读，不修改）
   const courses = getTodayCourses(schedulePath);
   const assignments = getTodayAssignments(assignmentsPath);
   const running = getTodayRunning(runningPath);
   console.log(`[daily] 课程:${courses.length} 作业:${assignments.length} 跑步:${running?.today ? 1 : 0}`);
 
-  // 3. LLM 总结
+  // 4. LLM 总结合成
   const aiSummary = await generateAiSummary({ courses, assignments, changes, running });
 
   // 4. 生成 Markdown
-  const md = buildMarkdown({ dateStr, weekday, changes, courses, assignments, running, aiSummary });
+  const md = buildMarkdown({ dateStr, weekday, changes, fileSummaries, courses, assignments, running, aiSummary });
 
   // 5. 写入文件
   const outDir = path.join(studyDir, '日报');
