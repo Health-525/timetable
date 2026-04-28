@@ -1,0 +1,44 @@
+name: 生成周报
+
+on:
+  schedule:
+    # 每周日北京时间 22:30 = UTC 14:30
+    - cron: "30 14 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: weekly-report
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取 timetable 仓库
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 克隆 jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
+          cd _study
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
+
+      - name: 生成周报
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+        run: node scripts/generate-weekly.js
