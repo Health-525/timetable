@@ -260,10 +260,18 @@ async function summarizeChanges(diffs) {
 }
 
 // ── LLM 灵感分析 + 整体总结 ──────────────────────────────────
-async function generateAiSummary({ courses, assignments, changes, fileSummaries, running }) {
+async function generateAiSummary({ courses, assignments, changes, fileSummaries, running, studyDir }) {
   const deepseekKey = process.env.DEEPSEEK_API_KEY;
   const glmKey = process.env.GLM_API_KEY;
   if (!deepseekKey && !glmKey) return null;
+
+  // 读取用户记忆文件（如果存在）
+  const memoryPath = path.join(studyDir, '日报', '上下文.md');
+  let memoryContext = '';
+  if (fs.existsSync(memoryPath)) {
+    memoryContext = fs.readFileSync(memoryPath, 'utf8').trim().slice(0, 2000);
+    console.log('[daily] 已加载记忆文件（日报/上下文.md）');
+  }
 
   // 提取灵感目录下的变更（文件名或路径包含"灵感"）
   const inspirationFiles = changes.files.filter(f => f.includes('灵感'));
@@ -277,9 +285,13 @@ async function generateAiSummary({ courses, assignments, changes, fileSummaries,
     '1. 用1-2句话总结今天的整体状态',
     '2. 重点分析用户今天记录的灵感/想法，给出深度建议',
     '',
+    memoryContext ? '## 关于用户（上下文记忆）' : '',
+    memoryContext ? memoryContext : '',
+    memoryContext ? '' : '',
     '要求：',
     '- 灵感分析：如果用户写了零散的想法，帮他找到关联、提炼核心方向、给出可行的下一步',
     '- 建议要具体，不能空泛。比如"可以开发一个skill"而不要说"可以继续思考"',
+    '- 如果用户有正在进行的项目或目标（见上下文记忆），将灵感与这些目标关联起来',
     '- 语气像朋友，不要官腔',
     '- 不要编造数据中没有的内容',
     '',
@@ -514,7 +526,7 @@ async function main() {
   console.log(`[daily] 课程:${courses.length} 作业:${assignments.length} 跑步:${running?.today ? 1 : 0}`);
 
   // 4. LLM 总结合成
-  const aiSummary = await generateAiSummary({ courses, assignments, changes, fileSummaries, running });
+  const aiSummary = await generateAiSummary({ courses, assignments, changes, fileSummaries, running, studyDir });
 
   // 4. 生成 Markdown
   const md = buildMarkdown({ dateStr, weekday, changes, fileSummaries, courses, assignments, running, aiSummary });
