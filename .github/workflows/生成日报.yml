@@ -1,6 +1,8 @@
 name: 生成日报
 
 on:
+  repository_dispatch:
+    types: [daily-refresh]
   schedule:
     # 每天北京时间 22:00 = UTC 14:00
     - cron: "0 14 * * *"
