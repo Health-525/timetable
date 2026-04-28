@@ -256,57 +256,81 @@ async function summarizeChanges(diffs) {
   }
 }
 
-// ── LLM 总结（可选，无 API Key 则跳过） ────────────────────────
-async function generateAiSummary({ courses, assignments, changes, running }) {
-  // 优先用 DEEPSEEK_API_KEY，其次 GLM_API_KEY
-  // 如果都没有，静默跳过
+// ── LLM 灵感分析 + 整体总结 ──────────────────────────────────
+async function generateAiSummary({ courses, assignments, changes, fileSummaries, running }) {
   const deepseekKey = process.env.DEEPSEEK_API_KEY;
   const glmKey = process.env.GLM_API_KEY;
   if (!deepseekKey && !glmKey) return null;
 
-  const changeLines = changes.files.slice(0, 15);
+  // 提取灵感目录下的变更（文件名或路径包含"灵感"）
+  const inspirationFiles = changes.files.filter(f => f.includes('灵感'));
+  const inspirationDiffs = {};
+  for (const f of inspirationFiles) {
+    if (changes.diffs[f]) inspirationDiffs[f] = changes.diffs[f];
+  }
 
-  const system = '你是学生的学习助手。根据今天的活动数据，用2-3句话写一段温和的复盘小结。语气像朋友，不要官腔，不要编造数据中没有的内容。50字以内。';
-
-  const user = [
-    '## 今日数据',
-    `课程：${courses.length > 0 ? courses.map(c => c.title).join('、') : '无'}`,
-    `作业：${assignments.length > 0 ? assignments.map(a => `${a.course}·${a.title}(${a.urgency})`).join(' / ') : '无新作业'}`,
-    `Git变更：${changeLines.length > 0 ? changeLines.join(' / ') : '无'}`,
-    `运动：${running?.today ? (running.today.type === 'morning' ? '晨跑' : '自由跑') + ' 1次' : '无'}`,
+  const system = [
+    '你是学生的学习教练兼灵感分析师。你的任务有两部分：',
+    '1. 用1-2句话总结今天的整体状态',
+    '2. 重点分析用户今天记录的灵感/想法，给出深度建议',
     '',
-    '请输出总结（纯文本，不要markdown格式）：',
+    '要求：',
+    '- 灵感分析：如果用户写了零散的想法，帮他找到关联、提炼核心方向、给出可行的下一步',
+    '- 建议要具体，不能空泛。比如"可以开发一个skill"而不要说"可以继续思考"',
+    '- 语气像朋友，不要官腔',
+    '- 不要编造数据中没有的内容',
+    '',
+    '输出格式（严格遵循）：',
+    '## 今日小结',
+    '（1-2句话）',
+    '',
+    '## 灵感分析',
+    '（如果没有灵感内容，写"今天没有记录灵感"）',
+    '（如果有灵感内容，逐条分析 + 给建议）',
   ].join('\n');
+
+  const parts = ['## 今日数据'];
+  parts.push(`课程：${courses.length > 0 ? courses.map(c => c.title).join('、') : '无'}`);
+  parts.push(`作业：${assignments.length > 0 ? assignments.map(a => `${a.course}·${a.title}(${a.urgency})`).join(' / ') : '无'}`);
+  parts.push(`运动：${running?.today ? (running.today.type === 'morning' ? '晨跑' : '自由跑') + ' 1次' : '未记录'}`);
+
+  // 附上灵感文件的 diff 内容
+  if (Object.keys(inspirationDiffs).length > 0) {
+    parts.push('');
+    parts.push('## 今日灵感内容（git diff）');
+    for (const [file, diff] of Object.entries(inspirationDiffs)) {
+      // 只取新增行（+开头），去掉 diff 格式噪音
+      const added = diff.split('\n')
+        .filter(l => l.startsWith('+') && !l.startsWith('+++'))
+        .map(l => l.slice(1)) // 去掉 + 前缀
+        .filter(l => l.trim())
+        .join('\n');
+      parts.push(`### ${file}`);
+      parts.push(added || diff.slice(0, 500));
+    }
+  }
+
+  const user = parts.join('\n');
 
   const tasks = [];
   if (deepseekKey) {
-    tasks.push(
-      llmCall({
-        hostname: 'api.deepseek.com',
-        apiPath: '/v1/chat/completions',
-        apiKey: deepseekKey,
-        model: 'deepseek-chat',
-        system,
-        user,
-      }).then(r => ({ r, src: 'deepseek' }))
-    );
+    tasks.push(llmCall({
+      hostname: 'api.deepseek.com', apiPath: '/v1/chat/completions',
+      apiKey: deepseekKey, model: 'deepseek-chat',
+      system, user,
+    }).then(r => ({ r, src: 'deepseek' })));
   }
   if (glmKey) {
-    tasks.push(
-      llmCall({
-        hostname: 'open.bigmodel.cn',
-        apiPath: '/api/paas/v4/chat/completions',
-        apiKey: glmKey,
-        model: 'glm-4-flash',
-        system,
-        user,
-      }).then(r => ({ r, src: 'glm' }))
-    );
+    tasks.push(llmCall({
+      hostname: 'open.bigmodel.cn', apiPath: '/api/paas/v4/chat/completions',
+      apiKey: glmKey, model: 'glm-4-flash',
+      system, user,
+    }).then(r => ({ r, src: 'glm' })));
   }
 
   try {
     const { r, src } = await Promise.any(tasks);
-    console.log(`[llm] 总结生成成功 (${src})`);
+    console.log(`[llm] 总结+灵感分析成功 (${src})`);
     return r;
   } catch {
     console.log('[llm] 总结生成失败，跳过');
@@ -425,11 +449,18 @@ function buildMarkdown({ dateStr, weekday, changes, fileSummaries, courses, assi
     lines.push('');
   }
 
-  // AI 总结（如果有）
+  // AI 小结 + 灵感分析（LLM 已按格式生成，直接嵌入）
   if (aiSummary) {
-    lines.push('## 🤖 AI 小结');
+    lines.push('---');
     lines.push('');
-    lines.push(`> ${aiSummary}`);
+    // 如果 LLM 返回的内容已包含 ## 标题，直接使用；否则包一层
+    if (aiSummary.includes('##')) {
+      lines.push(aiSummary);
+    } else {
+      lines.push('## 🤖 AI 小结');
+      lines.push('');
+      lines.push(`> ${aiSummary}`);
+    }
     lines.push('');
   }
 
@@ -480,7 +511,7 @@ async function main() {
   console.log(`[daily] 课程:${courses.length} 作业:${assignments.length} 跑步:${running?.today ? 1 : 0}`);
 
   // 4. LLM 总结合成
-  const aiSummary = await generateAiSummary({ courses, assignments, changes, running });
+  const aiSummary = await generateAiSummary({ courses, assignments, changes, fileSummaries, running });
 
   // 4. 生成 Markdown
   const md = buildMarkdown({ dateStr, weekday, changes, fileSummaries, courses, assignments, running, aiSummary });
