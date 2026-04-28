@@ -393,18 +393,58 @@ function llmCall({ hostname, apiPath, apiKey, model, system, user }) {
   });
 }
 
+// ── 进度条工具 ──────────────────────────────────────────────────
+function progressBar(current, target, width) {
+  const filled = Math.round(Math.min(current / target, 1) * width);
+  return '█'.repeat(filled) + '░'.repeat(width - filled);
+}
+
 // ── Markdown 生成 ──────────────────────────────────────────────
 function buildMarkdown({ dateStr, weekday, changes, fileSummaries, courses, assignments, running, aiSummary }) {
   const lines = [];
   const [y, m, d] = dateStr.split('-');
+  const urgent = assignments.filter(a => a.diffDays <= 3);
+  const bj = beijingNow();
+  const timeStr = `${String(bj.hour).padStart(2, '0')}:${String(bj.minute).padStart(2, '0')}`;
 
-  // 标题
-  lines.push(`# 📅 ${parseInt(m)}月${parseInt(d)}日 · ${weekday} · 日报`);
+  // ── YAML Frontmatter ──
+  lines.push('---');
+  lines.push(`date: ${dateStr}`);
+  lines.push(`weekday: ${weekday}`);
+  lines.push('tags: [日报]');
+  lines.push('---');
   lines.push('');
 
-  // 变更记录（核心）
-  lines.push('## 🔄 今日变更');
+  // ── 标题 ──
+  lines.push(`# 📅 ${y}年${parseInt(m)}月${parseInt(d)}日 · ${weekday}`);
   lines.push('');
+
+  // ── 今日概览 ──
+  lines.push('> [!SUMMARY] 今日概览');
+  lines.push('>');
+  if (courses.length > 0) {
+    lines.push(`> - 📚 **${courses.length} 门课**：${courses.map(c => c.title).join('、')}`);
+  } else {
+    lines.push('> - 📚 **今日无课**');
+  }
+  if (urgent.length > 0) {
+    lines.push(`> - 📝 **${urgent.length} 项紧急作业**：${urgent.map(a => a.title).join('、')}`);
+  } else {
+    lines.push('> - 📝 **无紧急待办** ✅');
+  }
+  if (changes.commits.length > 0) {
+    lines.push(`> - 🔄 **${changes.commits.length} 次提交** · ${changes.files.length} 个文件变更`);
+  } else {
+    lines.push('> - 🔄 今日无代码提交');
+  }
+  if (running) {
+    const totalPct = Math.round((running.total / running.totalTarget) * 100);
+    lines.push(`> - 🏃 **运动**：${running.total}/${running.totalTarget}（${totalPct}%）`);
+  }
+  lines.push('');
+
+  // ── 今日变更 ──
+  lines.push('> [!NOTE] 🔄 今日变更');
   if (changes.files.length === 0) {
     lines.push('> 今日无 Git 提交记录');
   } else {
@@ -414,76 +454,74 @@ function buildMarkdown({ dateStr, weekday, changes, fileSummaries, courses, assi
                     !changes.diffs[f].includes('\n-');
       const icon = isNew ? '➕' : '✏️';
       if (desc) {
-        lines.push(`- ${icon} **${f}** — ${desc}`);
+        lines.push(`> - ${icon} **${f}** — ${desc}`);
       } else {
-        lines.push(`- ${icon} ${f}`);
+        lines.push(`> - ${icon} **${f}**`);
       }
     }
+    lines.push('>');
+    lines.push(`> *共 ${changes.commits.length} 次提交 · ${changes.files.length} 个文件变更*`);
   }
   lines.push('');
-  const totalFiles = changes.files.length;
-  const commitCount = changes.commits.length;
-  lines.push(`> 共 ${commitCount} 次提交 · ${totalFiles} 个文件变更`);
-  lines.push('');
 
-  // 今日课程（从schedule.json取，如果有）
+  // ── 今日课程 ──
   if (courses.length > 0) {
-    lines.push('## 📅 今日课程');
-    lines.push('');
+    lines.push('> [!INFO] 📅 今日课程');
+    lines.push('>');
+    lines.push('> | 时间 | 课程 | 地点 |');
+    lines.push('> |:---:|---|:---:|');
     for (const c of courses) {
-      lines.push(`- ${c.time} **${c.title}** · ${c.location}`);
+      lines.push(`> | ${c.time} | **${c.title}** | ${c.location} |`);
     }
     lines.push('');
   }
 
-  // 作业（从assignments.json取，只展示临近的）
-  if (assignments.length > 0) {
-    const urgent = assignments.filter(a => a.diffDays <= 3);
-    if (urgent.length > 0) {
-      lines.push('## 📝 待完成作业');
-      lines.push('');
-      for (const a of urgent) {
-        lines.push(`- ${a.urgency} **${a.course}** · ${a.title}`);
-      }
-      lines.push('');
+  // ── 待完成作业 ──
+  if (urgent.length > 0) {
+    lines.push('> [!WARNING] 📝 待完成作业');
+    for (const a of urgent) {
+      lines.push(`> - ${a.urgency} **${a.course}** · ${a.title}`);
     }
+    lines.push('');
   }
 
-  // 运动（从running.json取）
+  // ── 运动 ──
   if (running) {
-    lines.push('## 🏃 运动');
-    lines.push('');
+    const totalPct = Math.round((running.total / running.totalTarget) * 100);
+    lines.push('> [!ABSTRACT] 🏃 运动');
+    lines.push('>');
     if (running.today) {
       const icon = running.today.type === 'morning' ? '🌅 晨跑' : '🏃 自由跑';
-      lines.push(`- 今日：${icon}`);
+      lines.push(`> **今日**：${icon} ✓`);
     } else {
-      lines.push('- 今日：未记录');
+      lines.push('> **今日**：未记录');
     }
-    const totalPct = Math.round((running.total / running.totalTarget) * 100);
-    lines.push(`- 学期进度：${running.total}/${running.totalTarget}（${totalPct}%）`);
+    lines.push('>');
+    lines.push(`> **学期进度**：${running.total} / ${running.totalTarget}`);
+    lines.push('>');
+    lines.push(`> \`${progressBar(running.total, running.totalTarget, 20)}\` ${totalPct}%`);
     lines.push('');
   }
 
-  // AI 小结 + 灵感分析（LLM 已按格式生成，直接嵌入）
+  // ── AI 小结 ──
   if (aiSummary) {
-    lines.push('---');
-    lines.push('');
-    // 如果 LLM 返回的内容已包含 ## 标题，直接使用；否则包一层
-    if (aiSummary.includes('##')) {
-      lines.push(aiSummary);
-    } else {
-      lines.push('## 🤖 AI 小结');
-      lines.push('');
-      lines.push(`> ${aiSummary}`);
+    lines.push('> [!TIP] 🤖 AI 小结');
+    lines.push('>');
+    const summaryLines = aiSummary.split('\n');
+    for (const line of summaryLines) {
+      if (line.trim()) {
+        lines.push(`> ${line}`);
+      } else {
+        lines.push('>');
+      }
     }
     lines.push('');
   }
 
-  // 页脚
-  const bj = beijingNow();
-  const timeStr = `${String(bj.hour).padStart(2, '0')}:${String(bj.minute).padStart(2, '0')}`;
+  // ── 页脚 ──
   lines.push('---');
-  lines.push(`> 由 OpenClaw 总指挥自动生成 · ${dateStr} ${timeStr}（北京时间）`);
+  lines.push('');
+  lines.push(`*由 OpenClaw 总指挥自动生成 · ${dateStr} ${timeStr}（北京时间）*`);
 
   return lines.join('\n') + '\n';
 }
