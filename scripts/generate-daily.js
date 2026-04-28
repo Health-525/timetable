@@ -75,6 +75,9 @@ function getGitChanges(studyDir) {
       current = { hash: m[1], message: m[2].trim(), files: [] };
       commits.push(current);
     } else if (current) {
+      // 跳过二进制和临时文件
+      if (/\.(exe|docx|doc|pptx|xlsx|pdf|png|jpg|jpeg|gif|ico|zip|tar|gz|tmp|o|obj|class|pyc)$/i.test(line)) continue;
+      if (line.startsWith('~$')) continue;
       current.files.push(line);
       fileSet.add(line);
     }
@@ -347,7 +350,7 @@ function llmCall({ hostname, apiPath, apiKey, model, system, user }) {
       { role: 'user', content: user },
     ],
     temperature: 0.3,
-    max_tokens: 200,
+    max_tokens: 1000,
   });
 
   return new Promise((resolve, reject) => {
