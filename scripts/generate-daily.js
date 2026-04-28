@@ -55,7 +55,7 @@ function getGitLog(studyDir) {
   let out = '';
   try {
     out = execSync(
-      `git log --since="${since}" --pretty=format:"%h|%s" --name-only`,
+      `git -c core.quotepath=false log --since="${since}" --pretty=format:"%h|%s" --name-only`,
       { cwd: studyDir, encoding: 'utf8', timeout: 15000 }
     ).trim();
   } catch {
