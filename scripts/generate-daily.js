@@ -420,8 +420,6 @@ async function main() {
     const repo = process.env.STUDY_REPO || 'https://github.com/Health-525/jiangshu-study.git';
     try {
       execSync('git add 日报/', { cwd: studyDir, stdio: 'pipe', timeout: 10000 });
-      const diffCheck = execSync('git diff --cached --quiet', { cwd: studyDir, stdio: 'pipe', timeout: 5000 });
-      // 有变更才提交
       execSync(
         `git -c user.name="timetable-bot" -c user.email="timetable-bot@users.noreply.github.com" ` +
         `commit -m "daily: ${dateStr} 日报自动生成"`,
@@ -431,10 +429,8 @@ async function main() {
       execSync(`git push "${authed}" HEAD:main`, { cwd: studyDir, stdio: 'pipe', timeout: 30000 });
       console.log('[daily] 已推送');
     } catch (e) {
-      // 没有变更时不报错
-      if (e.stdout && e.stdout.toString().includes('nothing to commit')) {
-        console.log('[daily] 无变更，跳过推送');
-      } else if (e.stderr && e.stderr.toString().includes('nothing to commit')) {
+      const msg = (e.stdout || '') + (e.stderr || '');
+      if (msg.includes('nothing to commit')) {
         console.log('[daily] 无变更，跳过推送');
       } else {
         console.log(`[daily] 推送失败：${e.message}`);
