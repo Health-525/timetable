@@ -1,6 +1,9 @@
-name: 同步YouTube笔记（已暂停）
+name: 同步YouTube笔记
 
 on:
+  schedule:
+    # 每天北京时间 08:00 / 20:00 = UTC 00:00 / 12:00
+    - cron: "0 0,12 * * *"
   workflow_dispatch:
     inputs:
       test_latest:
@@ -17,7 +20,6 @@ concurrency:
 
 jobs:
   run:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - name: 拉取 timetable 仓库
@@ -46,7 +48,7 @@ jobs:
           OUT_DIR_REL: 'youtube-daily'
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
-          MAX_ANALYZE: '11'
+          MAX_ANALYZE: '6'
           TEST_LATEST: ${{ github.event.inputs.test_latest }}
           YOUTUBE_COOKIES_FILE: youtube_cookies.txt
         run: |
