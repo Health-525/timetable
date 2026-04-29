@@ -33,6 +33,7 @@ jobs:
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
         run: |
+          rm -rf _study
           git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
           cd _study
           git config user.name "timetable-bot"
