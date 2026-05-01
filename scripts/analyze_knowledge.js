@@ -23,7 +23,7 @@ const path = require('path');
 
 const STUDY_DIR = process.env.STUDY_DIR || path.join(process.cwd(), '_study');
 const OUT_DIR = path.join(process.cwd(), '_out');
-const PROFILE_PATH = path.join(STUDY_DIR, '日报', '知识画像.md');
+const PROFILE_PATH = path.join(STUDY_DIR, '_meta', '知识画像.md');
 const INSPIRATION_PATH = path.join(STUDY_DIR, '10-灵感感悟', '灵感.md');
 const COURSE_MAP = {
   '00-Inbox':              { label: '收件箱 / 未归类',        exclude: true },

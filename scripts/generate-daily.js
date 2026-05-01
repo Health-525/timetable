@@ -266,11 +266,11 @@ async function generateAiSummary({ courses, assignments, changes, fileSummaries,
   if (!deepseekKey && !glmKey) return null;
 
   // 读取用户记忆文件（如果存在）
-  const memoryPath = path.join(studyDir, '日报', '上下文.md');
+  const memoryPath = path.join(studyDir, '_meta', '上下文.md');
   let memoryContext = '';
   if (fs.existsSync(memoryPath)) {
     memoryContext = fs.readFileSync(memoryPath, 'utf8').trim().slice(0, 2000);
-    console.log('[daily] 已加载记忆文件（日报/上下文.md）');
+    console.log('[daily] 已加载记忆文件（_meta/上下文.md）');
   }
 
   // 提取灵感目录下的变更（文件名或路径包含"灵感"）

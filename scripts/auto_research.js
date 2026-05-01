@@ -18,7 +18,7 @@
  *
  * 输入文件：
  *   _out/learning_gaps.json
- *   日报/知识画像.md（用户知识画像）
+ *   _meta/知识画像.md（用户知识画像）
  *
  * 输出路径：jiangshu-study/08-AI学习/自主研究/{title}.md
  */
@@ -35,7 +35,7 @@ const { execSync } = require('child_process');
 const STUDY_DIR = process.env.STUDY_DIR || path.join(process.cwd(), '_study');
 const OUT_DIR = path.join(process.cwd(), '_out');
 const GAPS_PATH = path.join(OUT_DIR, 'learning_gaps.json');
-const PROFILE_PATH = path.join(STUDY_DIR, '日报', '知识画像.md');
+const PROFILE_PATH = path.join(STUDY_DIR, '_meta', '知识画像.md');
 const NOTE_OUT_DIR = path.join(STUDY_DIR, '08-AI学习', '自主研究');
 
 const CST_OFFSET_MS = 8 * 60 * 60 * 1000;

@@ -193,7 +193,7 @@ async function generateAiSummary(payload) {
   const glmKey = process.env.GLM_API_KEY;
   if (!deepseekKey && !glmKey) return null;
 
-  const memoryPath = path.join(payload.studyDir, '日报', '上下文.md');
+  const memoryPath = path.join(payload.studyDir, '_meta', '上下文.md');
   const memoryContext = fs.existsSync(memoryPath)
     ? fs.readFileSync(memoryPath, 'utf8').trim().slice(0, 2000)
     : '';
