@@ -1,0 +1,51 @@
+name: 自主研究
+
+on:
+  schedule:
+    # 每周二、周五 北京时间 21:00 = UTC 13:00
+    - cron: "0 13 * * 2,5"
+  workflow_dispatch:
+    inputs:
+      gap_id:
+        description: '指定 gap ID（留空则自动选优先级最高）'
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-research
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取 timetable 仓库
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 克隆 jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          rm -rf _study
+          git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
+          cd _study
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
+
+      - name: 运行自主研究
+        env:
+          STUDY_DIR: _study
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+          GAP_ID: ${{ github.event.inputs.gap_id }}
+        run: node scripts/auto_research.js
