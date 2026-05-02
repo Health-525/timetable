@@ -1,6 +1,8 @@
 # timetable
 
 > 课表数据化 + 全自动化处理中枢 · 为 [jiangshu-study](https://github.com/Health-525/jiangshu-study) 提供后端支撑
+>
+> 属于 [MyDigitalCrew](https://github.com/Health-525/MyDigitalCrew) — 10 个 AI Agent 组成的个人学习管理数字团队
 
 ---
 
@@ -8,7 +10,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    您的学习系统                              │
+│                    MyDigitalCrew 学习系统                     │
 ├─────────────────────────────────────────────────────────────┤
 │                                                               │
 │  jiangshu-study (内容层)         timetable (执行层)          │
