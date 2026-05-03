@@ -1,0 +1,162 @@
+{
+  "generatedAt": "2026-05-03T02:06:25.576Z",
+  "profile": {
+    "strengths": [
+      "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
+      "**数值分析**：MATLAB 实验完整，理解算法稳定性",
+      "**Python 数据处理**：pandas/numpy 应用熟练",
+      "**技术英语**：能写专业的技术文档、Code Review、系统设计描述",
+      "**工程自动化**：独立搭建 GitHub Actions 多 Agent 系统",
+      "**Claude/LLM 工具链**：使用 10+ 个 AI 编码助手，配置 DeepSeek 中转"
+    ],
+    "weaknesses": [
+      "**AI/ML 理论**：08-AI学习 目录几乎是空的，只有骨架",
+      "**特征值/PCA 推导链路**：在多元统计里用了 PCA，在数值分析里学了特征值分解，但**没有把两者串起来**",
+      "**深度学习框架**：fork 了 LLMs-from-scratch 但没学完",
+      "**Rust**：安装了环境但还没开始"
+    ]
+  },
+  "gaps": [
+    {
+      "id": "gap-001",
+      "title": "PCA从协方差矩阵到特征值分解的完整推导",
+      "category": "数学桥接",
+      "priority": 1,
+      "why": "已学多元统计分析中的PCA调用和数值分析中的特征值分解，但缺少协方差矩阵如何桥接两者的数学推导，导致对PCA原理理解不深。",
+      "prerequisites_met": [
+        "特征值分解",
+        "PCA基本概念",
+        "线性代数基础"
+      ],
+      "suggestedTopic": "PCA的数学原理与推导",
+      "relatedCourses": [
+        "04-多元统计分析",
+        "05-数值分析"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-002",
+      "title": "从零实现神经网络训练循环",
+      "category": "AI/ML",
+      "priority": 1,
+      "why": "已掌握numpy和sklearn调包，但08-AI学习目录几乎为空，缺少从零实现简单神经网络（前向传播、反向传播、梯度下降）的实践，无法深入理解深度学习原理。",
+      "prerequisites_met": [
+        "Python编程",
+        "numpy基础",
+        "线性代数"
+      ],
+      "suggestedTopic": "从零实现神经网络",
+      "relatedCourses": [
+        "02-Python数据处理与分析",
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-003",
+      "title": "Git内部对象模型（blob/tree/commit/tag）",
+      "category": "工程深化",
+      "priority": 2,
+      "why": "已熟练使用git add/commit/push和GitHub Actions，但缺少对git底层对象模型的理解，无法深入理解版本控制原理。",
+      "prerequisites_met": [
+        "Git基本操作",
+        "GitHub Actions"
+      ],
+      "suggestedTopic": "Git内部原理",
+      "relatedCourses": [],
+      "status": "open"
+    },
+    {
+      "id": "gap-004",
+      "title": "MCP协议规范深入理解",
+      "category": "工程深化",
+      "priority": 2,
+      "why": "已有MCP服务器项目实践，但缺少对协议规范（如传输层、工具定义、资源模型）的系统学习，限制了对MCP生态的深度应用。",
+      "prerequisites_met": [
+        "MCP基础实践",
+        "Node.js/TypeScript"
+      ],
+      "suggestedTopic": "MCP协议规范详解",
+      "relatedCourses": [],
+      "status": "open"
+    },
+    {
+      "id": "gap-005",
+      "title": "深度学习框架（PyTorch/TensorFlow）入门",
+      "category": "AI/ML",
+      "priority": 1,
+      "why": "fork了LLMs-from-scratch但未系统学习，且08-AI学习内容极少，缺少主流深度学习框架的使用经验，无法进行后续LLM或计算机视觉项目。",
+      "prerequisites_met": [
+        "Python编程",
+        "numpy基础",
+        "神经网络基础概念"
+      ],
+      "suggestedTopic": "PyTorch入门与实践",
+      "relatedCourses": [
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-006",
+      "title": "计算机视觉基础（图像分类、目标检测）",
+      "category": "AI/ML",
+      "priority": 2,
+      "why": "用户对AI发型应用和模型自动替换感兴趣，且已有FrameDetective项目经验，但缺少系统的计算机视觉知识（如CNN、目标检测算法），限制进一步创新。",
+      "prerequisites_met": [
+        "Python编程",
+        "numpy基础",
+        "深度学习基础"
+      ],
+      "suggestedTopic": "计算机视觉基础",
+      "relatedCourses": [
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-007",
+      "title": "Rust语言基础与系统编程",
+      "category": "工程深化",
+      "priority": 3,
+      "why": "已安装Rust环境但未开始学习，作为现代系统编程语言，掌握Rust有助于深入理解底层原理和开发高性能工具。",
+      "prerequisites_met": [
+        "C/C++基础",
+        "编程思维"
+      ],
+      "suggestedTopic": "Rust语言入门",
+      "relatedCourses": [],
+      "status": "open"
+    },
+    {
+      "id": "gap-008",
+      "title": "日报/周报自动化生成系统",
+      "category": "项目实战",
+      "priority": 2,
+      "why": "用户明确表达对日报周报自动化的兴趣，且已有timetable多Agent系统和n8n工作流经验，但缺少将数据聚合、自然语言生成与自动化流程结合的项目实践。",
+      "prerequisites_met": [
+        "GitHub Actions",
+        "n8n工作流",
+        "LLM API调用"
+      ],
+      "suggestedTopic": "自动化报告生成系统",
+      "relatedCourses": [],
+      "status": "open"
+    },
+    {
+      "id": "gap-009",
+      "title": "飞书API集成与Bot开发",
+      "category": "项目实战",
+      "priority": 2,
+      "why": "用户希望加入飞书功能，但当前没有飞书API集成经验，无法将现有自动化系统（如timetable、日报生成）与飞书打通。",
+      "prerequisites_met": [
+        "REST API基础",
+        "Node.js/Python"
+      ],
+      "suggestedTopic": "飞书开放平台与Bot开发",
+      "relatedCourses": [],
+      "status": "open"
+    }
+  ]
+}
