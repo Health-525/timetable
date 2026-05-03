@@ -13,6 +13,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const comm = require('./lib/agent-comm');
 
 // 学期配置（用 UTC ms 避免时区歧义）
 // 2026-03-23 00:00:00 北京时间 = 2026-03-22T16:00:00Z
@@ -159,6 +160,8 @@ function updateRunningSection(content, rendered) {
 }
 
 function main() {
+  comm.preflight('running-parser', { timetableDir: process.cwd() });
+
   const { note, data } = parseArgs(process.argv);
 
   if (!note || !data) {
@@ -207,6 +210,11 @@ function main() {
   content = updateRunningSection(content, renderRunningSection(runningData.records));
   fs.writeFileSync(note, content, 'utf8');
   console.log('[done] 阳光长跑.md 已更新');
+
+  comm.postflight('running-parser', {
+    success: true,
+    summary: { total: runningData.records.length, today: trigger.triggered },
+  }, { timetableDir: process.cwd() });
 }
 
 main();

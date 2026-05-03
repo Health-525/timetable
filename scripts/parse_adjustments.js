@@ -11,6 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const comm = require('./lib/agent-comm');
 
 const WEEKDAY_MAP = { 周一: 1, 周二: 2, 周三: 3, 周四: 4, 周五: 5, 周六: 6, 周日: 7 };
 const WEEKDAY_REV = Object.fromEntries(Object.entries(WEEKDAY_MAP).map(([k, v]) => [v, k]));
@@ -110,6 +111,8 @@ function saveAdjustments(adjPath, adjs) {
 }
 
 function main() {
+  comm.preflight('adjustment-parser', { timetableDir: process.cwd() });
+
   const { note, adj } = parseArgs(process.argv);
 
   if (!note || !adj) {
@@ -191,6 +194,11 @@ function main() {
   console.log(
     `  ✓ ${adjustment.courseTitle}：${WEEKDAY_REV[srcWeekday]} ${f['原节次']} → ${WEEKDAY_REV[dstWeekday]} ${f['目标节次']}，${mode === 'once' ? `第${week}周` : `第${week}周起`}`
   );
+
+  comm.postflight('adjustment-parser', {
+    success: true,
+    summary: { course: adjustment.courseTitle, mode },
+  }, { timetableDir: process.cwd() });
 }
 
 main();

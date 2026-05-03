@@ -11,6 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const comm = require('./lib/agent-comm');
 
 function parseArgs(argv) {
   const out = { note: null, data: null };
@@ -186,6 +187,8 @@ function updateAssignmentsSection(content, rendered) {
 }
 
 function main() {
+  comm.preflight('assignment-parser', { timetableDir: process.cwd() });
+
   const { note, data } = parseArgs(process.argv);
 
   if (!note || !data) {
@@ -255,6 +258,11 @@ function main() {
   content = updateAssignmentsSection(content, rendered);
   fs.writeFileSync(note, content, 'utf8');
   console.log('[done] 作业.md 已更新');
+
+  comm.postflight('assignment-parser', {
+    success: true,
+    summary: { saved: savedCount, archived: archiveCount, total: assignments.length },
+  }, { timetableDir: process.cwd() });
 }
 
 main();

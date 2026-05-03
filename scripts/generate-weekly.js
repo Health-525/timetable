@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const comm = require('./lib/agent-comm');
 
 const CST_OFFSET_MS = 8 * 60 * 60 * 1000;
 const WEEKDAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
@@ -390,6 +391,8 @@ function buildWeeklyMarkdown(payload) {
 }
 
 async function main() {
+  comm.preflight('weekly-reporter', { timetableDir: process.cwd() });
+
   const studyDir = process.env.STUDY_DIR || path.join(process.cwd(), '_study');
   const timetableDir = process.env.TIMETABLE_DIR || process.cwd();
   const assignmentsPath = path.join(timetableDir, 'data', 'assignments.json');
@@ -439,9 +442,15 @@ async function main() {
       }
     }
   }
+
+  comm.postflight('weekly-reporter', {
+    success: true,
+    summary: { commits: payload.git.commits.length, files: payload.git.files.length },
+  }, { timetableDir: process.cwd() });
 }
 
 main().catch(error => {
   console.error('[weekly] 错误：', error?.stack || String(error));
+  comm.postflight('weekly-reporter', { success: false, errors: [String(error)] }, { timetableDir: process.cwd() });
   process.exit(1);
 });

@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const comm = require('./lib/agent-comm');
 
 // 课程名称缩写映射
 const ABBR = {
@@ -186,6 +187,8 @@ function dayLabel(d) {
  * 主函数
  */
 function main() {
+    comm.preflight('timetable-generator', { timetableDir: process.cwd() });
+
     // 解析命令行参数
     const args = process.argv.slice(2);
     const schedulePath = args[0] || 'data/schedule.json';
@@ -329,8 +332,11 @@ if (require.main === module) {
         process.exit(0);
     } catch (err) {
         console.error('生成课表失败:', err.message);
+        comm.postflight('timetable-generator', { success: false, errors: [err.message] }, { timetableDir: process.cwd() });
         process.exit(1);
     }
+
+    comm.postflight('timetable-generator', { success: true, summary: { week: w } }, { timetableDir: process.cwd() });
 }
 
 module.exports = { parseWeekSpec, applyAdjustments, weekIndex };
