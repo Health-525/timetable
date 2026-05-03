@@ -2,8 +2,8 @@ name: 自主研究
 
 on:
   schedule:
-    # 每周二、周五 北京时间 21:00 = UTC 13:00
-    - cron: "0 13 * * 2,5"
+    # 每天 北京时间 21:30 = UTC 13:30（错开半小时等分析完成）
+    - cron: "30 13 * * *"
   workflow_dispatch:
     inputs:
       gap_id:

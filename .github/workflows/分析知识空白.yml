@@ -2,8 +2,8 @@ name: 分析知识空白
 
 on:
   schedule:
-    # 每周一、周四 北京时间 21:00 = UTC 13:00
-    - cron: "0 13 * * 1,4"
+    # 每天 北京时间 21:00 = UTC 13:00
+    - cron: "0 13 * * *"
   workflow_dispatch:
 
 permissions:
