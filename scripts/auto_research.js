@@ -635,27 +635,14 @@ function updateGapsFile(gapId, newStatus) {
   }
 
   const data = JSON.parse(fs.readFileSync(GAPS_PATH, 'utf8'));
-  const gaps = data.gaps || [];
+  const before = (data.gaps || []).length;
 
-  let found = false;
-  for (const g of gaps) {
-    if (g.id === gapId) {
-      g.status = newStatus;
-      g.resolvedAt = newStatus === 'resolved' ? new Date().toISOString() : undefined;
-      g.failedAt = newStatus === 'failed' ? new Date().toISOString() : undefined;
-      found = true;
-      break;
-    }
-  }
+  // 直接删除已完成/已失败的 gap，不留痕迹
+  data.gaps = (data.gaps || []).filter(g => g.id !== gapId);
+  data.updatedAt = new Date().toISOString();
 
-  if (found) {
-    data.gaps = gaps;
-    data.updatedAt = new Date().toISOString();
-    fs.writeFileSync(GAPS_PATH, JSON.stringify(data, null, 2), 'utf8');
-    console.log(`[auto_research] 已更新 gaps 状态：${gapId} → ${newStatus}`);
-  } else {
-    console.log(`[auto_research] 未找到 ${gapId}`);
-  }
+  fs.writeFileSync(GAPS_PATH, JSON.stringify(data, null, 2), 'utf8');
+  console.log(`[auto_research] 已删除 ${gapId}（${newStatus}），剩余 ${data.gaps.length} 个 gap（原 ${before} 个）`);
 }
 
 // ═══════════════════════════════════════════════════════════════
