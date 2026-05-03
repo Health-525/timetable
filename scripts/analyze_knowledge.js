@@ -165,9 +165,9 @@ function scanCourseDirs() {
 // LLM 调用工具
 // ═══════════════════════════════════════════════════════════════
 
-function llmCall({ hostname, apiPath, apiKey, model, system, user, maxTokens }) {
+function llmCall({ hostname, apiPath, apiKey, model, system, user, maxTokens, responseFormat }) {
   const https = require('https');
-  const payload = JSON.stringify({
+  const body = {
     model,
     messages: [
       { role: 'system', content: system },
@@ -175,7 +175,11 @@ function llmCall({ hostname, apiPath, apiKey, model, system, user, maxTokens }) 
     ],
     temperature: 0.2,
     max_tokens: maxTokens || 4000,
-  });
+  };
+  if (responseFormat) {
+    body.response_format = { type: responseFormat };
+  }
+  const payload = JSON.stringify(body);
 
   return new Promise((resolve, reject) => {
     const req = https.request({
@@ -203,7 +207,7 @@ function llmCall({ hostname, apiPath, apiKey, model, system, user, maxTokens }) 
       });
     });
     req.on('error', reject);
-    req.setTimeout(60000, () => req.destroy(new Error('timeout')));
+    req.setTimeout(120000, () => req.destroy(new Error('timeout')));
     req.write(payload);
     req.end();
   });
@@ -278,6 +282,7 @@ async function analyzeGapsViaLLM({ profileMarkdown, courseStats, inspirationCont
       system,
       user,
       maxTokens: 4000,
+      responseFormat: 'json_object',
     }).then((r) => ({ r, src: 'deepseek' })));
   }
   if (glmKey) {
@@ -328,10 +333,25 @@ function extractJSON(text) {
   const startIdx = text.indexOf('{');
   const endIdx = text.lastIndexOf('}');
   if (startIdx !== -1 && endIdx > startIdx) {
+    const slice = text.slice(startIdx, endIdx + 1);
     try {
-      const obj = JSON.parse(text.slice(startIdx, endIdx + 1));
+      const obj = JSON.parse(slice);
       if (obj && obj.gaps) return obj;
     } catch { /* 继续 */ }
+  }
+
+  // 最后兜底：尝试修复常见 JSON 问题后重新解析
+  if (startIdx !== -1 && endIdx > startIdx) {
+    try {
+      let slice = text.slice(startIdx, endIdx + 1);
+      // 移除尾随逗号（在 ] 或 } 之前）
+      slice = slice.replace(/,(\s*[}\]])/g, '$1');
+      // 替换中文引号
+      slice = slice.replace(/“/g, '"').replace(/”/g, '"');
+      slice = slice.replace(/‘/g, "'").replace(/’/g, "'");
+      const obj = JSON.parse(slice);
+      if (obj && obj.gaps) return obj;
+    } catch { /* 尽力了 */ }
   }
 
   return null;
@@ -341,7 +361,7 @@ function extractJSON(text) {
 // 生成 Dry-Run 示例输出
 // ═══════════════════════════════════════════════════════════════
 
-function generateDryRunOutput(profile, courseStats) {
+function generateDryRunOutput(profile, courseStats, reason) {
   const allCourses = courseStats.map((c) => `${c.courseNum}-${c.label}`);
   const weakCourse = courseStats
     .filter((c) => c.mdCount <= 5)
@@ -350,9 +370,15 @@ function generateDryRunOutput(profile, courseStats) {
     .filter((c) => c.mdCount >= 10)
     .map((c) => `${c.courseNum}-${c.label}`);
 
+  const noteMap = {
+    no_llm: '此文件为 dry-run 模式生成，未调用 LLM。请检查 DEEPSEEK_API_KEY / GLM_API_KEY 是否已配置。',
+    json_parse_failed: '此文件为 dry-run 模式生成。LLM 已调用但返回内容无法解析为有效 JSON，请检查 GitHub Actions 日志中的 LLM 原始输出。',
+  };
+  const note = noteMap[reason] || noteMap.no_llm;
+
   return {
     generatedAt: new Date().toISOString(),
-    _note: '此文件为 dry-run 模式生成，未调用 LLM。设置 DEEPSEEK_API_KEY 环境变量以启用完整分析。',
+    _note: note,
     profile: {
       strengths: profile.strengths.length > 0
         ? profile.strengths
@@ -500,12 +526,13 @@ async function main() {
       console.log(`[analyze] LLM 返回了 ${output.gaps.length} 个知识空白`);
     } else {
       console.log('[analyze] LLM 返回无法解析为有效 JSON，使用 dry-run 模式');
-      output = generateDryRunOutput(profile, courseStats);
+      console.log(`[analyze] LLM 原始输出（前500字符）：${llmResult.slice(0, 500)}`);
+      output = generateDryRunOutput(profile, courseStats, 'json_parse_failed');
     }
   } else {
     // 无 API key 或 LLM 失败 → dry-run
     console.log('[analyze] 使用 dry-run 模式生成示例输出');
-    output = generateDryRunOutput(profile, courseStats);
+    output = generateDryRunOutput(profile, courseStats, 'no_llm');
   }
 
   // ── 6. 写入文件 ──
