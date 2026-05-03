@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const comm = require('./lib/agent-comm');
 
 // ═══════════════════════════════════════════════════════════════
 // 路径与配置
@@ -463,6 +464,7 @@ function generateDryRunOutput(profile, courseStats, reason) {
 // ═══════════════════════════════════════════════════════════════
 
 async function main() {
+  const ctx = comm.preflight('knowledge-analyzer', { timetableDir: process.cwd() });
   console.log('[analyze] 知识画像分析 Agent 启动');
   console.log(`[analyze] 学习目录：${STUDY_DIR}`);
 
@@ -542,10 +544,19 @@ async function main() {
   console.log(`[analyze] 输出已写入：${outPath}`);
   console.log(`[analyze] 共 ${output.gaps.length} 个知识空白`);
   console.log('[analyze] 完成');
+
+  comm.postflight('knowledge-analyzer', {
+    success: true,
+    summary: { gapCount: output.gaps.length, source: output._note ? 'dry-run' : 'llm' },
+  }, { timetableDir: process.cwd() });
 }
 
 main().catch((e) => {
   console.error('[analyze] 错误：', e?.stack || String(e));
+  comm.postflight('knowledge-analyzer', {
+    success: false,
+    errors: [String(e)],
+  }, { timetableDir: process.cwd() });
 
   // 即使崩溃也尝试写一个空输出，避免下游流程中断
   try {

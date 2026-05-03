@@ -13,6 +13,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const comm = require('./lib/agent-comm');
 
 // ═══════════════════════════════════════════════════════════════
 // 无需外部配置 — 路径和参数全部内聚在这个脚本里
@@ -528,6 +529,7 @@ function buildMarkdown({ dateStr, weekday, changes, fileSummaries, courses, assi
 
 // ── 主流程 ─────────────────────────────────────────────────────
 async function main() {
+  const ctx = comm.preflight('daily-reporter', { timetableDir: process.cwd() });
   // 路径：所有路径均通过环境变量或默认值，不硬编码绝对路径
   const studyDir = process.env.STUDY_DIR || path.join(process.cwd(), '_study');
   const timetableDir = process.env.TIMETABLE_DIR || process.cwd();
@@ -599,9 +601,18 @@ async function main() {
       }
     }
   }
+
+  comm.postflight('daily-reporter', {
+    success: true,
+    summary: { commits: changes.commits.length, files: changes.files.length, courses: courses.length },
+  }, { timetableDir: process.cwd() });
 }
 
 main().catch(e => {
   console.error('[daily] 错误：', e?.stack || String(e));
+  comm.postflight('daily-reporter', {
+    success: false,
+    errors: [String(e)],
+  }, { timetableDir: process.cwd() });
   process.exit(1);
 });

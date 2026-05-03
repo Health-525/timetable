@@ -1,0 +1,105 @@
+{
+  "lastUpdated": "2026-05-03",
+  "agents": [
+    {
+      "id": "timetable-generator",
+      "name": "课表生成",
+      "capabilities": ["generate-timetable"],
+      "produces": ["课表.md"],
+      "consumes": ["schedule.json", "adjustments.json"],
+      "schedule": "每天 06:00",
+      "dependsOn": [],
+      "notifyOnComplete": []
+    },
+    {
+      "id": "assignment-parser",
+      "name": "作业处理",
+      "capabilities": ["parse-assignments", "countdown"],
+      "produces": ["assignments.json", "作业提醒"],
+      "consumes": ["作业.md"],
+      "schedule": "每天 06:00 + repository_dispatch",
+      "dependsOn": [],
+      "notifyOnComplete": []
+    },
+    {
+      "id": "adjustment-parser",
+      "name": "调课处理",
+      "capabilities": ["parse-adjustments"],
+      "produces": ["adjustments.json"],
+      "consumes": ["调课.md"],
+      "schedule": "repository_dispatch",
+      "dependsOn": [],
+      "notifyOnComplete": ["timetable-generator"]
+    },
+    {
+      "id": "running-parser",
+      "name": "阳光长跑",
+      "capabilities": ["parse-running", "generate-heatmap"],
+      "produces": ["running.json", "热力图"],
+      "consumes": ["阳光长跑.md"],
+      "schedule": "repository_dispatch",
+      "dependsOn": [],
+      "notifyOnComplete": []
+    },
+    {
+      "id": "knowledge-analyzer",
+      "name": "知识空白分析",
+      "capabilities": ["analyze", "gap-detection", "llm"],
+      "produces": ["learning_gaps.json"],
+      "consumes": ["知识画像.md", "灵感.md", "course_dirs"],
+      "schedule": "每天 21:00",
+      "dependsOn": [],
+      "notifyOnComplete": ["auto-researcher"]
+    },
+    {
+      "id": "auto-researcher",
+      "name": "自主研究",
+      "capabilities": ["research", "generate-note", "self-score", "google-search"],
+      "produces": ["自主研究笔记"],
+      "consumes": ["learning_gaps.json", "知识画像.md"],
+      "schedule": "紧接 knowledge-analyzer 之后",
+      "dependsOn": ["knowledge-analyzer"],
+      "notifyOnComplete": ["daily-reporter"]
+    },
+    {
+      "id": "daily-reporter",
+      "name": "日报生成",
+      "capabilities": ["summarize", "inspiration-analysis", "llm"],
+      "produces": ["日报"],
+      "consumes": ["git_diff", "schedule.json", "assignments.json", "running.json"],
+      "schedule": "每天 22:00",
+      "dependsOn": [],
+      "notifyOnComplete": []
+    },
+    {
+      "id": "weekly-reporter",
+      "name": "周报生成",
+      "capabilities": ["summarize", "weekly-report", "llm"],
+      "produces": ["周报"],
+      "consumes": ["日报", "git_log", "schedule.json"],
+      "schedule": "每周日 22:30",
+      "dependsOn": [],
+      "notifyOnComplete": []
+    },
+    {
+      "id": "youtube-sync",
+      "name": "YouTube同步",
+      "capabilities": ["youtube-sync", "transcript-extraction"],
+      "produces": ["YouTube笔记"],
+      "consumes": ["YouTube API"],
+      "schedule": "暂停中",
+      "dependsOn": [],
+      "notifyOnComplete": []
+    },
+    {
+      "id": "video-note-extractor",
+      "name": "视频笔记提取",
+      "capabilities": ["video-extraction", "transcript-to-note"],
+      "produces": ["视频笔记"],
+      "consumes": ["YouTube URL"],
+      "schedule": "手动触发",
+      "dependsOn": [],
+      "notifyOnComplete": []
+    }
+  ]
+}

@@ -27,6 +27,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const { execSync } = require('child_process');
+const comm = require('./lib/agent-comm');
 
 // ═══════════════════════════════════════════════════════════════
 // 路径与配置
@@ -650,6 +651,7 @@ function updateGapsFile(gapId, newStatus) {
 // ═══════════════════════════════════════════════════════════════
 
 async function main() {
+  const ctx = comm.preflight('auto-researcher', { timetableDir: process.cwd() });
   const bj = beijingNow();
   console.log('[auto_research] 自主研究 Agent 启动');
   console.log(`[auto_research] 北京时间：${bj.dateStr}`);
@@ -838,10 +840,19 @@ async function main() {
   console.log(`[auto_research] 最高分：${bestScore !== null ? bestScore : 'N/A'}`);
   console.log(`[auto_research] 状态：${finalStatus === 'resolved' ? '已解决 ✓' : '未达标 ✗'}`);
   console.log('[auto_research] ═══════════════════════════════════════');
+
+  comm.postflight('auto-researcher', {
+    success: finalStatus === 'resolved',
+    summary: { gapId: gap.id, title: gap.title, score: bestScore, status: finalStatus },
+  }, { timetableDir: process.cwd() });
 }
 
 main().catch((e) => {
   console.error('[auto_research] 错误：', e?.stack || String(e));
+  comm.postflight('auto-researcher', {
+    success: false,
+    errors: [String(e)],
+  }, { timetableDir: process.cwd() });
 
   // 即使崩溃也尝试写一个空输出，避免下游流程中断
   try {
