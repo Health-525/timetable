@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-03T14:13:14.045Z",
+  "generatedAt": "2026-05-04T15:13:02.318Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -19,15 +19,15 @@
   "gaps": [
     {
       "id": "gap-001",
-      "title": "PCA推导链路缺失",
+      "title": "PCA 从特征值到主成分的完整推导",
       "category": "数学桥接",
       "priority": 2,
-      "why": "虽然掌握了特征值分解和PCA调用，但缺乏协方差矩阵到主成分的完整推导过程。",
+      "why": "已掌握特征值分解和PCA调用，但缺乏两者之间的连接，理解不深",
       "prerequisites_met": [
         "特征值分解",
         "PCA调用"
       ],
-      "suggestedTopic": "PCA的数学推导",
+      "suggestedTopic": "PCA原理与推导",
       "relatedCourses": [
         "04-多元统计分析",
         "05-数值分析"
@@ -36,31 +36,32 @@
     },
     {
       "id": "gap-002",
-      "title": "深度学习框架理解不足",
-      "category": "理论基础",
+      "title": "从 numpy 手写到深度学习框架",
+      "category": "工程深化",
       "priority": 3,
-      "why": "虽然学习了numpy和sklearn，但缺乏从零实现神经网络的实践经验。",
+      "why": "已掌握numpy基础和sklearn调包，但缺乏从零实现神经网络的实践",
       "prerequisites_met": [
-        "numpy",
-        "sklearn"
+        "numpy基础",
+        "sklearn调包"
       ],
-      "suggestedTopic": "神经网络基础",
+      "suggestedTopic": "神经网络基础与实现",
       "relatedCourses": [
+        "02-Python数据处理与分析",
         "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-003",
-      "title": "Git底层原理理解不足",
-      "category": "工程深化",
+      "title": "git 底层原理",
+      "category": "理论基础",
       "priority": 2,
-      "why": "虽然熟悉git的基本操作和GitHub Actions，但缺乏对git内部对象模型的深入理解。",
+      "why": "已掌握git基本操作和GitHub Actions，但缺乏对git内部对象模型的深入理解",
       "prerequisites_met": [
-        "git操作",
+        "git基本操作",
         "GitHub Actions"
       ],
-      "suggestedTopic": "Git内部原理",
+      "suggestedTopic": "git底层原理与对象模型",
       "relatedCourses": [
         "03-数据结构与算法"
       ],
