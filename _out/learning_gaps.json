@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-07T01:03:56.752Z",
+  "generatedAt": "2026-05-07T01:09:22.838Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -19,10 +19,10 @@
   "gaps": [
     {
       "id": "gap-001",
-      "title": "PCA从协方差矩阵到特征值分解的完整数学推导",
+      "title": "PCA从协方差矩阵到特征值分解的完整推导",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学特征值分解（数值分析）和PCA调用（多元统计），但缺少协方差矩阵如何桥接两者的推导，无法从原理上理解PCA的降维机制。",
+      "why": "已学多元统计分析中的PCA调用和数值分析中的特征值分解，但缺少协方差矩阵如何桥接两者的推导，导致对PCA原理理解不深。",
       "prerequisites_met": [
         "特征值分解",
         "PCA基本概念",
@@ -37,16 +37,16 @@
     },
     {
       "id": "gap-002",
-      "title": "从零实现神经网络训练循环（numpy）",
+      "title": "从零实现简单的神经网络训练循环",
       "category": "AI/ML",
       "priority": 1,
-      "why": "08-AI学习目录几乎为空，仅有骨架。已掌握numpy和sklearn调包，但缺少从零实现简单神经网络（前向/反向传播、梯度下降）的动手经验。",
+      "why": "AI学习课程笔记极少，仅停留在骨架规划；已掌握numpy和sklearn调包，但缺少从零实现神经网络训练循环的实践，无法深入理解反向传播等核心概念。",
       "prerequisites_met": [
-        "numpy基础",
         "Python编程",
-        "微积分与线性代数"
+        "numpy基础",
+        "机器学习基本概念"
       ],
-      "suggestedTopic": "用numpy从零实现神经网络",
+      "suggestedTopic": "从零实现神经网络（numpy）",
       "relatedCourses": [
         "08-AI学习",
         "02-Python数据处理与分析"
@@ -58,10 +58,10 @@
       "title": "Git内部对象模型（blob/tree/commit/tag）",
       "category": "工程深化",
       "priority": 2,
-      "why": "已熟练使用git add/commit/push和GitHub Actions，但缺少对git底层对象模型的理解，无法深入理解版本控制原理。",
+      "why": "已掌握git基本操作和GitHub Actions，但缺少对git底层对象模型的理解，不利于解决复杂版本控制问题和深入理解CI/CD。",
       "prerequisites_met": [
         "Git基本操作",
-        "GitHub Actions"
+        "GitHub Actions使用"
       ],
       "suggestedTopic": "Git内部原理",
       "relatedCourses": [],
@@ -72,10 +72,10 @@
       "title": "MCP协议规范深入理解",
       "category": "工程深化",
       "priority": 2,
-      "why": "已有MCP服务器项目（D:\\mcp1），但缺少对协议规范（如传输层、资源定义、工具调用）的系统学习，停留在实践层面。",
+      "why": "已有MCP服务器项目实践，但缺少对协议规范的系统学习，可能影响后续开发复杂MCP工具和调试。",
       "prerequisites_met": [
-        "MCP基础实践",
-        "Node.js/TypeScript"
+        "MCP基本概念",
+        "Node.js/TypeScript编程"
       ],
       "suggestedTopic": "MCP协议规范详解",
       "relatedCourses": [],
@@ -86,13 +86,13 @@
       "title": "深度学习框架（PyTorch/TensorFlow）入门",
       "category": "AI/ML",
       "priority": 2,
-      "why": "fork了LLMs-from-scratch但未学完，缺少深度学习框架的实际使用经验，无法将理论转化为可运行的模型。",
+      "why": "fork了LLMs-from-scratch但未系统学习，AI学习课程内容薄弱，缺少深度学习框架的实践，无法进行后续的模型训练和微调。",
       "prerequisites_met": [
         "Python编程",
         "numpy基础",
-        "神经网络基础概念"
+        "机器学习基础"
       ],
-      "suggestedTopic": "PyTorch快速入门与实践",
+      "suggestedTopic": "PyTorch深度学习入门",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -100,48 +100,50 @@
     },
     {
       "id": "gap-006",
-      "title": "Rust语言基础与所有权系统",
-      "category": "工程深化",
-      "priority": 3,
-      "why": "已安装Rust环境但未开始学习，缺少系统编程语言经验，无法利用Rust的高性能特性。",
-      "prerequisites_met": [
-        "C/C++基础",
-        "编程通用概念"
-      ],
-      "suggestedTopic": "Rust编程入门",
-      "relatedCourses": [],
-      "status": "open"
-    },
-    {
-      "id": "gap-007",
-      "title": "AI发型替换应用的技术实现",
+      "title": "发型替换应用的AI模型选型与实现",
       "category": "项目实战",
-      "priority": 2,
-      "why": "用户明确对AI发型应用感兴趣，但缺少图像生成/风格迁移相关技术储备，如GAN、扩散模型等。",
+      "priority": 3,
+      "why": "用户明确对AI发型替换应用感兴趣，但当前知识储备中缺少图像生成/编辑模型（如GAN、扩散模型）的相关知识。",
       "prerequisites_met": [
         "Python编程",
         "深度学习基础概念"
       ],
-      "suggestedTopic": "图像生成与风格迁移（GAN/扩散模型）",
+      "suggestedTopic": "图像生成与编辑（GAN/扩散模型）",
       "relatedCourses": [
         "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-007",
+      "title": "日报周报自动生成系统的设计与实现",
+      "category": "项目实战",
+      "priority": 3,
+      "why": "用户提出日报周报自动生成的需求，但缺少自然语言生成（NLG）和模板化报告生成的知识。",
+      "prerequisites_met": [
+        "Python编程",
+        "LLM API使用",
+        "n8n工作流"
+      ],
+      "suggestedTopic": "自动化报告生成系统设计",
+      "relatedCourses": [
+        "02-Python数据处理与分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-008",
-      "title": "日报周报自动生成系统的设计",
-      "category": "项目实战",
+      "title": "飞书API集成与自动化工作流",
+      "category": "工程深化",
       "priority": 3,
-      "why": "用户想开发日报周报功能，但缺少自然语言生成（NLG）和模板化报告生成的知识。",
+      "why": "用户希望加入飞书功能，但当前笔记中缺少飞书API调用和与现有自动化系统（如n8n、GitHub Actions）集成的知识。",
       "prerequisites_met": [
-        "Python编程",
-        "LLM API使用"
+        "API调用基础",
+        "n8n使用",
+        "GitHub Actions"
       ],
-      "suggestedTopic": "基于LLM的自动报告生成",
-      "relatedCourses": [
-        "08-AI学习"
-      ],
+      "suggestedTopic": "飞书开放平台API与自动化集成",
+      "relatedCourses": [],
       "status": "open"
     }
   ]
