@@ -15,7 +15,7 @@ permissions:
 
 concurrency:
   group: timetable-main-write
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   # ── Job 1: 知识空白分析 ──
@@ -53,6 +53,7 @@ jobs:
         run: |
           git config user.name "timetable-bot"
           git config user.email "timetable-bot@users.noreply.github.com"
+          git pull --rebase origin main
           git add -f _out/learning_gaps.json _state/ 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "无变化"
@@ -109,6 +110,7 @@ jobs:
         run: |
           git config user.name "timetable-bot"
           git config user.email "timetable-bot@users.noreply.github.com"
+          git pull --rebase origin main
           git add -f _out/learning_gaps.json _state/ 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "无变化"
