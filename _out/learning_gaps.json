@@ -18,6 +18,7 @@
   },
   "gaps": [
     {
+<<<<<<< Updated upstream
       "id": "gap-001",
       "title": "PCA从协方差矩阵到特征值分解的完整推导",
       "category": "数学桥接",
@@ -36,6 +37,8 @@
       "status": "open"
     },
     {
+=======
+>>>>>>> Stashed changes
       "id": "gap-002",
       "title": "从零实现简单的神经网络训练循环",
       "category": "AI/ML",
@@ -146,5 +149,6 @@
       "relatedCourses": [],
       "status": "open"
     }
-  ]
+  ],
+  "updatedAt": "2026-05-07T01:10:27.427Z"
 }
