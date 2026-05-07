@@ -53,7 +53,7 @@ jobs:
         run: |
           git config user.name "timetable-bot"
           git config user.email "timetable-bot@users.noreply.github.com"
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git add -f _out/learning_gaps.json _state/ 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "无变化"
@@ -61,7 +61,7 @@ jobs:
             git commit -m "feat: update knowledge gap analysis + agent state"
             pushed=0
             for i in 1 2 3; do
-              git pull --rebase origin main
+              git pull --rebase --autostash origin main
               git push && pushed=1 && break
               echo 'push rejected, retrying...'
               sleep 2
@@ -110,7 +110,7 @@ jobs:
         run: |
           git config user.name "timetable-bot"
           git config user.email "timetable-bot@users.noreply.github.com"
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git add -f _out/learning_gaps.json _state/ 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "无变化"
@@ -118,7 +118,7 @@ jobs:
             git commit -m "feat: update gap status + agent state after auto research"
             pushed=0
             for i in 1 2 3; do
-              git pull --rebase origin main
+              git pull --rebase --autostash origin main
               git push && pushed=1 && break
               echo 'push rejected, retrying...'
               sleep 2
