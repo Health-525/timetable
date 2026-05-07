@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: assignments-push
+  group: timetable-main-write
   cancel-in-progress: false
 
 permissions:
@@ -32,7 +32,7 @@ jobs:
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: 克隆 jiangshu-study
         env:
@@ -62,7 +62,17 @@ jobs:
           else
             git commit -m "feat: update assignments from Obsidian"
             git pull --rebase --no-autostash origin main || echo "Pull failed, will force push"
-            git push --force-with-lease
+            pushed=0
+            for i in 1 2 3; do
+              git pull --rebase origin main
+              git push --force-with-lease && pushed=1 && break
+              echo 'push rejected, retrying...'
+              sleep 2
+            done
+            if [ "$pushed" != "1" ]; then
+              echo 'push failed after retries'
+              exit 1
+            fi
           fi
 
       - name: 将更新后的作业.md 推送回 jiangshu-study

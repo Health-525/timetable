@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: knowledge-pipeline
+  group: timetable-main-write
   cancel-in-progress: false
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: 克隆 jiangshu-study
         env:
@@ -58,7 +58,17 @@ jobs:
             echo "无变化"
           else
             git commit -m "feat: update knowledge gap analysis + agent state"
-            git push
+            pushed=0
+            for i in 1 2 3; do
+              git pull --rebase origin main
+              git push && pushed=1 && break
+              echo 'push rejected, retrying...'
+              sleep 2
+            done
+            if [ "$pushed" != "1" ]; then
+              echo 'push failed after retries'
+              exit 1
+            fi
           fi
 
   # ── Job 2: 自主研究（依赖 analyze 完成） ──
@@ -74,7 +84,7 @@ jobs:
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: 克隆 jiangshu-study
         env:
@@ -104,5 +114,15 @@ jobs:
             echo "无变化"
           else
             git commit -m "feat: update gap status + agent state after auto research"
-            git push
+            pushed=0
+            for i in 1 2 3; do
+              git pull --rebase origin main
+              git push && pushed=1 && break
+              echo 'push rejected, retrying...'
+              sleep 2
+            done
+            if [ "$pushed" != "1" ]; then
+              echo 'push failed after retries'
+              exit 1
+            fi
           fi

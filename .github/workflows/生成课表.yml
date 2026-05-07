@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: timetable-push
+  group: timetable-main-write
   cancel-in-progress: false
 
 permissions:
@@ -35,7 +35,7 @@ jobs:
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: 生成课表.md
         run: |
@@ -55,5 +55,15 @@ jobs:
             git commit -m "chore: 自动更新课表"
             git fetch origin main
             git rebase --no-autostash origin/main || echo "Rebase failed, will force push"
-            git push
+            pushed=0
+            for i in 1 2 3; do
+              git pull --rebase origin main
+              git push && pushed=1 && break
+              echo 'push rejected, retrying...'
+              sleep 2
+            done
+            if [ "$pushed" != "1" ]; then
+              echo 'push failed after retries'
+              exit 1
+            fi
           fi

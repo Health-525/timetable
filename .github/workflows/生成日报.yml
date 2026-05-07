@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: daily-report
+  group: timetable-main-write
   cancel-in-progress: false
 
 permissions:
@@ -27,7 +27,7 @@ jobs:
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: 克隆 jiangshu-study
         env:
