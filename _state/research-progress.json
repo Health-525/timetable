@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-08T14:59:35.546Z",
+  "updatedAt": "2026-05-08T15:02:29.927Z",
   "gaps": {
     "gap-002": {
       "title": "从numpy手写到深度学习框架",
@@ -18,6 +18,16 @@
       "status": "resolved",
       "updatedAt": "2026-05-08T14:59:35.546Z",
       "score": 88,
+      "hasNote": true,
+      "searchFallback": true
+    },
+    "gap-003": {
+      "title": "git底层原理",
+      "suggestedTopic": "git内部对象模型与原理",
+      "priority": 3,
+      "status": "resolved",
+      "updatedAt": "2026-05-08T15:02:29.927Z",
+      "score": 72,
       "hasNote": true,
       "searchFallback": true
     }
