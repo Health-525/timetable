@@ -87,6 +87,10 @@ function loadJsonObject(filePath) {
 }
 
 function getGitWeeklyChanges(studyDir, startDate, endDate) {
+  if (!fs.existsSync(path.join(studyDir, '.git'))) {
+    return { commits: [], files: [], byDay: {}, inspirationFiles: [] };
+  }
+
   try {
     const after = `${startDate}T00:00:00+08:00`;
     const before = `${endDate}T23:59:59+08:00`;
@@ -420,28 +424,7 @@ async function main() {
   fs.writeFileSync(outPath, markdown, 'utf8');
   console.log(`[weekly] 已写入：${outPath}`);
 
-  const pushToken = process.env.STUDY_PUSH_TOKEN;
-  if (pushToken && fs.existsSync(path.join(studyDir, '.git'))) {
-    const repo = process.env.STUDY_REPO || 'https://github.com/Health-525/jiangshu-study.git';
-    try {
-      execSync('git add 周报/', { cwd: studyDir, stdio: 'pipe', timeout: 10000 });
-      execSync(
-        `git -c user.name="timetable-bot" -c user.email="timetable-bot@users.noreply.github.com" ` +
-        `commit -m "weekly: ${start} to ${end}"`,
-        { cwd: studyDir, stdio: 'pipe', timeout: 10000 }
-      );
-      const authedRepo = repo.replace('https://', `https://x-access-token:${pushToken}@`);
-      execSync(`git push "${authedRepo}" HEAD:main`, { cwd: studyDir, stdio: 'pipe', timeout: 30000 });
-      console.log('[weekly] 已推送');
-    } catch (error) {
-      const message = String((error && error.stdout) || '') + String((error && error.stderr) || '');
-      if (message.includes('nothing to commit')) {
-        console.log('[weekly] 无变更，跳过推送');
-      } else {
-        console.log(`[weekly] 推送失败：${error.message}`);
-      }
-    }
-  }
+  // 发布由 workflow 负责，这里只生成周报文件
 
   comm.postflight('weekly-reporter', {
     success: true,

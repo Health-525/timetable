@@ -4,17 +4,16 @@
  * 自主研究 Agent · Autonomous Research Agent
  *
  * 每周二、周五自动运行（北京时间 21:00），读取知识空白分析结果，
- * 自动搜索网络资料，调用 LLM 生成学习笔记，自我评分后决定是否提交。
+ * 自动搜索网络资料，调用 LLM 生成学习笔记，自我评分后更新研究进度。
  *
  * 核心理念：Andrej Karpathy 的 "git ratchet" 模式 ——
  *   每个提交必须让知识库向前进步，如果质量不够就重试，重试不够就标记失败。
  *
  * 输入（环境变量）：
- *   STUDY_DIR         — jiangshu-study 仓库本地路径
- *   DEEPSEEK_API_KEY  — DeepSeek API Key（主）
- *   GLM_API_KEY       — GLM API Key（备用）
- *   STUDY_PUSH_TOKEN  — GitHub Push Token（git push 用）
- *   STUDY_REPO        — 仓库 URL（可选）
+ *   STUDY_DIR                    — jiangshu-study 仓库本地路径
+ *   DEEPSEEK_API_KEY             — DeepSeek API Key（主）
+ *   GLM_API_KEY                  — GLM API Key（备用）
+ *   AUTO_RESEARCH_SEARCH_PROVIDER — 检索源（aihot-first / aihot-only / google-only）
  *
  * 输入文件：
  *   _out/learning_gaps.json
@@ -26,7 +25,6 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const { execSync } = require('child_process');
 const comm = require('./lib/agent-comm');
 
 // ═══════════════════════════════════════════════════════════════
@@ -36,15 +34,18 @@ const comm = require('./lib/agent-comm');
 const STUDY_DIR = process.env.STUDY_DIR || path.join(process.cwd(), '_study');
 const OUT_DIR = path.join(process.cwd(), '_out');
 const GAPS_PATH = path.join(OUT_DIR, 'learning_gaps.json');
+const RESEARCH_PROGRESS_PATH = path.join(process.cwd(), '_state', 'research-progress.json');
 const PROFILE_PATH = path.join(STUDY_DIR, '_meta', '知识画像.md');
 const NOTE_OUT_DIR = path.join(STUDY_DIR, '08-AI学习', '自主研究');
 
 const CST_OFFSET_MS = 8 * 60 * 60 * 1000;
+const AIHOT_BASE_URL = 'https://aihot.virxact.com';
 
 const CONFIG = {
   MAX_RETRIES: 3,
   SCORE_THRESHOLD: 70,
   MAX_SEARCH_RESULTS: 5,
+  SEARCH_PROVIDER: process.env.AUTO_RESEARCH_SEARCH_PROVIDER || 'aihot-first',
 };
 
 const NOTE_TEMPLATE = `---
@@ -115,6 +116,73 @@ function loadLearningGapsOrThrow() {
     throw new Error(describeJsonReadFailure(result, GAPS_PATH));
   }
   return result.value;
+}
+
+function validateResearchProgressData(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return 'top-level JSON must be an object';
+  }
+  if (!value.gaps || typeof value.gaps !== 'object' || Array.isArray(value.gaps)) {
+    return '"gaps" must be an object';
+  }
+  return true;
+}
+
+function loadResearchProgress() {
+  const result = comm.readJsonSafe(RESEARCH_PROGRESS_PATH, { validate: validateResearchProgressData });
+  if (!result.ok) {
+    if (result.reason === 'missing') {
+      return { updatedAt: null, gaps: {} };
+    }
+    throw new Error(`research-progress 文件不可用：${RESEARCH_PROGRESS_PATH}${result.error ? `: ${result.error}` : ''}`);
+  }
+  return result.value;
+}
+
+function saveResearchProgress(progress) {
+  const normalized = {
+    updatedAt: new Date().toISOString(),
+    gaps: progress && progress.gaps && typeof progress.gaps === 'object' ? progress.gaps : {},
+  };
+  comm.writeJsonAtomic(RESEARCH_PROGRESS_PATH, normalized);
+  return normalized;
+}
+
+function selectOpenGaps(gaps, progress) {
+  const progressMap = progress && progress.gaps ? progress.gaps : {};
+  return gaps
+    .filter((gap) => {
+      if (!gap || !gap.id) return false;
+      const recorded = progressMap[gap.id];
+      return !(recorded && recorded.status === 'resolved');
+    })
+    .sort((a, b) => (a.priority || 3) - (b.priority || 3));
+}
+
+function updateResearchProgress(progress, gap, status, extra = {}) {
+  const previous = progress && progress.gaps && progress.gaps[gap.id]
+    ? progress.gaps[gap.id]
+    : {};
+  const next = {
+    updatedAt: progress && progress.updatedAt ? progress.updatedAt : null,
+    gaps: {
+      ...(progress && progress.gaps ? progress.gaps : {}),
+      [gap.id]: {
+        ...previous,
+        title: gap.title,
+        suggestedTopic: gap.suggestedTopic || gap.title || '',
+        priority: gap.priority || 3,
+        status,
+        updatedAt: new Date().toISOString(),
+        ...extra,
+      },
+    },
+  };
+  return saveResearchProgress(next);
+}
+
+function reportRun(result) {
+  return comm.postflight('auto-researcher', result, { timetableDir: process.cwd() });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -262,6 +330,97 @@ function googleSearch(query) {
 
     req.end();
   });
+}
+
+function aihotSearch(query) {
+  const url = new URL('/api/public/items', AIHOT_BASE_URL);
+  url.searchParams.set('q', query);
+  url.searchParams.set('take', String(CONFIG.MAX_SEARCH_RESULTS));
+
+  const cacheKey = url.toString();
+  if (searchCache.has(cacheKey)) {
+    console.log(`[auto_research] 使用 Aihot 缓存结果: "${query.slice(0, 40)}..."`);
+    return Promise.resolve(searchCache.get(cacheKey));
+  }
+
+  console.log(`[auto_research] Aihot 搜索: "${query.slice(0, 60)}..."`);
+
+  return new Promise((resolve) => {
+    const req = https.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+      },
+      timeout: 15000,
+    }, (res) => {
+      let buf = '';
+      res.on('data', (d) => { buf += d; });
+      res.on('end', () => {
+        if (res.statusCode !== 200) {
+          console.log(`[auto_research] Aihot 搜索失败 (status=${res.statusCode})，返回空结果`);
+          const empty = [];
+          searchCache.set(cacheKey, empty);
+          resolve(empty);
+          return;
+        }
+
+        try {
+          const obj = JSON.parse(buf);
+          const items = Array.isArray(obj && obj.items) ? obj.items : [];
+          const results = items
+            .filter((item) => item && item.title && item.url)
+            .slice(0, CONFIG.MAX_SEARCH_RESULTS)
+            .map((item) => ({
+              title: item.title,
+              link: item.url,
+              snippet: [item.summary, item.source, item.category].filter(Boolean).join(' · '),
+            }));
+          console.log(`[auto_research] Aihot 返回 ${results.length} 条结果`);
+          searchCache.set(cacheKey, results);
+          resolve(results);
+        } catch (e) {
+          console.log(`[auto_research] Aihot 返回不是合法 JSON：${e.message}`);
+          const empty = [];
+          searchCache.set(cacheKey, empty);
+          resolve(empty);
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      console.log(`[auto_research] Aihot 搜索网络错误：${e.message}`);
+      const empty = [];
+      searchCache.set(cacheKey, empty);
+      resolve(empty);
+    });
+
+    req.on('timeout', () => {
+      console.log('[auto_research] Aihot 搜索超时');
+      req.destroy();
+      const empty = [];
+      searchCache.set(cacheKey, empty);
+      resolve(empty);
+    });
+
+    req.end();
+  });
+}
+
+async function searchKnowledge(query) {
+  const provider = CONFIG.SEARCH_PROVIDER;
+
+  if (provider === 'google-only') {
+    return googleSearch(query);
+  }
+  if (provider === 'aihot-only') {
+    return aihotSearch(query);
+  }
+
+  const aihotResults = await aihotSearch(query);
+  if (aihotResults.length > 0) {
+    return aihotResults;
+  }
+  return googleSearch(query);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -605,86 +764,11 @@ search_fallback: ${searchFallback ? 'true' : 'false'}
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Git commit + push（与 generate-daily.js 一致的风格）
-// ═══════════════════════════════════════════════════════════════
-
-function commitAndPush(filePath, gapId) {
-  const pushToken = process.env.STUDY_PUSH_TOKEN;
-
-  if (!pushToken) {
-    console.log('[auto_research] 无 STUDY_PUSH_TOKEN，跳过 git 推送');
-    return false;
-  }
-
-  if (!fs.existsSync(path.join(STUDY_DIR, '.git'))) {
-    console.log('[auto_research] 学习目录不是 git 仓库，跳过推送');
-    return false;
-  }
-
-  const repo = process.env.STUDY_REPO || 'https://github.com/Health-525/jiangshu-study.git';
-
-  try {
-    const relPath = path.relative(STUDY_DIR, filePath).replace(/\\/g, '/');
-    console.log(`[auto_research] git add: ${relPath}`);
-
-    execSync(`git add "${relPath}"`, { cwd: STUDY_DIR, stdio: 'pipe', timeout: 10000 });
-
-    // 检查是否有变更
-    try {
-      execSync('git diff --cached --quiet', { cwd: STUDY_DIR, stdio: 'pipe', timeout: 5000 });
-      console.log('[auto_research] 无变更，跳过提交');
-      return false;
-    } catch {
-      // diff 非零退出 = 有变更，继续
-    }
-
-    const commitMsg = `feat(auto_research): ${gapId} 自主研究笔记`;
-    execSync(
-      `git -c user.name="timetable-bot" -c user.email="timetable-bot@users.noreply.github.com" ` +
-      `commit -m "${commitMsg}"`,
-      { cwd: STUDY_DIR, stdio: 'pipe', timeout: 10000 }
-    );
-    console.log(`[auto_research] git commit: ${commitMsg}`);
-
-    const authed = repo.replace('https://', `https://x-access-token:${pushToken}@`);
-    execSync(`git push "${authed}" HEAD:main`, { cwd: STUDY_DIR, stdio: 'pipe', timeout: 30000 });
-    console.log('[auto_research] git push 成功');
-
-    return true;
-  } catch (e) {
-    const msg = (e.stdout || '') + (e.stderr || '');
-    if (msg.includes('nothing to commit')) {
-      console.log('[auto_research] 无变更，跳过推送');
-      return false;
-    }
-    console.error(`[auto_research] git 操作失败：${e.message}`);
-    console.error(`[auto_research] 详情：${msg.slice(0, 500)}`);
-    return false;
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 更新 learning_gaps.json
-// ═══════════════════════════════════════════════════════════════
-
-function updateGapsFile(gapId, newStatus) {
-  const data = loadLearningGapsOrThrow();
-  const before = data.gaps.length;
-
-  // 直接删除已完成/已失败的 gap，不留痕迹
-  data.gaps = data.gaps.filter(g => g && g.id !== gapId);
-  data.updatedAt = new Date().toISOString();
-
-  comm.writeJsonAtomic(GAPS_PATH, data);
-  console.log(`[auto_research] 已删除 ${gapId}（${newStatus}），剩余 ${data.gaps.length} 个 gap（原 ${before} 个）`);
-}
-
-// ═══════════════════════════════════════════════════════════════
 // 主流程
 // ═══════════════════════════════════════════════════════════════
 
 async function main() {
-  const ctx = comm.preflight('auto-researcher', { timetableDir: process.cwd() });
+  comm.preflight('auto-researcher', { timetableDir: process.cwd() });
   const bj = beijingNow();
   console.log('[auto_research] 自主研究 Agent 启动');
   console.log(`[auto_research] 北京时间：${bj.dateStr}`);
@@ -696,6 +780,10 @@ async function main() {
 
   if (!deepseekKey && !glmKey) {
     console.log('[auto_research] 无 API Key（DEEPSEEK_API_KEY / GLM_API_KEY），跳过 LLM 调用，退出');
+    reportRun({
+      success: true,
+      summary: { status: 'skipped', reason: 'missing_api_key' },
+    });
     return;
   }
 
@@ -703,20 +791,26 @@ async function main() {
   console.log('[auto_research] ── Step 1: 选择目标知识空白 ──');
 
   const gapsData = loadLearningGapsOrThrow();
+  const progress = loadResearchProgress();
   const allGaps = gapsData.gaps;
 
   if (allGaps.length === 0) {
     console.log('[auto_research] 无知识空白，退出');
+    reportRun({
+      success: true,
+      summary: { status: 'skipped', reason: 'no_gaps' },
+    });
     return;
   }
 
-  // 按优先级排序，找第一个 open 的
-  const openGaps = allGaps
-    .filter(g => g.status === 'open')
-    .sort((a, b) => (a.priority || 3) - (b.priority || 3));
+  const openGaps = selectOpenGaps(allGaps, progress);
 
   if (openGaps.length === 0) {
-    console.log('[auto_research] 所有知识空白已处理完毕，无 open 状态 gap，退出');
+    console.log('[auto_research] 所有知识空白已处理完毕，无待处理 gap，退出');
+    reportRun({
+      success: true,
+      summary: { status: 'skipped', reason: 'no_open_gaps' },
+    });
     return;
   }
 
@@ -726,7 +820,7 @@ async function main() {
   if (targetGapId) {
     gap = openGaps.find(g => g.id === targetGapId);
     if (!gap) {
-      console.log(`[auto_research] 指定的 gap ${targetGapId} 不是 open 状态或不存在，使用优先级最高的`);
+      console.log(`[auto_research] 指定的 gap ${targetGapId} 已解决或不存在，使用优先级最高的待处理项`);
       gap = openGaps[0];
     }
   } else {
@@ -762,7 +856,7 @@ async function main() {
     let searchFailed = true;
 
     for (const q of queries) {
-      const results = await googleSearch(q);
+      const results = await searchKnowledge(q);
       if (results.length > 0) {
         allResults = allResults.concat(results);
         searchFailed = false;
@@ -841,9 +935,9 @@ async function main() {
 
   console.log(`[auto_research] ── 决策：最终状态 = ${finalStatus}，最高分 = ${bestScore}`);
 
-  // ── Step 6: 写笔记 + git push + 更新 gaps ──
+  // ── Step 6: 写笔记 + 更新研究进度 ──
   if (bestNote) {
-    const notePath = writeNote({
+    writeNote({
       noteContent: bestNote,
       gap,
       score: bestScore,
@@ -851,16 +945,20 @@ async function main() {
     });
 
     if (finalStatus === 'resolved') {
-      commitAndPush(notePath, gap.id);
+      console.log('[auto_research] 笔记达到阈值，等待 workflow 统一发布');
     } else {
-      console.log('[auto_research] 笔记未达阈值，仅本地保存，不推送');
+      console.log('[auto_research] 笔记未达阈值，仅保留本地产物和研究进度');
     }
   } else {
     console.log('[auto_research] 所有尝试均失败，无笔记产出');
   }
 
-  // ── Step 7: 更新 gaps 状态 ──
-  updateGapsFile(gap.id, finalStatus);
+  // ── Step 7: 更新研究进度 ──
+  updateResearchProgress(progress, gap, finalStatus, {
+    score: bestScore,
+    hasNote: Boolean(bestNote),
+    searchFallback: bestSearchFallback,
+  });
 
   // ── 输出摘要 ──
   console.log('[auto_research] ═══════════════════════════════════════');
@@ -869,18 +967,18 @@ async function main() {
   console.log(`[auto_research] 状态：${finalStatus === 'resolved' ? '已解决 ✓' : '未达标 ✗'}`);
   console.log('[auto_research] ═══════════════════════════════════════');
 
-  comm.postflight('auto-researcher', {
+  reportRun({
     success: finalStatus === 'resolved',
     summary: { gapId: gap.id, title: gap.title, score: bestScore, status: finalStatus },
-  }, { timetableDir: process.cwd() });
+  });
 }
 
 main().catch((e) => {
   console.error('[auto_research] 错误：', e?.stack || String(e));
-  comm.postflight('auto-researcher', {
+  reportRun({
     success: false,
     errors: [String(e)],
-  }, { timetableDir: process.cwd() });
+  });
 
   // 即使崩溃也尝试写一个空输出，避免下游流程中断
   try {

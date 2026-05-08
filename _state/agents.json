@@ -59,7 +59,7 @@
       "consumes": ["learning_gaps.json", "知识画像.md"],
       "schedule": "紧接 knowledge-analyzer 之后",
       "dependsOn": ["knowledge-analyzer"],
-      "notifyOnComplete": ["daily-reporter"]
+      "notifyOnComplete": []
     },
     {
       "id": "daily-reporter",

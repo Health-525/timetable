@@ -2,7 +2,8 @@
 /**
  * Agent 通信库 · MyDigitalCrew A2A
  *
- * 所有 Agent 通过文件系统共享状态与消息。
+ * 这是一个轻量状态/通知层：必要链路可通过文件系统共享状态与消息，
+ * 独立 Agent 也可以只使用 preflight/postflight 上报运行状态。
  * 不依赖长连接服务器，适配 GitHub Actions 无状态运行环境。
  *
  * 用法：

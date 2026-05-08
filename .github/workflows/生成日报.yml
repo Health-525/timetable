@@ -41,7 +41,20 @@ jobs:
 
       - name: 生成日报
         env:
-          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
         run: node scripts/generate-daily.js
+
+      - name: 提交日报
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+        run: |
+          cd _study
+          git add 日报/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "无新的日报"
+          else
+            today=$(date -u -d '+8 hours' +%F)
+            git commit -m "daily: ${today} 日报自动生成"
+            git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
+          fi

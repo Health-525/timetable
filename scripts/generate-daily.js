@@ -578,29 +578,7 @@ async function main() {
   fs.writeFileSync(outPath, md, 'utf8');
   console.log(`[daily] 已写入：${outPath}`);
 
-  // 6. 如果有 push token，自动 commit + push
-  const pushToken = process.env.STUDY_PUSH_TOKEN;
-  if (pushToken && fs.existsSync(path.join(studyDir, '.git'))) {
-    const repo = process.env.STUDY_REPO || 'https://github.com/Health-525/jiangshu-study.git';
-    try {
-      execSync('git add 日报/', { cwd: studyDir, stdio: 'pipe', timeout: 10000 });
-      execSync(
-        `git -c user.name="timetable-bot" -c user.email="timetable-bot@users.noreply.github.com" ` +
-        `commit -m "daily: ${dateStr} 日报自动生成"`,
-        { cwd: studyDir, stdio: 'pipe', timeout: 10000 }
-      );
-      const authed = repo.replace('https://', `https://x-access-token:${pushToken}@`);
-      execSync(`git push "${authed}" HEAD:main`, { cwd: studyDir, stdio: 'pipe', timeout: 30000 });
-      console.log('[daily] 已推送');
-    } catch (e) {
-      const msg = (e.stdout || '') + (e.stderr || '');
-      if (msg.includes('nothing to commit')) {
-        console.log('[daily] 无变更，跳过推送');
-      } else {
-        console.log(`[daily] 推送失败：${e.message}`);
-      }
-    }
-  }
+  // 6. 发布由 workflow 负责，这里只生成日报文件
 
   comm.postflight('daily-reporter', {
     success: true,
