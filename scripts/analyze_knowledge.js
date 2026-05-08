@@ -540,7 +540,7 @@ async function main() {
   // ── 6. 写入文件 ──
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const outPath = path.join(OUT_DIR, 'learning_gaps.json');
-  fs.writeFileSync(outPath, JSON.stringify(output, null, 2), 'utf8');
+  comm.writeJsonAtomic(outPath, output);
   console.log(`[analyze] 输出已写入：${outPath}`);
   console.log(`[analyze] 共 ${output.gaps.length} 个知识空白`);
   console.log('[analyze] 完成');
@@ -562,12 +562,12 @@ main().catch((e) => {
   try {
     fs.mkdirSync(OUT_DIR, { recursive: true });
     const fallbackPath = path.join(OUT_DIR, 'learning_gaps.json');
-    fs.writeFileSync(fallbackPath, JSON.stringify({
+    comm.writeJsonAtomic(fallbackPath, {
       generatedAt: new Date().toISOString(),
       profile: { strengths: [], weaknesses: [] },
       gaps: [],
       error: String(e),
-    }, null, 2), 'utf8');
+    });
     console.log(`[analyze] 已写入空输出（错误恢复）：${fallbackPath}`);
   } catch { /* 最后的兜底 */ }
 

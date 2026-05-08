@@ -19,15 +19,74 @@ const path = require('path');
 // 内部工具
 // ═══════════════════════════════════════════════════════════════
 
+function hasConflictMarkers(text) {
+  return /^(<{7}|={7}|>{7})/m.test(text);
+}
+
+function readJsonSafe(filePath, opts = {}) {
+  const validate = typeof opts.validate === 'function' ? opts.validate : null;
+
+  if (!fs.existsSync(filePath)) {
+    return { ok: false, reason: 'missing' };
+  }
+
+  let text = '';
+  try {
+    text = fs.readFileSync(filePath, 'utf8');
+  } catch (e) {
+    return { ok: false, reason: 'read_error', error: e.message };
+  }
+
+  if (text.charCodeAt(0) === 0xFEFF) {
+    text = text.slice(1);
+  }
+
+  if (!text.trim()) {
+    return { ok: false, reason: 'empty' };
+  }
+
+  if (hasConflictMarkers(text)) {
+    return { ok: false, reason: 'conflict_markers' };
+  }
+
+  let value;
+  try {
+    value = JSON.parse(text);
+  } catch (e) {
+    return { ok: false, reason: 'parse_error', error: e.message };
+  }
+
+  if (validate) {
+    const validation = validate(value);
+    if (validation !== true) {
+      return {
+        ok: false,
+        reason: 'invalid_shape',
+        error: typeof validation === 'string' ? validation : undefined,
+      };
+    }
+  }
+
+  return { ok: true, value, text };
+}
+
+function writeJsonAtomic(filePath, obj) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const tempPath = path.join(
+    path.dirname(filePath),
+    `.${path.basename(filePath)}.${process.pid}.${Date.now()}.tmp`
+  );
+  fs.writeFileSync(tempPath, JSON.stringify(obj, null, 2), 'utf8');
+  fs.renameSync(tempPath, filePath);
+}
+
 function loadJSON(filePath) {
-  if (!fs.existsSync(filePath)) return null;
-  try { return JSON.parse(fs.readFileSync(filePath, 'utf8')); }
-  catch { return null; }
+  const result = readJsonSafe(filePath);
+  return result.ok ? result.value : null;
 }
 
 function saveJSON(filePath, obj) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
+  writeJsonAtomic(filePath, obj);
 }
 
 function ensureDir(dir) {
@@ -210,4 +269,11 @@ function getStatus(opts = {}) {
   };
 }
 
-module.exports = { preflight, postflight, sendMessage, getStatus };
+module.exports = {
+  preflight,
+  postflight,
+  sendMessage,
+  getStatus,
+  readJsonSafe,
+  writeJsonAtomic,
+};

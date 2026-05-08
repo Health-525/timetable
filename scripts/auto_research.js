@@ -79,6 +79,44 @@ const RETRY_STRATEGIES = [
 // 搜索缓存（同一次运行内不重复抓取同一 URL）
 const searchCache = new Map();
 
+function validateLearningGapsData(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return 'top-level JSON must be an object';
+  }
+  if (!Array.isArray(value.gaps)) {
+    return '"gaps" must be an array';
+  }
+  return true;
+}
+
+function describeJsonReadFailure(result, filePath) {
+  const suffix = result.error ? `: ${result.error}` : '';
+  switch (result.reason) {
+    case 'missing':
+      return `learning_gaps 文件不存在：${filePath}`;
+    case 'empty':
+      return `learning_gaps 文件为空：${filePath}`;
+    case 'conflict_markers':
+      return `learning_gaps 文件包含 Git 冲突标记：${filePath}`;
+    case 'parse_error':
+      return `learning_gaps 文件不是合法 JSON：${filePath}${suffix}`;
+    case 'invalid_shape':
+      return `learning_gaps 文件结构不合法：${filePath}${suffix}`;
+    case 'read_error':
+      return `learning_gaps 文件读取失败：${filePath}${suffix}`;
+    default:
+      return `learning_gaps 文件不可用：${filePath}${suffix}`;
+  }
+}
+
+function loadLearningGapsOrThrow() {
+  const result = comm.readJsonSafe(GAPS_PATH, { validate: validateLearningGapsData });
+  if (!result.ok) {
+    throw new Error(describeJsonReadFailure(result, GAPS_PATH));
+  }
+  return result.value;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // 北京时间工具
 // ═══════════════════════════════════════════════════════════════
@@ -630,19 +668,14 @@ function commitAndPush(filePath, gapId) {
 // ═══════════════════════════════════════════════════════════════
 
 function updateGapsFile(gapId, newStatus) {
-  if (!fs.existsSync(GAPS_PATH)) {
-    console.log(`[auto_research] gaps 文件不存在：${GAPS_PATH}`);
-    return;
-  }
-
-  const data = JSON.parse(fs.readFileSync(GAPS_PATH, 'utf8'));
-  const before = (data.gaps || []).length;
+  const data = loadLearningGapsOrThrow();
+  const before = data.gaps.length;
 
   // 直接删除已完成/已失败的 gap，不留痕迹
-  data.gaps = (data.gaps || []).filter(g => g.id !== gapId);
+  data.gaps = data.gaps.filter(g => g && g.id !== gapId);
   data.updatedAt = new Date().toISOString();
 
-  fs.writeFileSync(GAPS_PATH, JSON.stringify(data, null, 2), 'utf8');
+  comm.writeJsonAtomic(GAPS_PATH, data);
   console.log(`[auto_research] 已删除 ${gapId}（${newStatus}），剩余 ${data.gaps.length} 个 gap（原 ${before} 个）`);
 }
 
@@ -669,13 +702,8 @@ async function main() {
   // ── Step 1: 选择目标 gap ──
   console.log('[auto_research] ── Step 1: 选择目标知识空白 ──');
 
-  if (!fs.existsSync(GAPS_PATH)) {
-    console.log(`[auto_research] gaps 文件不存在：${GAPS_PATH}，退出`);
-    return;
-  }
-
-  const gapsData = JSON.parse(fs.readFileSync(GAPS_PATH, 'utf8'));
-  const allGaps = gapsData.gaps || [];
+  const gapsData = loadLearningGapsOrThrow();
+  const allGaps = gapsData.gaps;
 
   if (allGaps.length === 0) {
     console.log('[auto_research] 无知识空白，退出');
