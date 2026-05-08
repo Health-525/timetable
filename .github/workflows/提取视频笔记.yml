@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: timetable-main-write
+  group: timetable-video-note
   cancel-in-progress: true
 
 jobs:

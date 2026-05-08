@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: timetable-main-write
-  cancel-in-progress: true
+  group: study-weekly-publish
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -52,7 +52,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "无新的周报"
           else
-            range=$(node -e "const now=new Date(Date.now()+8*3600*1000); const day=now.getUTCDay(); const daysFromMonday=day===0?6:day-1; const monday=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())-daysFromMonday*86400000); const sunday=new Date(monday.getTime()+6*86400000); const fmt=d=>[d.getUTCFullYear(),String(d.getUTCMonth()+1).padStart(2,'0'),String(d.getUTCDate()).padStart(2,'0')].join('-'); process.stdout.write(`${fmt(monday)} to ${fmt(sunday)}`);")
+            range=$(node -e "const now=new Date(Date.now()+8*3600*1000); const day=now.getUTCDay(); const daysFromMonday=day===0?6:day-1; const monday=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())-daysFromMonday*86400000); const sunday=new Date(monday.getTime()+6*86400000); const fmt=d=>[d.getUTCFullYear(),String(d.getUTCMonth()+1).padStart(2,'0'),String(d.getUTCDate()).padStart(2,'0')].join('-'); process.stdout.write(fmt(monday) + ' to ' + fmt(sunday));")
             git commit -m "weekly: ${range}"
             git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
           fi

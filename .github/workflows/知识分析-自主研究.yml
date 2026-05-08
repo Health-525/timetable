@@ -14,8 +14,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: timetable-main-write
-  cancel-in-progress: true
+  group: timetable-knowledge-pipeline
+  cancel-in-progress: false
 
 jobs:
   # ── Job 1: 知识空白分析 ──

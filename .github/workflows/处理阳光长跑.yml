@@ -5,10 +5,10 @@ on:
     types: [running-push]
   workflow_dispatch:
 
-# 同一时间只允许一个实例运行，新触发会取消正在排队的旧实例
+# 同一类运行串行执行，避免并发写回 running 数据
 concurrency:
-  group: timetable-main-write
-  cancel-in-progress: true
+  group: timetable-running-write
+  cancel-in-progress: false
 
 permissions:
   contents: write

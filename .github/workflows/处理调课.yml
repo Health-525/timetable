@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: timetable-main-write
-  cancel-in-progress: true
+  group: timetable-adjustments-write
+  cancel-in-progress: false
 
 permissions:
   contents: write

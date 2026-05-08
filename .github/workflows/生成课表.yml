@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: timetable-main-write
-  cancel-in-progress: true
+  group: study-timetable-publish
+  cancel-in-progress: false
 
 permissions:
   contents: write
