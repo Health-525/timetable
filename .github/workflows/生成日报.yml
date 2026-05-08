@@ -56,5 +56,7 @@ jobs:
           else
             today=$(date -u -d '+8 hours' +%F)
             git commit -m "daily: ${today} 日报自动生成"
+            git fetch "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
+            git rebase --no-autostash FETCH_HEAD
             git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
           fi
