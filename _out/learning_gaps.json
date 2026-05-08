@@ -18,24 +18,6 @@
   },
   "gaps": [
     {
-      "id": "gap-001",
-      "title": "PCA从协方差矩阵到特征值分解的完整数学推导",
-      "category": "数学桥接",
-      "priority": 1,
-      "why": "已学多元统计分析中的PCA调用和数值分析中的特征值分解，但缺少协方差矩阵如何桥接两者的推导，无法从原理上理解降维过程。",
-      "prerequisites_met": [
-        "特征值分解",
-        "PCA基本概念",
-        "线性代数基础"
-      ],
-      "suggestedTopic": "PCA的数学原理与推导",
-      "relatedCourses": [
-        "04-多元统计分析",
-        "05-数值分析"
-      ],
-      "status": "open"
-    },
-    {
       "id": "gap-002",
       "title": "从零实现神经网络训练循环（numpy）",
       "category": "AI/ML",
@@ -142,5 +124,6 @@
       "relatedCourses": [],
       "status": "open"
     }
-  ]
+  ],
+  "updatedAt": "2026-05-08T14:06:06.210Z"
 }
