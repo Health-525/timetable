@@ -1,11 +1,11 @@
 {
   "agentId": "auto-researcher",
   "name": "自主研究",
-  "lastRun": "2026-05-08T14:56:17.185Z",
+  "lastRun": "2026-05-08T14:59:35.547Z",
   "status": "success",
   "summary": {
-    "gapId": "gap-002",
-    "title": "从numpy手写到深度学习框架",
+    "gapId": "gap-001",
+    "title": "PCA从协方差矩阵到特征值分解的完整数学推导",
     "score": 88,
     "status": "resolved"
   },

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-08T14:56:17.183Z",
+  "updatedAt": "2026-05-08T14:59:35.546Z",
   "gaps": {
     "gap-002": {
       "title": "从numpy手写到深度学习框架",
@@ -7,6 +7,16 @@
       "priority": 1,
       "status": "resolved",
       "updatedAt": "2026-05-08T14:56:17.183Z",
+      "score": 88,
+      "hasNote": true,
+      "searchFallback": true
+    },
+    "gap-001": {
+      "title": "PCA从协方差矩阵到特征值分解的完整数学推导",
+      "suggestedTopic": "PCA的数学原理与推导",
+      "priority": 1,
+      "status": "resolved",
+      "updatedAt": "2026-05-08T14:59:35.546Z",
       "score": 88,
       "hasNote": true,
       "searchFallback": true
