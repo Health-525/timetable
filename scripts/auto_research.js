@@ -973,24 +973,32 @@ async function main() {
   });
 }
 
-main().catch((e) => {
-  console.error('[auto_research] 错误：', e?.stack || String(e));
-  reportRun({
-    success: false,
-    errors: [String(e)],
+module.exports = {
+  selectOpenGaps,
+  parseGoogleResults,
+  buildSearchQueries,
+};
+
+if (require.main === module) {
+  main().catch((e) => {
+    console.error('[auto_research] 错误：', e?.stack || String(e));
+    reportRun({
+      success: false,
+      errors: [String(e)],
+    });
+
+    // 即使崩溃也尝试写一个空输出，避免下游流程中断
+    try {
+      fs.mkdirSync(OUT_DIR, { recursive: true });
+      const fallbackPath = path.join(OUT_DIR, 'auto_research_error.json');
+      fs.writeFileSync(fallbackPath, JSON.stringify({
+        timestamp: new Date().toISOString(),
+        error: String(e),
+        _note: '自主研究 Agent 崩溃，此文件用于调试',
+      }, null, 2), 'utf8');
+      console.log(`[auto_research] 已写入错误恢复文件：${fallbackPath}`);
+    } catch { /* 最后的兜底 */ }
+
+    process.exit(1);
   });
-
-  // 即使崩溃也尝试写一个空输出，避免下游流程中断
-  try {
-    fs.mkdirSync(OUT_DIR, { recursive: true });
-    const fallbackPath = path.join(OUT_DIR, 'auto_research_error.json');
-    fs.writeFileSync(fallbackPath, JSON.stringify({
-      timestamp: new Date().toISOString(),
-      error: String(e),
-      _note: '自主研究 Agent 崩溃，此文件用于调试',
-    }, null, 2), 'utf8');
-    console.log(`[auto_research] 已写入错误恢复文件：${fallbackPath}`);
-  } catch { /* 最后的兜底 */ }
-
-  process.exit(1);
-});
+}

@@ -201,4 +201,14 @@ function main() {
   }, { timetableDir: process.cwd() });
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  parseFrontmatter,
+  resetFrontmatter,
+  appendArchive,
+  WEEKDAY_MAP,
+  PERIOD_MAP,
+};

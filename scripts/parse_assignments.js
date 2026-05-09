@@ -43,6 +43,8 @@ function parseDeadline(str) {
 function parseFrontmatter(content) {
   // 找最后一个 frontmatter 块（填写区域，支持有无 --- 包裹）
   const matches = [...content.matchAll(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/gm)];
+  const lastFrontmatter = matches.length > 0 ? matches[matches.length - 1] : null;
+  const lastFrontmatterEnd = lastFrontmatter ? lastFrontmatter.index + lastFrontmatter[0].length : -1;
 
   // 同时查找无 --- 包裹的追加块（手机快捷指令写入格式）
   // 格式：课程：xxx（有实际内容）\n标题：xxx\n...
@@ -52,21 +54,25 @@ function parseFrontmatter(content) {
   let isAppend = false;
 
   if (appendMatch) {
-    // 优先处理追加块
-    match = { index: content.indexOf(appendMatch[0]) + 1, fullMatch: appendMatch[0].trimStart(), fields: {} };
-    isAppend = true;
-    for (const line of appendMatch[1].split(/\r?\n/)) {
-      const m = line.match(/^([^：:]+)[：:]\s*(.*)$/);
-      if (m) match.fields[m[1].trim()] = m[2].trim();
+    const appendIndex = content.indexOf(appendMatch[0]) + 1;
+    if (appendIndex >= lastFrontmatterEnd) {
+      // 只有追加块位于 frontmatter 之后时，才优先按追加块处理
+      match = { index: appendIndex, fullMatch: appendMatch[0].trimStart(), fields: {} };
+      isAppend = true;
+      for (const line of appendMatch[1].split(/\r?\n/)) {
+        const m = line.match(/^([^：:]+)[：:]\s*(.*)$/);
+        if (m) match.fields[m[1].trim()] = m[2].trim();
+      }
     }
-  } else if (matches.length > 0) {
-    const last = matches[matches.length - 1];
+  }
+
+  if (!match && lastFrontmatter) {
     const fields = {};
-    for (const line of last[1].split(/\r?\n/)) {
+    for (const line of lastFrontmatter[1].split(/\r?\n/)) {
       const m = line.match(/^([^：:]+)[：:]\s*(.*)$/);
       if (m) fields[m[1].trim()] = m[2].trim();
     }
-    match = { fields, fullMatch: last[0], index: last.index };
+    match = { fields, fullMatch: lastFrontmatter[0], index: lastFrontmatter.index };
   }
 
   if (!match) return null;
@@ -265,4 +271,17 @@ function main() {
   }, { timetableDir: process.cwd() });
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  parseDeadline,
+  parseFrontmatter,
+  resetFrontmatter,
+  renderAssignmentsList,
+  updateAssignmentsSection,
+  getBJMidnightMs,
+  getDeadlineBJMidnightMs,
+  formatDeadlineBJ,
+};

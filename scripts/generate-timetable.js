@@ -323,6 +323,9 @@ function main() {
 
     fs.writeFileSync(outputPath, lines.join('\n').trim() + '\n', 'utf-8');
     console.log(`课表已生成：${outputPath}`);
+
+    comm.postflight('timetable-generator', { success: true, summary: { week: w } }, { timetableDir: process.cwd() });
+    return { week: w, outputPath };
 }
 
 // 运行
@@ -335,8 +338,6 @@ if (require.main === module) {
         comm.postflight('timetable-generator', { success: false, errors: [err.message] }, { timetableDir: process.cwd() });
         process.exit(1);
     }
-
-    comm.postflight('timetable-generator', { success: true, summary: { week: w } }, { timetableDir: process.cwd() });
 }
 
-module.exports = { parseWeekSpec, applyAdjustments, weekIndex };
+module.exports = { parseWeekSpec, applyAdjustments, weekIndex, main };
