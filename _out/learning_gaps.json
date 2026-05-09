@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-09T00:12:56.972Z",
+  "generatedAt": "2026-05-09T00:19:15.149Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -19,15 +19,16 @@
   "gaps": [
     {
       "id": "gap-001",
-      "title": "PCA特征值到主成分的完整推导",
+      "title": "PCA从协方差矩阵到特征值分解的完整数学推导",
       "category": "数学桥接",
-      "priority": 2,
-      "why": "已掌握特征值分解和PCA调用，但缺乏两者之间的桥梁，即协方差矩阵如何连接特征值分解和主成分。",
+      "priority": 1,
+      "why": "已学多元统计分析中的PCA调用和数值分析中的特征值分解，但缺少协方差矩阵如何桥接两者的推导，导致对PCA原理理解不深。",
       "prerequisites_met": [
         "特征值分解",
-        "PCA调用"
+        "PCA基本概念",
+        "线性代数基础"
       ],
-      "suggestedTopic": "PCA原理与协方差矩阵的关系",
+      "suggestedTopic": "PCA的数学原理与推导",
       "relatedCourses": [
         "04-多元统计分析",
         "05-数值分析"
@@ -36,35 +37,107 @@
     },
     {
       "id": "gap-002",
-      "title": "从numpy手写到深度学习框架",
-      "category": "工程深化",
+      "title": "从零实现简单神经网络训练循环",
+      "category": "AI/ML",
       "priority": 1,
-      "why": "已掌握numpy基础和sklearn调包，但缺乏从零开始实现神经网络的经验。",
+      "why": "08-AI学习目录几乎为空，仅有骨架；已掌握numpy和sklearn调包，但缺少从零实现神经网络训练循环的实践，无法深入理解反向传播等核心概念。",
       "prerequisites_met": [
+        "Python编程",
         "numpy基础",
-        "sklearn调包"
+        "机器学习基本概念"
       ],
-      "suggestedTopic": "神经网络基础与实现",
+      "suggestedTopic": "从零实现神经网络",
       "relatedCourses": [
-        "03-数据结构与算法",
-        "05-数值分析"
+        "08-AI学习",
+        "02-Python数据处理与分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-003",
-      "title": "git底层原理",
-      "category": "理论基础",
-      "priority": 3,
-      "why": "已掌握git基本操作和GitHub Actions，但缺乏对git内部对象模型的深入理解。",
+      "title": "Git内部对象模型（blob/tree/commit/tag）",
+      "category": "工程深化",
+      "priority": 2,
+      "why": "已熟练使用git add/commit/push及GitHub Actions，但缺少对git底层对象模型的理解，限制了对版本控制原理的掌握。",
       "prerequisites_met": [
-        "git基本操作",
-        "GitHub Actions"
+        "Git基本操作",
+        "GitHub Actions使用"
       ],
-      "suggestedTopic": "git内部对象模型与原理",
+      "suggestedTopic": "Git内部原理",
+      "relatedCourses": [],
+      "status": "open"
+    },
+    {
+      "id": "gap-004",
+      "title": "MCP协议规范深入理解",
+      "category": "工程深化",
+      "priority": 2,
+      "why": "已有MCP服务器项目实践，但缺少对协议规范（如传输层、资源模型、工具定义）的系统学习，可能影响后续开发。",
+      "prerequisites_met": [
+        "MCP服务器搭建经验",
+        "TypeScript基础"
+      ],
+      "suggestedTopic": "MCP协议规范详解",
+      "relatedCourses": [],
+      "status": "open"
+    },
+    {
+      "id": "gap-005",
+      "title": "深度学习框架（PyTorch/TensorFlow）入门",
+      "category": "AI/ML",
+      "priority": 1,
+      "why": "fork了LLMs-from-scratch但未学完，08-AI学习内容极少，缺少主流深度学习框架的使用经验，无法进行后续的模型训练和项目开发。",
+      "prerequisites_met": [
+        "Python编程",
+        "numpy基础",
+        "神经网络基本概念"
+      ],
+      "suggestedTopic": "PyTorch深度学习入门",
       "relatedCourses": [
-        "03-数据结构与算法"
+        "08-AI学习"
       ],
+      "status": "open"
+    },
+    {
+      "id": "gap-006",
+      "title": "发型替换AI应用的技术路线",
+      "category": "项目实战",
+      "priority": 2,
+      "why": "用户明确对AI发型替换应用感兴趣，但当前知识库中无相关技术（如图像分割、生成模型）的笔记，需要系统学习。",
+      "prerequisites_met": [
+        "Python编程",
+        "图像处理基础"
+      ],
+      "suggestedTopic": "图像生成与风格迁移",
+      "relatedCourses": [],
+      "status": "open"
+    },
+    {
+      "id": "gap-007",
+      "title": "日报/周报自动生成系统的设计",
+      "category": "项目实战",
+      "priority": 3,
+      "why": "用户有日报周报自动生成的想法，但缺乏相关项目经验和技术方案（如自然语言生成、模板引擎）。",
+      "prerequisites_met": [
+        "Python编程",
+        "LLM API使用"
+      ],
+      "suggestedTopic": "自动化报告生成系统",
+      "relatedCourses": [],
+      "status": "open"
+    },
+    {
+      "id": "gap-008",
+      "title": "飞书API集成与机器人开发",
+      "category": "工程深化",
+      "priority": 3,
+      "why": "用户希望加入飞书功能，但当前无飞书API集成经验，需要学习飞书开放平台、机器人开发等。",
+      "prerequisites_met": [
+        "REST API基础",
+        "Node.js/Python后端开发"
+      ],
+      "suggestedTopic": "飞书开放平台与机器人开发",
+      "relatedCourses": [],
       "status": "open"
     }
   ]
