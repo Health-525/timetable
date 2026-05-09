@@ -20,20 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 拉取 jiangshu-study 仓库
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Health-525/jiangshu-study
           token: ${{ secrets.STUDY_PUSH_TOKEN }}
 
       - name: 拉取 timetable 数据
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Health-525/timetable
           path: _timetable
           token: ${{ secrets.STUDY_PUSH_TOKEN }}
 
       - name: 安装 Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 
