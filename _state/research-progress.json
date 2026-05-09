@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-09T00:20:33.220Z",
+  "updatedAt": "2026-05-09T01:09:32.559Z",
   "gaps": {
     "gap-002": {
       "title": "从numpy手写到深度学习框架",
@@ -38,6 +38,16 @@
       "status": "resolved",
       "updatedAt": "2026-05-09T00:20:33.220Z",
       "score": 72,
+      "hasNote": true,
+      "searchFallback": true
+    },
+    "gap-004": {
+      "title": "MCP协议规范深入理解",
+      "suggestedTopic": "MCP协议规范详解：传输层、工具定义与安全",
+      "priority": 2,
+      "status": "failed",
+      "updatedAt": "2026-05-09T01:09:32.559Z",
+      "score": 45,
       "hasNote": true,
       "searchFallback": true
     }
