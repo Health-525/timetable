@@ -1,13 +1,11 @@
 {
   "agentId": "auto-researcher",
   "name": "自主研究",
-  "lastRun": "2026-05-09T01:22:42.644Z",
-  "status": "failed",
+  "lastRun": "2026-05-09T05:15:21.737Z",
+  "status": "success",
   "summary": {
-    "gapId": "gap-007",
-    "title": "AI发型推荐应用的技术方案",
-    "score": 55,
-    "status": "failed"
+    "status": "skipped",
+    "reason": "no_open_gaps"
   },
   "errors": []
 }
