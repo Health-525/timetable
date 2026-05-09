@@ -34,12 +34,7 @@ jobs:
       - name: 克隆 jiangshu-study
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
-        run: |
-          rm -rf _study
-          git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
-          cd _study
-          git config user.name "timetable-bot"
-          git config user.email "timetable-bot@users.noreply.github.com"
+        run: node scripts/ci/clone-study-repo.js
 
       - name: 检查调课.md是否存在
         id: check
@@ -60,38 +55,19 @@ jobs:
 
       - name: 提交 adjustments.json 到 timetable
         if: steps.check.outputs.exists == 'true'
-        run: |
-          git add data/adjustments.json
-          if git diff --cached --quiet; then
-            echo "adjustments.json 无变化，跳过"
-          else
-            git commit -m "feat: apply schedule adjustments from Obsidian"
-            git pull --rebase --no-autostash origin main || echo "Pull failed, will force push"
-            pushed=0
-            for i in 1 2 3; do
-              git pull --rebase origin main
-              git push --force-with-lease && pushed=1 && break
-              echo 'push rejected, retrying...'
-              sleep 2
-            done
-            if [ "$pushed" != "1" ]; then
-              echo 'push failed after retries'
-              exit 1
-            fi
-          fi
+        env:
+          PUBLISH_MODE: origin
+          PUBLISH_REPO_DIR: .
+          PUBLISH_ADD_PATH: data/adjustments.json
+          PUBLISH_COMMIT_MESSAGE: feat: apply schedule adjustments from Obsidian
+        run: node scripts/ci/publish-with-rebase.js
 
       - name: 将更新后的调课.md 推送回 jiangshu-study
         if: steps.check.outputs.exists == 'true'
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
-        run: |
-          cd _study
-          git add 09-日常处理/调课.md
-          if git diff --cached --quiet; then
-            echo "调课.md 无变化，跳过"
-          else
-            git commit -m "chore: archive processed adjustments"
-            git fetch "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" main
-            git rebase --no-autostash origin/main || echo "Rebase failed, will force push"
-            git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
-          fi
+          PUBLISH_MODE: study
+          PUBLISH_REPO_DIR: _study
+          PUBLISH_ADD_PATH: 09-日常处理/调课.md
+          PUBLISH_COMMIT_MESSAGE: chore: archive processed adjustments
+        run: node scripts/ci/publish-with-rebase.js

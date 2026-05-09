@@ -551,25 +551,34 @@ async function main() {
   }, { timetableDir: process.cwd() });
 }
 
-main().catch((e) => {
-  console.error('[analyze] 错误：', e?.stack || String(e));
-  comm.postflight('knowledge-analyzer', {
-    success: false,
-    errors: [String(e)],
-  }, { timetableDir: process.cwd() });
+if (require.main === module) {
+  main().catch((e) => {
+    console.error('[analyze] 错误：', e?.stack || String(e));
+    comm.postflight('knowledge-analyzer', {
+      success: false,
+      errors: [String(e)],
+    }, { timetableDir: process.cwd() });
 
-  // 即使崩溃也尝试写一个空输出，避免下游流程中断
-  try {
-    fs.mkdirSync(OUT_DIR, { recursive: true });
-    const fallbackPath = path.join(OUT_DIR, 'learning_gaps.json');
-    comm.writeJsonAtomic(fallbackPath, {
-      generatedAt: new Date().toISOString(),
-      profile: { strengths: [], weaknesses: [] },
-      gaps: [],
-      error: String(e),
-    });
-    console.log(`[analyze] 已写入空输出（错误恢复）：${fallbackPath}`);
-  } catch { /* 最后的兜底 */ }
+    // 即使崩溃也尝试写一个空输出，避免下游流程中断
+    try {
+      fs.mkdirSync(OUT_DIR, { recursive: true });
+      const fallbackPath = path.join(OUT_DIR, 'learning_gaps.json');
+      comm.writeJsonAtomic(fallbackPath, {
+        generatedAt: new Date().toISOString(),
+        profile: { strengths: [], weaknesses: [] },
+        gaps: [],
+        error: String(e),
+      });
+      console.log(`[analyze] 已写入空输出（错误恢复）：${fallbackPath}`);
+    } catch { /* 最后的兜底 */ }
 
-  process.exit(1);
-});
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  parseProfile,
+  extractJSON,
+  generateDryRunOutput,
+  main,
+};

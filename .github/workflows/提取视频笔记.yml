@@ -31,7 +31,7 @@ jobs:
           node-version: '22'
 
       - name: 安装 yt-dlp
-        uses: AnimMouse/setup-yt-dlp@v3
+        uses: AnimMouse/setup-yt-dlp@v3.1.2
         with:
           ejs-node: true
 

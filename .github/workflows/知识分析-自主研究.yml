@@ -35,12 +35,7 @@ jobs:
       - name: 克隆 jiangshu-study
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
-        run: |
-          rm -rf _study
-          git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
-          cd _study
-          git config user.name "timetable-bot"
-          git config user.email "timetable-bot@users.noreply.github.com"
+        run: node scripts/ci/clone-study-repo.js
 
       - name: 分析知识空白
         env:
@@ -50,27 +45,12 @@ jobs:
         run: node scripts/analyze_knowledge.js
 
       - name: 提交分析结果 + Agent 状态
-        run: |
-          git config user.name "timetable-bot"
-          git config user.email "timetable-bot@users.noreply.github.com"
-          git pull --rebase --autostash origin main
-          git add -f _out/learning_gaps.json _state/ 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "无变化"
-          else
-            git commit -m "feat: update knowledge gap analysis + agent state"
-            pushed=0
-            for i in 1 2 3; do
-              git pull --rebase --autostash origin main
-              git push && pushed=1 && break
-              echo 'push rejected, retrying...'
-              sleep 2
-            done
-            if [ "$pushed" != "1" ]; then
-              echo 'push failed after retries'
-              exit 1
-            fi
-          fi
+        env:
+          PUBLISH_MODE: origin
+          PUBLISH_REPO_DIR: .
+          PUBLISH_ADD_PATH: -f _out/learning_gaps.json _state/
+          PUBLISH_COMMIT_MESSAGE: feat: update knowledge gap analysis + agent state
+        run: node scripts/ci/publish-with-rebase.js
 
   # ── Job 2: 自主研究（依赖 analyze 完成） ──
   research:
@@ -99,12 +79,7 @@ jobs:
       - name: 克隆 jiangshu-study
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
-        run: |
-          rm -rf _study
-          git clone "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" _study
-          cd _study
-          git config user.name "timetable-bot"
-          git config user.email "timetable-bot@users.noreply.github.com"
+        run: node scripts/ci/clone-study-repo.js
 
       - name: 运行自主研究
         env:
@@ -117,35 +92,16 @@ jobs:
       - name: 提交自主研究笔记
         env:
           STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
-        run: |
-          cd _study
-          git add "08-AI学习/自主研究" 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "无新的自主研究笔记"
-          else
-            git commit -m "feat(auto_research): publish autonomous research note"
-            git push "https://x-access-token:${STUDY_PUSH_TOKEN}@github.com/Health-525/jiangshu-study.git" HEAD:main
-          fi
+          PUBLISH_MODE: study
+          PUBLISH_REPO_DIR: _study
+          PUBLISH_ADD_PATH: 08-AI学习/自主研究
+          PUBLISH_COMMIT_MESSAGE: feat(auto_research): publish autonomous research note
+        run: node scripts/ci/publish-with-rebase.js
 
       - name: 提交 gap 状态 + Agent 状态
-        run: |
-          git config user.name "timetable-bot"
-          git config user.email "timetable-bot@users.noreply.github.com"
-          git pull --rebase --autostash origin main
-          git add -f _out/learning_gaps.json _state/ 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "无变化"
-          else
-            git commit -m "feat: update gap status + agent state after auto research"
-            pushed=0
-            for i in 1 2 3; do
-              git pull --rebase --autostash origin main
-              git push && pushed=1 && break
-              echo 'push rejected, retrying...'
-              sleep 2
-            done
-            if [ "$pushed" != "1" ]; then
-              echo 'push failed after retries'
-              exit 1
-            fi
-          fi
+        env:
+          PUBLISH_MODE: origin
+          PUBLISH_REPO_DIR: .
+          PUBLISH_ADD_PATH: -f _out/learning_gaps.json _state/
+          PUBLISH_COMMIT_MESSAGE: feat: update gap status + agent state after auto research
+        run: node scripts/ci/publish-with-rebase.js
