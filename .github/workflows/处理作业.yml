@@ -54,7 +54,7 @@ jobs:
           PUBLISH_MODE: origin
           PUBLISH_REPO_DIR: .
           PUBLISH_ADD_PATH: data/assignments.json
-          PUBLISH_COMMIT_MESSAGE: feat: update assignments from Obsidian
+          PUBLISH_COMMIT_MESSAGE: 'feat: update assignments from Obsidian'
         run: node scripts/ci/publish-with-rebase.js
 
       - name: 将更新后的作业.md 推送回 jiangshu-study
@@ -63,5 +63,5 @@ jobs:
           PUBLISH_MODE: study
           PUBLISH_REPO_DIR: _study
           PUBLISH_ADD_PATH: 09-日常处理/作业.md
-          PUBLISH_COMMIT_MESSAGE: chore: update 作业.md reminder list
+          PUBLISH_COMMIT_MESSAGE: 'chore: update 作业.md reminder list'
         run: node scripts/ci/publish-with-rebase.js

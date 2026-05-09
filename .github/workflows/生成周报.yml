@@ -44,5 +44,5 @@ jobs:
           PUBLISH_MODE: study
           PUBLISH_REPO_DIR: _study
           PUBLISH_ADD_PATH: 周报/
-          PUBLISH_COMMIT_MESSAGE: weekly: ${{ github.run_id }}
+          PUBLISH_COMMIT_MESSAGE: 'weekly: ${{ github.run_id }}'
         run: node scripts/ci/publish-with-rebase.js

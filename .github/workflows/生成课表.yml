@@ -49,5 +49,5 @@ jobs:
           PUBLISH_MODE: origin
           PUBLISH_REPO_DIR: .
           PUBLISH_ADD_PATH: 09-日常处理/课表.md
-          PUBLISH_COMMIT_MESSAGE: chore: 自动更新课表
+          PUBLISH_COMMIT_MESSAGE: 'chore: 自动更新课表'
         run: node _timetable/scripts/ci/publish-with-rebase.js

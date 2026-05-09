@@ -52,7 +52,7 @@ jobs:
           PUBLISH_MODE: origin
           PUBLISH_REPO_DIR: .
           PUBLISH_ADD_PATH: data/running.json
-          PUBLISH_COMMIT_MESSAGE: feat: update running from Obsidian
+          PUBLISH_COMMIT_MESSAGE: 'feat: update running from Obsidian'
         run: node scripts/ci/publish-with-rebase.js
 
       - name: 将更新后的阳光长跑.md 推送回 jiangshu-study
@@ -61,5 +61,5 @@ jobs:
           PUBLISH_MODE: study
           PUBLISH_REPO_DIR: _study
           PUBLISH_ADD_PATH: 09-日常处理/阳光长跑.md
-          PUBLISH_COMMIT_MESSAGE: chore: update 阳光长跑.md heatmap
+          PUBLISH_COMMIT_MESSAGE: 'chore: update 阳光长跑.md heatmap'
         run: node scripts/ci/publish-with-rebase.js

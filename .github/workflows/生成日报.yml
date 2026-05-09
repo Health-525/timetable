@@ -46,5 +46,5 @@ jobs:
           PUBLISH_MODE: study
           PUBLISH_REPO_DIR: _study
           PUBLISH_ADD_PATH: 日报/
-          PUBLISH_COMMIT_MESSAGE: daily: ${{ github.run_id }} 日报自动生成
+          PUBLISH_COMMIT_MESSAGE: 'daily: ${{ github.run_id }} 日报自动生成'
         run: node scripts/ci/publish-with-rebase.js

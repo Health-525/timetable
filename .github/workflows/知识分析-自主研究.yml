@@ -49,7 +49,7 @@ jobs:
           PUBLISH_MODE: origin
           PUBLISH_REPO_DIR: .
           PUBLISH_ADD_PATH: -f _out/learning_gaps.json _state/
-          PUBLISH_COMMIT_MESSAGE: feat: update knowledge gap analysis + agent state
+          PUBLISH_COMMIT_MESSAGE: 'feat: update knowledge gap analysis + agent state'
         run: node scripts/ci/publish-with-rebase.js
 
   # ── Job 2: 自主研究（依赖 analyze 完成） ──
@@ -95,7 +95,7 @@ jobs:
           PUBLISH_MODE: study
           PUBLISH_REPO_DIR: _study
           PUBLISH_ADD_PATH: 08-AI学习/自主研究
-          PUBLISH_COMMIT_MESSAGE: feat(auto_research): publish autonomous research note
+          PUBLISH_COMMIT_MESSAGE: 'feat(auto_research): publish autonomous research note'
         run: node scripts/ci/publish-with-rebase.js
 
       - name: 提交 gap 状态 + Agent 状态
@@ -103,5 +103,5 @@ jobs:
           PUBLISH_MODE: origin
           PUBLISH_REPO_DIR: .
           PUBLISH_ADD_PATH: -f _out/learning_gaps.json _state/
-          PUBLISH_COMMIT_MESSAGE: feat: update gap status + agent state after auto research
+          PUBLISH_COMMIT_MESSAGE: 'feat: update gap status + agent state after auto research'
         run: node scripts/ci/publish-with-rebase.js
