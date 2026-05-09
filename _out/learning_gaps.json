@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-08T15:01:06.636Z",
+  "generatedAt": "2026-05-09T00:12:56.972Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -22,12 +22,12 @@
       "title": "PCA特征值到主成分的完整推导",
       "category": "数学桥接",
       "priority": 2,
-      "why": "虽然掌握了特征值分解和PCA调用，但缺乏两者之间的连接，未能理解协方差矩阵如何桥接两者。",
+      "why": "已掌握特征值分解和PCA调用，但缺乏两者之间的桥梁，即协方差矩阵如何连接特征值分解和主成分。",
       "prerequisites_met": [
         "特征值分解",
         "PCA调用"
       ],
-      "suggestedTopic": "PCA原理与特征值分解的关系",
+      "suggestedTopic": "PCA原理与协方差矩阵的关系",
       "relatedCourses": [
         "04-多元统计分析",
         "05-数值分析"
@@ -39,15 +39,15 @@
       "title": "从numpy手写到深度学习框架",
       "category": "工程深化",
       "priority": 1,
-      "why": "虽然熟悉numpy和sklearn，但缺乏从零实现神经网络的实践。",
+      "why": "已掌握numpy基础和sklearn调包，但缺乏从零开始实现神经网络的经验。",
       "prerequisites_met": [
         "numpy基础",
         "sklearn调包"
       ],
       "suggestedTopic": "神经网络基础与实现",
       "relatedCourses": [
-        "06-数学模型与数学软件",
-        "08-AI学习"
+        "03-数据结构与算法",
+        "05-数值分析"
       ],
       "status": "open"
     },
@@ -56,7 +56,7 @@
       "title": "git底层原理",
       "category": "理论基础",
       "priority": 3,
-      "why": "虽然掌握了git的基本操作和GitHub Actions，但缺乏对git内部对象模型的深入理解。",
+      "why": "已掌握git基本操作和GitHub Actions，但缺乏对git内部对象模型的深入理解。",
       "prerequisites_met": [
         "git基本操作",
         "GitHub Actions"
