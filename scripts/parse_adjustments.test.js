@@ -4,6 +4,10 @@
  * 运行：node scripts/parse_adjustments.test.js
  */
 
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { spawnSync } = require('child_process');
 const {
   parseFrontmatter,
   resetFrontmatter,
@@ -103,6 +107,47 @@ group('resetFrontmatter / appendArchive - 模板重置与归档', () => {
 
   const reset = resetFrontmatter(archived);
   assertTruthy('重置后包含空模板', reset.includes('状态: 待处理'));
+});
+
+group('集成 - frontmatter 入库并归档', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'parse-adjustments-'));
+  const notePath = path.join(tmpDir, '调课.md');
+  const dataPath = path.join(tmpDir, 'adjustments.json');
+
+  const noteContent = [
+    '---',
+    '课程: 数据结构',
+    '原星期: 周三',
+    '原节次: 5-6',
+    '目标星期: 周四',
+    '目标节次: 7-8',
+    '类型: 单次',
+    '周次: 6',
+    '状态: 待处理',
+    '---',
+    '',
+    '## 已处理记录',
+    '',
+  ].join('\n');
+
+  fs.writeFileSync(notePath, noteContent, 'utf8');
+  fs.writeFileSync(dataPath, '[]\n', 'utf8');
+
+  const result = spawnSync(process.execPath, [path.join(__dirname, 'parse_adjustments.js'), '--note', notePath, '--adj', dataPath], {
+    cwd: path.join(__dirname, '..'),
+    encoding: 'utf8',
+  });
+
+  assert('脚本退出码为 0', result.status, 0);
+
+  const saved = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  assert('新增 1 条调课', saved.length, 1);
+  assert('课程写入正确', saved[0].courseTitle, '数据结构');
+  assert('单次调课 specificWeek 正确', saved[0].specificWeek, 6);
+
+  const updatedNote = fs.readFileSync(notePath, 'utf8');
+  assertTruthy('归档区包含课程名', updatedNote.includes('- 课程：数据结构'));
+  assertTruthy('frontmatter 已重置', updatedNote.includes('状态: 待处理'));
 });
 
 console.log(`\n${'─'.repeat(40)}`);

@@ -193,7 +193,7 @@ node scripts/schedule.js today
       "periods": [5, 6],
       "weeks": "2-17",
       "location": "笃学B楼 202",
-      "teacher": "石玮"
+      "teacher": ""
     }
   ]
 }

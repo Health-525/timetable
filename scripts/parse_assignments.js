@@ -10,7 +10,6 @@
  */
 
 const fs = require('fs');
-const path = require('path');
 const comm = require('./lib/agent-comm');
 
 function parseArgs(argv) {
@@ -103,8 +102,7 @@ function loadAssignments(dataPath) {
 }
 
 function saveAssignments(dataPath, assignments) {
-  fs.mkdirSync(path.dirname(dataPath), { recursive: true });
-  fs.writeFileSync(dataPath, JSON.stringify(assignments, null, 2) + '\n', 'utf8');
+  comm.writeJsonAtomic(dataPath, assignments);
 }
 
 const CST_OFFSET_MS = 8 * 60 * 60 * 1000;

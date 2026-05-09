@@ -89,8 +89,7 @@ function loadRunningData(dataPath) {
 }
 
 function saveRunningData(dataPath, data) {
-  fs.mkdirSync(path.dirname(dataPath), { recursive: true });
-  fs.writeFileSync(dataPath, JSON.stringify(data, null, 2) + '\n', 'utf8');
+  comm.writeJsonAtomic(dataPath, data);
 }
 
 function generateHeatmap(records) {
@@ -217,4 +216,20 @@ function main() {
   }, { timetableDir: process.cwd() });
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  parseRunningTrigger,
+  resetRunningTrigger,
+  loadRunningData,
+  saveRunningData,
+  generateHeatmap,
+  generateHistoryList,
+  renderRunningSection,
+  updateRunningSection,
+  semesterDayToDateStr,
+  getBeijingNow,
+  main,
+};

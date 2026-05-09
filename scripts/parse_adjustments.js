@@ -10,7 +10,6 @@
  */
 
 const fs = require('fs');
-const path = require('path');
 const comm = require('./lib/agent-comm');
 
 const WEEKDAY_MAP = { 周一: 1, 周二: 2, 周三: 3, 周四: 4, 周五: 5, 周六: 6, 周日: 7 };
@@ -106,8 +105,7 @@ function loadAdjustments(adjPath) {
 }
 
 function saveAdjustments(adjPath, adjs) {
-  fs.mkdirSync(path.dirname(adjPath), { recursive: true });
-  fs.writeFileSync(adjPath, JSON.stringify(adjs, null, 2) + '\n', 'utf8');
+  comm.writeJsonAtomic(adjPath, adjs);
 }
 
 function main() {

@@ -4,6 +4,10 @@
  * 运行：node scripts/parse_assignments.test.js
  */
 
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { spawnSync } = require('child_process');
 const {
   parseDeadline,
   parseFrontmatter,
@@ -93,6 +97,45 @@ group('resetFrontmatter / updateAssignmentsSection - 回写模板', () => {
 
   const updated = updateAssignmentsSection(reset, '> [!tip] 🎉 暂无待完成作业');
   assertTruthy('提醒区被替换', updated.includes('暂无待完成作业'));
+});
+
+group('集成 - 追加块入库并重写提醒区', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'parse-assignments-'));
+  const notePath = path.join(tmpDir, '作业.md');
+  const dataPath = path.join(tmpDir, 'assignments.json');
+
+  const noteContent = [
+    '<!-- ASSIGNMENTS_START -->',
+    '',
+    '旧提醒',
+    '',
+    '<!-- ASSIGNMENTS_END -->',
+    '',
+    '## 作业记录',
+    '',
+    '课程：线性代数',
+    '标题：第一章习题',
+    '截止日期：2026-03-22 18:00',
+  ].join('\n');
+
+  fs.writeFileSync(notePath, noteContent, 'utf8');
+  fs.writeFileSync(dataPath, '[]\n', 'utf8');
+
+  const result = spawnSync(process.execPath, [path.join(__dirname, 'parse_assignments.js'), '--note', notePath, '--data', dataPath], {
+    cwd: path.join(__dirname, '..'),
+    encoding: 'utf8',
+  });
+
+  assert('脚本退出码为 0', result.status, 0);
+
+  const saved = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  assert('新增 1 条作业', saved.length, 1);
+  assert('课程写入正确', saved[0].course, '线性代数');
+  assert('标题写入正确', saved[0].title, '第一章习题');
+
+  const updatedNote = fs.readFileSync(notePath, 'utf8');
+  assertTruthy('提醒区包含新作业', updatedNote.includes('线性代数 · 第一章习题'));
+  assertTruthy('追加块已被移除', !updatedNote.includes('标题：第一章习题'));
 });
 
 console.log(`\n${'─'.repeat(40)}`);
