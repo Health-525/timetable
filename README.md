@@ -15,6 +15,7 @@
 基于当前代码，仓库已经包含这些能力：
 
 - 课表生成：`scripts/generate-timetable.js`
+- 订阅日历导出：`scripts/export_ics.js`
 - 作业解析：`scripts/parse_assignments.js`
 - 调课解析：`scripts/parse_adjustments.js`
 - 跑步解析：`scripts/parse_running.js`
@@ -58,6 +59,12 @@ timetable/
 - `同步YouTube笔记.yml`
 - `提取视频笔记.yml`
 
+其中 `生成课表.yml` 现在不仅会回写 `09-日常处理/课表.md`，还会：
+
+- 生成 `09-日常处理/课表.ics`
+- 同步公开订阅文件到 `jiangshu-study/public/schedule.ics`
+- 配合 `jiangshu-study` 的 GitHub Pages 工作流，发布可订阅日历链接
+
 ## 数据文件
 
 `data/` 目录是执行层的核心状态：
@@ -84,6 +91,7 @@ timetable/
 cd timetable
 
 node scripts/generate-timetable.js
+node scripts/export_ics.js data/schedule.json output.ics
 node scripts/parse_assignments.js
 node scripts/parse_adjustments.js
 node scripts/parse_running.js
@@ -126,6 +134,29 @@ npm run dev
 - `npm run cap:copy`
 - `npm run cap:sync`
 
+## 课表订阅链路
+
+当前课表相关能力已经拆成三类产物：
+
+- `09-日常处理/课表.md`
+  面向内容阅读的 Markdown 课表
+- `09-日常处理/课表.ics`
+  面向手动导入日历的 ICS 文件
+- `public/schedule.ics`
+  面向 GitHub Pages 发布的固定订阅地址
+
+推荐订阅地址：
+
+```text
+https://health-525.github.io/jiangshu-study/schedule.ics
+```
+
+这条链路的职责边界是：
+
+- `timetable` 负责从 `data/schedule.json` 生成最新 ICS
+- `jiangshu-study` 负责承接产物与 Pages 发布
+- iPhone / macOS 日历通过“已订阅的日历”消费公开 ICS
+
 ## 关键环境变量
 
 从当前脚本实现看，常见环境变量包括：
@@ -157,4 +188,5 @@ npm run dev
 
 - 如果日报、周报、知识分析异常，优先看 `scripts/` 日志与 workflow 执行记录
 - 如果课表展示异常，优先检查 `data/schedule.json` 与 `web/`
+- 如果订阅日历内容异常，优先检查 `scripts/export_ics.js`、`data/schedule.json` 和 `jiangshu-study/public/schedule.ics`
 - 如果回写异常，优先核对 `STUDY_DIR`、token 和 workflow 触发链路
