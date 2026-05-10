@@ -5,6 +5,17 @@ const fs = require("fs");
 const path = require("path");
 const { parseWeekSpec } = require("./schedule");
 
+function hasWeek(spec, week) {
+  const weeks = parseWeekSpec(String(spec || ""));
+  if (weeks instanceof Set) {
+    return weeks.size === 0 || weeks.has(week);
+  }
+  if (Array.isArray(weeks)) {
+    return weeks.length === 0 || weeks.includes(week);
+  }
+  return true;
+}
+
 function pad2(n) {
   return String(n).padStart(2, "0");
 }
@@ -100,8 +111,7 @@ function buildEvents(schedule) {
       const specialWindows = new Set();
 
       for (const item of schedule.special || []) {
-        const weeks = parseWeekSpec(String(item.weeks || ""));
-        if (weeks.length && !weeks.includes(week)) continue;
+        if (!hasWeek(item.weeks, week)) continue;
 
         const weekdays = Array.isArray(item.weekday) ? item.weekday.map(Number) : [Number(item.weekday)];
         if (!weekdays.includes(weekday)) continue;
@@ -131,9 +141,7 @@ function buildEvents(schedule) {
 
       for (const course of schedule.courses || []) {
         if (Number(course.weekday) !== weekday) continue;
-
-        const weeks = parseWeekSpec(String(course.weeks || ""));
-        if (weeks.length && !weeks.includes(week)) continue;
+        if (!hasWeek(course.weeks, week)) continue;
 
         const window = getPeriodWindow(periodTimes, course.periods);
         if (!window) continue;
