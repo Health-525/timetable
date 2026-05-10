@@ -44,10 +44,113 @@ jobs:
             _timetable/data/adjustments.json \
             09-日常处理/课表.md
 
-      - name: 推送课表.md 到 jiangshu-study
+      - name: 生成课表.ics
+        run: |
+          node _timetable/scripts/export_ics.js \
+            _timetable/data/schedule.json \
+            09-日常处理/课表.ics
+
+      - name: 准备订阅日历静态文件
+        shell: bash
+        run: |
+          mkdir -p public
+          cp "09-日常处理/课表.ics" public/schedule.ics
+          cat > public/index.html <<'EOF'
+          <!doctype html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>姜书课表订阅</title>
+            <style>
+              :root {
+                color-scheme: light;
+                --bg: #f7f5ef;
+                --card: #fffdf8;
+                --ink: #1f2937;
+                --muted: #5b6472;
+                --accent: #0f766e;
+                --border: #d9d2c3;
+              }
+              * { box-sizing: border-box; }
+              body {
+                margin: 0;
+                font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+                background:
+                  radial-gradient(circle at top left, rgba(15,118,110,0.10), transparent 32%),
+                  linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
+                color: var(--ink);
+              }
+              main {
+                max-width: 760px;
+                margin: 0 auto;
+                padding: 48px 20px 72px;
+              }
+              .card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 20px;
+                padding: 28px;
+                box-shadow: 0 18px 40px rgba(31, 41, 55, 0.08);
+              }
+              h1 {
+                margin: 0 0 12px;
+                font-size: 32px;
+                line-height: 1.15;
+              }
+              p {
+                margin: 0 0 14px;
+                line-height: 1.7;
+                color: var(--muted);
+              }
+              a.button {
+                display: inline-block;
+                margin: 12px 0 20px;
+                padding: 12px 18px;
+                border-radius: 999px;
+                text-decoration: none;
+                background: var(--accent);
+                color: white;
+                font-weight: 600;
+              }
+              code {
+                display: inline-block;
+                padding: 2px 6px;
+                border-radius: 6px;
+                background: #f2efe8;
+                color: #0f172a;
+              }
+              ol {
+                margin: 10px 0 0;
+                padding-left: 20px;
+                color: var(--ink);
+              }
+              li { margin: 8px 0; line-height: 1.6; }
+            </style>
+          </head>
+          <body>
+            <main>
+              <section class="card">
+                <h1>姜书课表订阅</h1>
+                <p>这个页面提供可订阅的课表日历文件。适合 iPhone、macOS 和支持 ICS 订阅的日历客户端。</p>
+                <a class="button" href="./schedule.ics">打开日历文件</a>
+                <p>订阅地址：</p>
+                <p><code>https://health-525.github.io/jiangshu-study/schedule.ics</code></p>
+                <ol>
+                  <li>在 iPhone 打开 <code>设置 → 日历 → 账户 → 添加账户 → 其他 → 添加已订阅的日历</code>。</li>
+                  <li>粘贴上面的订阅地址。</li>
+                  <li>保存后，系统会按自己的节奏刷新，不需要每次重新导入。</li>
+                </ol>
+              </section>
+            </main>
+          </body>
+          </html>
+          EOF
+
+      - name: 推送课表产物到 jiangshu-study
         env:
           PUBLISH_MODE: origin
           PUBLISH_REPO_DIR: .
-          PUBLISH_ADD_PATH: 09-日常处理/课表.md
-          PUBLISH_COMMIT_MESSAGE: 'chore: 自动更新课表'
+          PUBLISH_ADD_PATH: "09-日常处理/课表.md 09-日常处理/课表.ics public/schedule.ics public/index.html"
+          PUBLISH_COMMIT_MESSAGE: 'chore: 自动更新课表与订阅日历'
         run: node _timetable/scripts/ci/publish-with-rebase.js
