@@ -1,0 +1,10 @@
+{
+  "agentId": "timetable-generator",
+  "name": "课表生成",
+  "lastRun": "2026-05-10T03:50:35.963Z",
+  "status": "success",
+  "summary": {
+    "week": 10
+  },
+  "errors": []
+}

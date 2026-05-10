@@ -1,240 +1,160 @@
 # timetable
 
-> 课表数据化 + 全自动化处理中枢 · 为 [jiangshu-study](https://github.com/Health-525/jiangshu-study) 提供后端支撑
->
-> 属于 [MyDigitalCrew](https://github.com/Health-525/MyDigitalCrew) — 10 个 AI Agent 组成的个人学习管理数字团队
+> `jiangshu-study` 的执行层仓库。这里存放自动化脚本、结构化数据、GitHub Actions 工作流，以及一个课表前端/PWA 原型。
 
----
+## 仓库定位
 
-## 🎯 核心架构原则
+`timetable` 负责“处理、计算、生成、回写”，不承担长期内容沉淀。
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    MyDigitalCrew 学习系统                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  jiangshu-study (内容层)         timetable (执行层)          │
-│  ─────────────────────         ─────────────────────         │
-│  • 纯 Markdown 内容             • 处理逻辑脚本                │
-│  • Obsidian 笔记仓库            • GitHub Actions             │
-│  • 人工编辑                     • 数据存储 (JSON)            │
-│  • 读取产物                     • 生成产物                   │
-│                                                               │
-└─────────────────────────────────────────────────────────────┘
-```
+- 输入：`jiangshu-study` 中的 Markdown、`data/*.json`、环境变量
+- 处理：Node.js / Python 脚本、GitHub Actions、LLM 调用
+- 输出：结构化 JSON、回写到 `jiangshu-study` 的 Markdown 产物、前端课表展示
 
-**职责分离：**
-- **jiangshu-study**：只存文本，供人类阅读和编辑
-- **timetable**：只跑逻辑，机器自动化处理
+## 当前能力总览
 
----
+基于当前代码，仓库已经包含这些能力：
 
-## 📋 仓库功能
+- 课表生成：`scripts/generate-timetable.js`
+- 作业解析：`scripts/parse_assignments.js`
+- 调课解析：`scripts/parse_adjustments.js`
+- 跑步解析：`scripts/parse_running.js`
+- 日报生成：`scripts/generate-daily.js`
+- 周报生成：`scripts/generate-weekly.js`
+- 知识空白分析：`scripts/analyze_knowledge.js`
+- 自主研究闭环：`scripts/auto_research.js`
+- 视频笔记提取与同步：
+  - `scripts/fetch_video_note.js`
+  - `scripts/youtube_daily_to_study.js`
+  - `scripts/wechat_daily_to_jiangshu_study.js`
+- PDF 课表提取：`scripts/extract_from_pdf.py`
+- Web / PWA 课表端：`web/`
 
-本仓库承担所有**执行逻辑**，`jiangshu-study` 只存文本。通过 GitHub Actions 实现：
+## 目录结构
 
-- ✅ 每日自动生成课表（北京时间 06:00）
-- ✅ 解析作业并推送倒计时提醒
-- ✅ 解析调课并更新课表数据
-- ✅ 自动生成日报 / 周报
-- ✅ 知识空白分析与自主研究
-- ✅ 阳光长跑热力图追踪
-
-### 当前解耦原则
-
-- **只连接必要链路**：目前只有 `调课 -> 课表生成`、`知识分析 -> 自主研究` 这类确实存在上下游关系的流程会显式串联
-- **其余 Agent 默认独立运行**：日报、周报、作业、跑步等流程不再因为“挂在同一总线”而彼此耦合
-- **发布留在 workflow**：脚本只负责生成或更新产物，真正的 `git commit / push` 放在 GitHub Actions 中统一处理
-- **分析快照与处理进度分离**：`_out/learning_gaps.json` 保留分析结果，`_state/research-progress.json` 单独记录自主研究进度
-
----
-
-## 📂 目录结构
-
-```
+```text
 timetable/
-├── .github/workflows/         # GitHub Actions 自动化工作流
-│   ├── 生成课表.yml           # 每日 06:00 自动生成课表
-│   ├── 处理作业.yml           # 解析作业.md，更新提醒
-│   ├── 处理调课.yml           # 解析调课.md，更新数据
-│   ├── 处理阳光长跑.yml       # 解析阳光长跑.md，生成热力图
-│   ├── 同步YouTube笔记.yml    # YouTube 笔记同步（当前已暂停）
-│   └── 提取视频笔记.yml       # 手动提取单个视频笔记
-├── data/                      # 数据存储（JSON 格式）
-│   ├── schedule.json          # 课表数据（主数据源）
-│   ├── adjustments.json       # 调课记录
-│   ├── assignments.json       # 作业记录
-│   └── running.json           # 阳光长跑记录
-├── scripts/                   # 处理脚本
-│   ├── schedule.js            # CLI 查课表工具
-│   ├── generate-timetable.js  # 生成课表.md
-│   ├── parse_assignments.js   # 解析作业.md
-│   ├── parse_adjustments.js   # 解析调课.md
-│   ├── parse_running.js       # 解析阳光长跑.md
-│   ├── youtube_daily_to_study.js  # YouTube 笔记同步
-│   ├── fetch_video_note.js    # 单视频笔记提取
-│   └── extract_from_pdf.py    # 从 PDF 提取课表
-└── web/                       # Next.js 前端（已弃用）
+├─ .github/workflows/        自动化工作流
+├─ data/                     结构化数据源
+├─ scripts/                  核心脚本与测试
+├─ web/                      Next.js + Capacitor 前端
+├─ obsidian-templates/       配套模板
+├─ youtube/                  视频源配置
+├─ wechat/                   公众号源配置
+├─ _state/                   Agent 运行状态与消息
+└─ requirements.txt          Python 依赖
 ```
 
----
+### 工作流
 
-## 🔄 自动化流程
+当前仓库里存在以下 GitHub Actions：
 
-### 1️⃣ 课表生成流程
+- `生成课表.yml`
+- `处理作业.yml`
+- `处理调课.yml`
+- `处理阳光长跑.yml`
+- `生成日报.yml`
+- `生成周报.yml`
+- `知识分析-自主研究.yml`
+- `同步YouTube笔记.yml`
+- `提取视频笔记.yml`
 
-```
-data/schedule.json (数据源)
-         ↓
-[生成课表.yml] 每日 06:00 自动
-         ↓
-generate-timetable.js 读取 JSON
-         ↓
-生成 jiangshu-study/09-日常处理/课表.md
-         ↓
-推送回 jiangshu-study 仓库
-```
+## 数据文件
 
-### 2️⃣ 作业管理流程
+`data/` 目录是执行层的核心状态：
 
-```
-jiangshu-study/09-日常处理/作业.md (人工填写)
-         ↓
-推送 → 触发 [处理作业.yml]
-         ↓
-parse_assignments.js 解析 Markdown
-         ↓
-更新 data/assignments.json
-         ↓
-更新 作业.md 顶部（添加倒计时提醒）
-         ↓
-推送回 jiangshu-study
-```
+- `schedule.json`：课表主数据源
+- `adjustments.json`：调课记录
+- `assignments.json`：作业记录
+- `running.json`：跑步记录
 
-### 3️⃣ 触发链路
+这些文件由脚本读写，尽量不要手工大范围改动。
 
-```
-jiangshu-study 推送作业.md / 调课.md / 阳光长跑.md
-       ↓
-[sync_to_timetable.yml] 检测变化
-       ↓
-发送 repository_dispatch 事件到 timetable
-       ↓
-对应 workflow 执行
-       ↓
-结果写回 jiangshu-study
-```
+## 本地运行
 
----
+### 环境要求
 
-## 💻 本地使用
+- Node.js 20+ 更稳妥
+- Python 3.8+（用于 PDF 提取等 Python 脚本）
 
-### 前置要求
-- Node.js >= 20
-- Python >= 3.8（用于 PDF 解析）
+### 常用命令
 
-### 安装依赖
+仓库根目录没有单独的 `package.json`，脚本直接通过 Node 运行：
 
 ```bash
-# 安装 Node.js 依赖
-cd scripts
+cd timetable
+
+node scripts/generate-timetable.js
+node scripts/parse_assignments.js
+node scripts/parse_adjustments.js
+node scripts/parse_running.js
+node scripts/generate-daily.js
+node scripts/generate-weekly.js
+node scripts/analyze_knowledge.js
+node scripts/auto_research.js
+```
+
+PDF 提取脚本示例：
+
+```bash
+python scripts/extract_from_pdf.py
+```
+
+### 运行测试
+
+当前 `scripts/` 下已经有多组测试文件，可直接使用 Node 内置测试运行器：
+
+```bash
+node --test "scripts/*.test.js"
+```
+
+## Web 端
+
+`web/` 是一个独立的 Next.js 项目，当前用于课表展示与移动端封装。
+
+```bash
+cd web
 npm install
-
-# 安装 Python 依赖（可选）
-pip install -r requirements.txt
+npm run dev
 ```
 
-### CLI 工具
+常用脚本：
 
-```bash
-# 查今日课表
-node scripts/schedule.js today
+- `npm run dev`
+- `npm run build`
+- `npm run start`
+- `npm run lint`
+- `npm run cap:copy`
+- `npm run cap:sync`
 
-# 查指定日期
-node scripts/schedule.js 2026-03-27
+## 关键环境变量
 
-# 设置自定义课表路径
-set TIMETABLE_SCHEDULE=path/to/schedule.json
-node scripts/schedule.js today
-```
+从当前脚本实现看，常见环境变量包括：
 
----
+- `STUDY_DIR`：本地 `jiangshu-study` 路径
+- `TIMETABLE_DIR`：当前执行仓库路径
+- `DEEPSEEK_API_KEY`：LLM 主接口
+- `GLM_API_KEY`：LLM 备用接口
+- `AUTO_RESEARCH_SEARCH_PROVIDER`：自主研究搜索源
 
-## 🔐 Secrets 配置
+不同 workflow 还可能需要仓库同步用 token，这部分应以 workflow 文件中的实际 secrets 配置为准。
 
-| Secret | 用途 | 必需 |
-|--------|------|------|
-| `STUDY_PUSH_TOKEN` | 读写 jiangshu-study 仓库 | ✅ 必需 |
-| `TIMETABLE_DISPATCH_TOKEN` | jiangshu-study 触发本仓库 | ✅ 必需 |
-| `DEEPSEEK_API_KEY` | YouTube 笔记 AI 分析 | ⚠️ 可选 |
-| `GLM_API_KEY` | YouTube 笔记 AI 分析（备用）| ⚠️ 可选 |
-| `YOUTUBE_COOKIES` | YouTube 访问 Cookie | ⚠️ 可选 |
+## 设计原则
 
----
+- KISS：脚本尽量单职责，一个脚本解决一个明确问题
+- DRY：通用能力沉淀在 `scripts/lib/`，避免 workflow 中重复写复杂逻辑
+- YAGNI：只保留当前真正运行的链路，不为未来场景预埋过多抽象
+- SOLID：
+  - `jiangshu-study` 负责内容
+  - `timetable` 负责执行
+  - `web` 负责展示
 
-## 📊 数据格式
+## 关联仓库
 
-### schedule.json
+- `jiangshu-study`：内容层，保存学习产物与人工输入
+- `myweb`：展示层，用于对外展示项目能力
 
-```json
-{
-  "meta": {
-    "tz": "Asia/Shanghai",
-    "week1_monday": "2026-03-02"
-  },
-  "periodTimes": {
-    "1": "08:10-08:55",
-    "2": "09:05-09:50"
-  },
-  "courses": [
-    {
-      "title": "数值分析",
-      "weekday": 2,
-      "periods": [5, 6],
-      "weeks": "2-17",
-      "location": "笃学B楼 202",
-      "teacher": ""
-    }
-  ]
-}
-```
+## 说明
 
-### assignments.json
-
-```json
-[
-  {
-    "id": "a-xxx",
-    "course": "数值分析",
-    "title": "上机作业",
-    "deadline": "2026-03-27T15:59:00.000Z",
-    "done": false,
-    "createdAt": "2026-03-21T05:25:38.276Z"
-  }
-]
-```
-
----
-
-## ⚠️ 重要提示
-
-- **公开仓库**：请勿提交含个人信息的原始材料（课表 PDF 等）
-- **数据源单一**：所有数据以 `data/` 目录的 JSON 文件为准
-- **bot 提交**：自动生成的提交由 `timetable-bot` 完成，避免循环触发
-
----
-
-## 🚀 GitHub Actions 工作流
-
-| Workflow | 触发方式 | 功能 |
-|---------|---------|------|
-| 生成课表.yml | 每天 06:00 / dispatch / 手动 | 生成课表.md |
-| 处理作业.yml | dispatch / 每天 22:00 | 解析作业、更新倒计时 |
-| 处理调课.yml | dispatch / 手动 | 解析调课、更新数据，并触发课表刷新 |
-| 处理阳光长跑.yml | dispatch / 手动 | 生成热力图 |
-| 生成日报.yml | 每天 22:00 / dispatch / 手动 | 生成并发布日报 |
-| 生成周报.yml | 每周日 22:30 / 手动 | 生成并发布周报 |
-| 知识分析-自主研究.yml | 每天 21:00 / 手动 | 先分析 gap，再触发自主研究 |
-| 同步YouTube笔记.yml | 已暂停 | YouTube 笔记同步（当前不执行） |
-| 提取视频笔记.yml | 手动（需提供URL）| 单视频笔记提取 |
-
+- 如果日报、周报、知识分析异常，优先看 `scripts/` 日志与 workflow 执行记录
+- 如果课表展示异常，优先检查 `data/schedule.json` 与 `web/`
+- 如果回写异常，优先核对 `STUDY_DIR`、token 和 workflow 触发链路

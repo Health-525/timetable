@@ -1,0 +1,11 @@
+{
+  "agentId": "running-parser",
+  "name": "阳光长跑",
+  "lastRun": "2026-05-10T03:50:36.447Z",
+  "status": "success",
+  "summary": {
+    "total": 0,
+    "today": false
+  },
+  "errors": []
+}

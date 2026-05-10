@@ -1,0 +1,11 @@
+{
+  "agentId": "adjustment-parser",
+  "name": "调课处理",
+  "lastRun": "2026-05-10T03:50:36.049Z",
+  "status": "success",
+  "summary": {
+    "course": "数据结构",
+    "mode": "once"
+  },
+  "errors": []
+}
