@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-09T14:17:29.929Z",
+  "generatedAt": "2026-05-10T14:20:21.232Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -47,7 +47,7 @@
       "suggestedTopic": "神经网络基础与实现",
       "relatedCourses": [
         "03-数据结构与算法",
-        "08-AI学习"
+        "05-数值分析"
       ],
       "status": "open"
     },
@@ -56,7 +56,7 @@
       "title": "git底层原理",
       "category": "理论基础",
       "priority": 3,
-      "why": "虽然熟悉git的基本操作和GitHub Actions，但缺乏对git内部对象模型的深入理解。",
+      "why": "虽然掌握了git的基本操作和GitHub Actions，但缺乏对git内部对象模型的深入理解。",
       "prerequisites_met": [
         "git基本操作",
         "GitHub Actions"
