@@ -183,6 +183,7 @@ function buildEvents(schedule) {
 function buildICS(schedule) {
   const events = buildEvents(schedule);
   const now = new Date();
+  const reminderMinutes = 20;
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -202,6 +203,11 @@ function buildICS(schedule) {
     lines.push(`SUMMARY:${esc(event.summary)}`);
     if (event.location) lines.push(`LOCATION:${esc(event.location)}`);
     if (event.description) lines.push(`DESCRIPTION:${esc(event.description)}`);
+    lines.push("BEGIN:VALARM");
+    lines.push(`TRIGGER:-PT${reminderMinutes}M`);
+    lines.push("ACTION:DISPLAY");
+    lines.push(`DESCRIPTION:${esc(`课程开始前 ${reminderMinutes} 分钟提醒：${event.summary}`)}`);
+    lines.push("END:VALARM");
     lines.push("END:VEVENT");
   }
 
