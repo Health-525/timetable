@@ -183,7 +183,7 @@ function buildEvents(schedule) {
 function buildICS(schedule) {
   const events = buildEvents(schedule);
   const now = new Date();
-  const reminderMinutes = 20;
+  const reminderMinutes = 30;
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
