@@ -59,6 +59,11 @@ function loadSchedule(schedulePath) {
   return JSON.parse(fs.readFileSync(schedulePath, "utf-8"));
 }
 
+function loadAdjustments(adjustmentsPath) {
+  if (!adjustmentsPath || !fs.existsSync(adjustmentsPath)) return [];
+  return JSON.parse(fs.readFileSync(adjustmentsPath, "utf-8"));
+}
+
 function getPeriodWindow(periodTimes, periods) {
   if (!Array.isArray(periods) || periods.length === 0) return null;
   const first = String(periodTimes[String(periods[0])] || "");
@@ -99,7 +104,62 @@ function getMaxWeek(schedule) {
   return maxWeek;
 }
 
-function buildEvents(schedule) {
+function findMatchingAdjustment(adjustments, event) {
+  for (const adj of adjustments) {
+    const adjTitle = String(adj.courseTitle || "");
+    const summary = String(event.summary || "");
+    if (adjTitle && !summary.includes(adjTitle) && !adjTitle.includes(summary)) continue;
+
+    const mode = adj.mode || "once";
+    if (mode === "once" && Number(adj.specificWeek) !== event.week) continue;
+    if (mode === "longterm" && event.week < Number(adj.startWeek || 0)) continue;
+    if (Number(adj.sourceWeekday) !== event.weekday) continue;
+
+    const sourcePeriods = Array.isArray(adj.sourcePeriods) ? adj.sourcePeriods.map(Number) : [];
+    if (sourcePeriods.join(",") !== event.periods.join(",")) continue;
+
+    return adj;
+  }
+
+  return null;
+}
+
+function applyAdjustmentToEvent(event, adjustment, periodTimes) {
+  if (!adjustment) return event;
+
+  const next = { ...event };
+  const targetWeekday = Number(adjustment.targetWeekday || event.weekday);
+  const targetPeriods = Array.isArray(adjustment.targetPeriods)
+    ? adjustment.targetPeriods.map(Number)
+    : event.periods;
+
+  const weekdayDelta = targetWeekday - event.weekday;
+  if (weekdayDelta !== 0) {
+    next.start = addDays(next.start, weekdayDelta);
+    next.end = addDays(next.end, weekdayDelta);
+  }
+
+  const targetWindow = getPeriodWindow(periodTimes, targetPeriods);
+  if (targetWindow) {
+    const startClock = parseClock(targetWindow.start);
+    const endClock = parseClock(targetWindow.end);
+    if (startClock && endClock) {
+      next.start.setHours(startClock.hour, startClock.minute, 0, 0);
+      next.end.setHours(endClock.hour, endClock.minute, 0, 0);
+      next.startText = targetWindow.start;
+    }
+  }
+
+  if (adjustment.targetLocation) {
+    next.location = cleanText(adjustment.targetLocation);
+  }
+
+  next.weekday = targetWeekday;
+  next.periods = targetPeriods;
+  return next;
+}
+
+function buildEvents(schedule, adjustments = []) {
   const week1Monday = parseLocalDate(schedule.meta?.week1_monday || "2026-03-02");
   const periodTimes = schedule.periodTimes || {};
   const maxWeek = getMaxWeek(schedule);
@@ -135,6 +195,9 @@ function buildEvents(schedule) {
             location: cleanText(item.location),
             description: cleanText(item.note),
             startText: time.start,
+            week,
+            weekday,
+            periods: [],
           });
         }
       }
@@ -164,14 +227,25 @@ function buildEvents(schedule) {
           details.push(`节次: 第${startPeriod}${startPeriod === endPeriod ? "" : `-${endPeriod}`}节`);
         }
 
-        events.push({
+        const baseEvent = {
           start,
           end,
           summary: cleanText(course.title),
           location: cleanText(course.location),
           description: details.join("\\n"),
           startText: window.start,
-        });
+          week,
+          weekday,
+          periods: Array.isArray(course.periods) ? course.periods.map(Number) : [],
+        };
+
+        events.push(
+          applyAdjustmentToEvent(
+            baseEvent,
+            findMatchingAdjustment(adjustments, baseEvent),
+            periodTimes
+          )
+        );
       }
     }
   }
@@ -180,8 +254,8 @@ function buildEvents(schedule) {
   return events;
 }
 
-function buildICS(schedule) {
-  const events = buildEvents(schedule);
+function buildICS(schedule, adjustments = []) {
+  const events = buildEvents(schedule, adjustments);
   const now = new Date();
   const reminderMinutes = 30;
   const lines = [
@@ -217,6 +291,7 @@ function buildICS(schedule) {
 
 function main(argv) {
   const schedulePath = path.resolve(argv[2] || "data/schedule.json");
+  const adjustmentsPath = path.resolve(argv[4] || process.env.TIMETABLE_ADJUSTMENTS_PATH || "data/adjustments.json");
   const outputPath = path.resolve(argv[3] || "课表.ics");
 
   if (!fs.existsSync(schedulePath)) {
@@ -225,7 +300,8 @@ function main(argv) {
   }
 
   const schedule = loadSchedule(schedulePath);
-  const ics = buildICS(schedule);
+  const adjustments = loadAdjustments(adjustmentsPath);
+  const ics = buildICS(schedule, adjustments);
   fs.writeFileSync(outputPath, ics, "utf-8");
   console.log(`ICS exported: ${outputPath}`);
   return 0;

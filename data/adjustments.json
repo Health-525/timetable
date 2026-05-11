@@ -18,5 +18,25 @@
     "specificWeek": 5,
     "createdAt": "2026-03-17T01:06:37.308Z",
     "note": "来自Obsidian调课记录"
+  },
+  {
+    "id": "adj-20260511-bigdata-room-week11",
+    "courseTitle": "大数据技术基础",
+    "sourceWeekday": 5,
+    "sourcePeriods": [
+      7,
+      8
+    ],
+    "targetWeekday": 5,
+    "targetPeriods": [
+      7,
+      8
+    ],
+    "targetLocation": "笃行131",
+    "mode": "once",
+    "startWeek": 11,
+    "specificWeek": 11,
+    "createdAt": "2026-05-11T00:00:00.000Z",
+    "note": "2026-05-15 大数据技术基础临时调课到笃行131"
   }
 ]
