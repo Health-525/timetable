@@ -32,6 +32,19 @@ function formatICSDate(d) {
   );
 }
 
+function formatICSUTCDate(d) {
+  return (
+    d.getUTCFullYear() +
+    pad2(d.getUTCMonth() + 1) +
+    pad2(d.getUTCDate()) +
+    "T" +
+    pad2(d.getUTCHours()) +
+    pad2(d.getUTCMinutes()) +
+    pad2(d.getUTCSeconds()) +
+    "Z"
+  );
+}
+
 function parseLocalDate(isoString) {
   const [year, month, day] = String(isoString).split("-").map(Number);
   return new Date(year, month - 1, day, 0, 0, 0, 0);
@@ -49,6 +62,27 @@ function esc(value) {
     .replace(/\r?\n/g, "\\n")
     .replace(/,/g, "\\,")
     .replace(/;/g, "\\;");
+}
+
+function foldICSLine(line) {
+  const text = String(line || "");
+  if (Buffer.byteLength(text, "utf8") <= 75) return [text];
+
+  const parts = [];
+  let current = "";
+
+  for (const ch of text) {
+    const candidate = current + ch;
+    if (Buffer.byteLength(candidate, "utf8") > 75) {
+      parts.push(current);
+      current = ` ${ch}`;
+    } else {
+      current = candidate;
+    }
+  }
+
+  if (current) parts.push(current);
+  return parts;
 }
 
 function cleanText(value) {
@@ -258,6 +292,7 @@ function buildICS(schedule, adjustments = []) {
   const events = buildEvents(schedule, adjustments);
   const now = new Date();
   const reminderMinutes = 30;
+  const tzid = schedule.meta?.tz || "Asia/Shanghai";
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -265,15 +300,25 @@ function buildICS(schedule, adjustments = []) {
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "X-WR-CALNAME:姜书课表",
-    `X-WR-TIMEZONE:${schedule.meta?.tz || "Asia/Shanghai"}`,
+    `X-WR-TIMEZONE:${tzid}`,
+    "BEGIN:VTIMEZONE",
+    `TZID:${tzid}`,
+    "X-LIC-LOCATION:Asia/Shanghai",
+    "BEGIN:STANDARD",
+    "TZOFFSETFROM:+0800",
+    "TZOFFSETTO:+0800",
+    "TZNAME:CST",
+    "DTSTART:19700101T000000",
+    "END:STANDARD",
+    "END:VTIMEZONE",
   ];
 
   for (const event of events) {
     lines.push("BEGIN:VEVENT");
     lines.push(`UID:${generateUID(event.start, event.startText, event.summary)}`);
-    lines.push(`DTSTAMP:${formatICSDate(now)}`);
-    lines.push(`DTSTART:${formatICSDate(event.start)}`);
-    lines.push(`DTEND:${formatICSDate(event.end)}`);
+    lines.push(`DTSTAMP:${formatICSUTCDate(now)}`);
+    lines.push(`DTSTART;TZID=${tzid}:${formatICSDate(event.start)}`);
+    lines.push(`DTEND;TZID=${tzid}:${formatICSDate(event.end)}`);
     lines.push(`SUMMARY:${esc(event.summary)}`);
     if (event.location) lines.push(`LOCATION:${esc(event.location)}`);
     if (event.description) lines.push(`DESCRIPTION:${esc(event.description)}`);
@@ -286,7 +331,7 @@ function buildICS(schedule, adjustments = []) {
   }
 
   lines.push("END:VCALENDAR");
-  return `${lines.join("\r\n")}\r\n`;
+  return `${lines.flatMap(foldICSLine).join("\r\n")}\r\n`;
 }
 
 function main(argv) {
