@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-11T15:56:27.980Z",
+  "generatedAt": "2026-05-12T15:40:31.804Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -19,15 +19,16 @@
   "gaps": [
     {
       "id": "gap-001",
-      "title": "PCA 推导链路缺失",
+      "title": "协方差矩阵与PCA的数学桥接缺失",
       "category": "数学桥接",
-      "priority": 2,
-      "why": "虽然掌握了特征值分解和 PCA 调用，但缺乏两者之间的桥梁，即协方差矩阵如何连接这两个概念。",
+      "priority": 1,
+      "why": "已学特征值分解和PCA调用，但笔记中缺少协方差矩阵如何从数据构造、特征分解后如何得到主成分的推导过程。",
       "prerequisites_met": [
+        "线性代数基础",
         "特征值分解",
-        "PCA 调用"
+        "PCA基本概念"
       ],
-      "suggestedTopic": "协方差矩阵与 PCA 推导",
+      "suggestedTopic": "协方差矩阵与PCA的数学推导",
       "relatedCourses": [
         "04-多元统计分析",
         "05-数值分析"
@@ -36,34 +37,155 @@
     },
     {
       "id": "gap-002",
-      "title": "深度学习框架理解不足",
-      "category": "理论基础",
-      "priority": 3,
-      "why": "虽然 fork 了 LLMs-from-scratch 项目，但缺乏对深度学习框架的深入理解。",
+      "title": "LLM原理从零实现缺失",
+      "category": "AI/ML",
+      "priority": 1,
+      "why": "已fork LLMs-from-scratch仓库，但笔记中无任何Transformer、注意力机制、预训练等原理笔记，停留在API调用层。",
       "prerequisites_met": [
-        "numpy",
-        "sklearn"
+        "Python编程",
+        "神经网络基础",
+        "线性代数"
       ],
-      "suggestedTopic": "深度学习框架原理",
+      "suggestedTopic": "从零实现小型Transformer",
       "relatedCourses": [
-        "AI学习"
+        "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-003",
-      "title": "Git 底层原理理解不足",
+      "title": "深度学习框架（PyTorch/TensorFlow）实战缺失",
+      "category": "AI/ML",
+      "priority": 1,
+      "why": "有深度学习目录但仅含GAT笔记，无PyTorch或TensorFlow的系统学习笔记，无法独立构建和训练模型。",
+      "prerequisites_met": [
+        "Python编程",
+        "numpy/pandas",
+        "神经网络基础"
+      ],
+      "suggestedTopic": "PyTorch深度学习实战",
+      "relatedCourses": [
+        "08-AI学习",
+        "02-Python数据处理与分析"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-004",
+      "title": "多Agent系统设计模式与协作机制缺失",
       "category": "工程深化",
       "priority": 2,
-      "why": "虽然掌握了 git 的基本操作，但缺乏对 git 内部对象模型的深入理解。",
+      "why": "已实现timetable多Agent系统，但笔记中缺少Agent通信、任务分解、记忆共享等设计模式的系统学习。",
       "prerequisites_met": [
-        "git add/commit/push",
-        "GitHub Actions"
+        "Node.js",
+        "GitHub Actions",
+        "LLM API调用"
       ],
-      "suggestedTopic": "Git 内部对象模型",
+      "suggestedTopic": "多Agent系统架构设计",
       "relatedCourses": [
-        "工程深化"
+        "08-AI学习"
       ],
+      "status": "open"
+    },
+    {
+      "id": "gap-005",
+      "title": "计算机视觉基础（CNN/目标检测）缺失",
+      "category": "AI/ML",
+      "priority": 2,
+      "why": "FrameDetective项目使用了Qwen-VL和SAM，但无CNN、目标检测、图像分割等基础理论笔记。",
+      "prerequisites_met": [
+        "Python编程",
+        "深度学习基础",
+        "图像处理基础"
+      ],
+      "suggestedTopic": "卷积神经网络与目标检测",
+      "relatedCourses": [
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-006",
+      "title": "RAG系统原理与优化缺失",
+      "category": "AI/ML",
+      "priority": 2,
+      "why": "已使用RAG技术，但笔记中无向量数据库、检索策略、文档分块、重排序等核心原理。",
+      "prerequisites_met": [
+        "LLM API调用",
+        "Python编程",
+        "向量嵌入概念"
+      ],
+      "suggestedTopic": "RAG系统深度解析",
+      "relatedCourses": [
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-007",
+      "title": "数值线性代数（矩阵分解）在ML中的应用缺失",
+      "category": "数学桥接",
+      "priority": 2,
+      "why": "数值分析笔记有MATLAB实验，但未涉及SVD、QR分解等在PCA、推荐系统中的应用。",
+      "prerequisites_met": [
+        "线性代数",
+        "数值分析基础",
+        "MATLAB"
+      ],
+      "suggestedTopic": "矩阵分解与机器学习应用",
+      "relatedCourses": [
+        "05-数值分析",
+        "04-多元统计分析"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-008",
+      "title": "模型部署与推理优化缺失",
+      "category": "工程深化",
+      "priority": 3,
+      "why": "有Docker和云服务器经验，但无模型量化、ONNX、TensorRT等部署优化笔记。",
+      "prerequisites_met": [
+        "Docker",
+        "Python编程",
+        "深度学习基础"
+      ],
+      "suggestedTopic": "模型部署与推理加速",
+      "relatedCourses": [
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-009",
+      "title": "AI发型应用相关技术（图像生成/风格迁移）缺失",
+      "category": "项目实战",
+      "priority": 3,
+      "why": "用户明确对AI发型应用感兴趣，但无GAN、扩散模型、图像到图像翻译等笔记。",
+      "prerequisites_met": [
+        "Python编程",
+        "深度学习基础",
+        "计算机视觉基础"
+      ],
+      "suggestedTopic": "生成对抗网络与扩散模型",
+      "relatedCourses": [
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-010",
+      "title": "飞书API与自动化集成缺失",
+      "category": "工程深化",
+      "priority": 3,
+      "why": "用户想加入飞书功能，但笔记中无飞书开放平台API、机器人、消息推送等学习记录。",
+      "prerequisites_met": [
+        "Node.js",
+        "API调用",
+        "自动化工作流"
+      ],
+      "suggestedTopic": "飞书API与机器人开发",
+      "relatedCourses": [],
       "status": "open"
     }
   ]
