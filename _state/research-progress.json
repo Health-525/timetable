@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-12T15:43:05.716Z",
+  "updatedAt": "2026-05-13T15:45:51.246Z",
   "gaps": {
     "gap-002": {
       "title": "从numpy手写到深度学习框架",
@@ -42,12 +42,12 @@
       "searchFallback": true
     },
     "gap-004": {
-      "title": "多Agent系统设计模式与协作机制缺失",
-      "suggestedTopic": "多Agent系统架构设计",
+      "title": "模型部署与推理优化：从训练到生产环境的完整流程",
+      "suggestedTopic": "模型部署：ONNX导出、TensorRT加速与Docker推理服务",
       "priority": 2,
-      "status": "failed",
-      "updatedAt": "2026-05-12T15:43:05.715Z",
-      "score": 55,
+      "status": "resolved",
+      "updatedAt": "2026-05-13T15:45:51.246Z",
+      "score": 72,
       "hasNote": true,
       "searchFallback": true
     },

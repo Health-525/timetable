@@ -1,13 +1,13 @@
 {
   "agentId": "auto-researcher",
   "name": "自主研究",
-  "lastRun": "2026-05-12T15:43:05.716Z",
-  "status": "failed",
+  "lastRun": "2026-05-13T15:45:51.247Z",
+  "status": "success",
   "summary": {
     "gapId": "gap-004",
-    "title": "多Agent系统设计模式与协作机制缺失",
-    "score": 55,
-    "status": "failed"
+    "title": "模型部署与推理优化：从训练到生产环境的完整流程",
+    "score": 72,
+    "status": "resolved"
   },
   "errors": []
 }
