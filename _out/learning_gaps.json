@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-13T15:44:30.644Z",
+  "generatedAt": "2026-05-14T15:20:23.100Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -19,16 +19,16 @@
   "gaps": [
     {
       "id": "gap-001",
-      "title": "协方差矩阵与特征分解的桥接：从数学原理到PCA实现",
+      "title": "协方差矩阵与PCA的数学桥接缺失",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学多元统计分析中的PCA原理和特征值分解，但笔记中缺少协方差矩阵如何连接两者的推导过程，导致对PCA的几何意义理解不深。",
+      "why": "已学多元统计分析中的PCA原理和Python调用，但未深入理解协方差矩阵的特征分解如何具体实现PCA降维，缺少从协方差矩阵到特征向量、特征值再到投影的完整推导。",
       "prerequisites_met": [
+        "多元统计分析PCA概念",
         "线性代数基础",
-        "特征值分解",
-        "PCA概念"
+        "Python数据处理"
       ],
-      "suggestedTopic": "协方差矩阵与PCA的数学桥接",
+      "suggestedTopic": "协方差矩阵与PCA的数学推导",
       "relatedCourses": [
         "04-多元统计分析",
         "05-数值分析"
@@ -37,16 +37,16 @@
     },
     {
       "id": "gap-002",
-      "title": "深度学习基础：从感知机到多层神经网络的原理与实现",
+      "title": "深度学习基础模块缺失",
       "category": "AI/ML",
       "priority": 1,
-      "why": "AI学习课程笔记最多但内容最弱，仅有骨架规划，缺少神经网络核心概念（如反向传播、激活函数、损失函数）的笔记。",
+      "why": "AI学习课程笔记最多但内容最弱，仅有骨架规划；虽有GAT/图注意力网络笔记，但缺乏深度学习基础（如神经网络、反向传播、CNN/RNN等）的系统学习。",
       "prerequisites_met": [
         "Python编程",
         "线性代数",
-        "微积分基础"
+        "多元统计分析"
       ],
-      "suggestedTopic": "深度学习基础：感知机、反向传播与多层神经网络",
+      "suggestedTopic": "深度学习基础（神经网络与反向传播）",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -54,16 +54,16 @@
     },
     {
       "id": "gap-003",
-      "title": "图神经网络原理：从图注意力网络（GAT）到实际应用",
+      "title": "LLM原理与微调实践空白",
       "category": "AI/ML",
-      "priority": 2,
-      "why": "电脑中有GAT/图注意力网络的Jupyter笔记，但知识画像中未提及，且缺乏系统性的图神经网络理论基础。",
+      "priority": 1,
+      "why": "大量使用LLM API和工具链，但未系统学习Transformer架构、注意力机制、模型微调等原理，fork了LLMs-from-scratch但未深入。",
       "prerequisites_met": [
         "深度学习基础",
-        "线性代数",
-        "Python"
+        "Python编程",
+        "线性代数"
       ],
-      "suggestedTopic": "图神经网络：GCN、GAT与图表示学习",
+      "suggestedTopic": "Transformer架构与LLM微调",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -71,50 +71,49 @@
     },
     {
       "id": "gap-004",
-      "title": "模型部署与推理优化：从训练到生产环境的完整流程",
+      "title": "数值分析中特征值算法的工程实现缺失",
       "category": "工程深化",
       "priority": 2,
-      "why": "已有多Agent系统和API调用经验，但缺少模型部署（如ONNX、TensorRT、Docker化推理服务）的笔记。",
+      "why": "数值分析课程学习了稳定性分析、秦九韶算法等，但未涉及特征值计算的数值方法（如QR算法、幂迭代），而这正是PCA等算法的底层实现基础。",
       "prerequisites_met": [
-        "Python后端",
-        "Docker基础",
-        "API开发"
+        "数值分析基础",
+        "线性代数",
+        "MATLAB编程"
       ],
-      "suggestedTopic": "模型部署：ONNX导出、TensorRT加速与Docker推理服务",
+      "suggestedTopic": "特征值计算的数值方法（QR算法与幂迭代）",
+      "relatedCourses": [
+        "05-数值分析",
+        "04-多元统计分析"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-005",
+      "title": "大数据技术栈深度不足",
+      "category": "工程深化",
+      "priority": 2,
+      "why": "大数据技术基础课程仅入门Linux/Vim，缺乏Hadoop、Spark、分布式计算等核心组件的实践笔记，与当前AI工程化需求脱节。",
+      "prerequisites_met": [
+        "Linux基础",
+        "Python编程"
+      ],
+      "suggestedTopic": "Hadoop/Spark分布式计算入门",
       "relatedCourses": [
         "01-大数据技术基础"
       ],
       "status": "open"
     },
     {
-      "id": "gap-005",
-      "title": "计算机视觉基础：图像分类、目标检测与分割原理",
+      "id": "gap-006",
+      "title": "计算机视觉基础缺失",
       "category": "AI/ML",
       "priority": 2,
-      "why": "FrameDetective项目使用了SAM-3和Qwen-VL，但缺少传统CV基础（如卷积、池化、经典网络结构）的笔记。",
+      "why": "FrameDetective项目使用了Qwen-2.5-VL和SAM-3，但缺乏图像处理基础（卷积、特征提取、目标检测原理）的系统学习，影响模型替换等兴趣方向。",
       "prerequisites_met": [
-        "Python",
-        "深度学习基础",
-        "线性代数"
-      ],
-      "suggestedTopic": "计算机视觉基础：CNN、目标检测与语义分割",
-      "relatedCourses": [
-        "08-AI学习"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-006",
-      "title": "强化学习入门：从多臂老虎机到Q-learning",
-      "category": "AI/ML",
-      "priority": 3,
-      "why": "用户对多Agent系统感兴趣，但强化学习是Agent决策的核心，目前完全没有相关笔记。",
-      "prerequisites_met": [
-        "Python",
-        "概率论基础",
+        "Python编程",
         "深度学习基础"
       ],
-      "suggestedTopic": "强化学习基础：MDP、Q-learning与策略梯度",
+      "suggestedTopic": "计算机视觉基础（CNN与目标检测）",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -122,16 +121,16 @@
     },
     {
       "id": "gap-007",
-      "title": "自然语言处理基础：词嵌入、RNN与Transformer",
+      "title": "多Agent系统设计理论空白",
       "category": "AI/ML",
       "priority": 2,
-      "why": "用户使用LLM API但缺少NLP基础理论，如词向量、循环神经网络、注意力机制等。",
+      "why": "timetable项目实现了7个Agent的自动化系统，但缺乏多Agent协作、通信协议、任务编排等理论支撑，目前停留在工程实现层面。",
       "prerequisites_met": [
-        "Python",
-        "深度学习基础",
-        "线性代数"
+        "Node.js开发",
+        "GitHub Actions",
+        "LLM API使用"
       ],
-      "suggestedTopic": "NLP基础：词嵌入、RNN、LSTM与Transformer",
+      "suggestedTopic": "多Agent系统设计与协作模式",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -139,15 +138,48 @@
     },
     {
       "id": "gap-008",
-      "title": "生成对抗网络（GAN）原理与应用",
-      "category": "AI/ML",
+      "title": "数学模型与优化算法深度不足",
+      "category": "理论基础",
       "priority": 3,
-      "why": "用户对AI发型应用感兴趣，GAN是图像生成的核心技术，但完全没有相关笔记。",
+      "why": "数学模型课程仅覆盖基础优化和线性代数，缺乏凸优化、梯度下降变体、约束优化等深入内容，影响AI模型训练的理解。",
       "prerequisites_met": [
-        "深度学习基础",
-        "计算机视觉基础"
+        "线性代数",
+        "微积分",
+        "MATLAB基础"
       ],
-      "suggestedTopic": "生成对抗网络：原理、训练技巧与应用",
+      "suggestedTopic": "凸优化与梯度下降算法",
+      "relatedCourses": [
+        "06-数学模型与数学软件",
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-009",
+      "title": "Rust语言实践项目缺失",
+      "category": "工程深化",
+      "priority": 3,
+      "why": "已安装Rust环境但无实际项目，缺乏系统编程实践，与当前高性能AI工具链开发趋势不符。",
+      "prerequisites_met": [
+        "C/C++基础",
+        "编程基础"
+      ],
+      "suggestedTopic": "Rust语言入门与系统编程实践",
+      "relatedCourses": [],
+      "status": "open"
+    },
+    {
+      "id": "gap-010",
+      "title": "AI应用落地（发型推荐）缺乏技术路径",
+      "category": "项目实战",
+      "priority": 3,
+      "why": "用户明确对AI发型应用感兴趣，但缺乏图像生成、模型替换、人脸关键点检测等相关技术储备，需从计算机视觉和生成模型入手。",
+      "prerequisites_met": [
+        "计算机视觉基础",
+        "深度学习基础",
+        "Python编程"
+      ],
+      "suggestedTopic": "图像生成与模型替换技术（GAN/扩散模型）",
       "relatedCourses": [
         "08-AI学习"
       ],
