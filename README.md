@@ -36,6 +36,7 @@
 timetable/
 ├─ .github/workflows/        自动化工作流
 ├─ data/                     结构化数据源
+├─ generated/                本地生成产物（已忽略）
 ├─ scripts/                  核心脚本与测试
 ├─ web/                      Next.js + Capacitor 前端
 ├─ obsidian-templates/       配套模板
@@ -91,6 +92,7 @@ timetable/
 cd timetable
 
 node scripts/generate-timetable.js
+# 默认输出到 generated/课表.md
 node scripts/export_ics.js data/schedule.json output.ics
 node scripts/parse_assignments.js
 node scripts/parse_adjustments.js
@@ -135,6 +137,8 @@ npm run dev
 - `npm run cap:sync`
 
 ## 课表订阅链路
+
+`timetable` 本地运行时，课表 Markdown 默认写入 `generated/课表.md`，只作为执行层本地产物。真正回写到内容仓库的 `09-日常处理/课表.md` 仍由 GitHub Actions 显式指定输出路径，避免执行层目录混入内容层命名。
 
 当前课表相关能力已经拆成三类产物：
 

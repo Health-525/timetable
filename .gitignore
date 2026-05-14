@@ -16,6 +16,7 @@ env/
 _out/
 _out_temp/
 _study/
+generated/
 
 # Logs
 logs/

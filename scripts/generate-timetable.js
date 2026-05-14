@@ -193,7 +193,7 @@ function main() {
     const args = process.argv.slice(2);
     const schedulePath = args[0] || 'data/schedule.json';
     const adjPath = args[1] || 'data/adjustments.json';
-    const outputPath = args[2] || '09-日常处理/课表.md';
+    const outputPath = args[2] || 'generated/课表.md';
 
     // 加载数据
     const data = JSON.parse(fs.readFileSync(schedulePath, 'utf-8'));
