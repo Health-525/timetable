@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-14T15:21:20.411Z",
+  "updatedAt": "2026-05-15T15:16:28.076Z",
   "gaps": {
     "gap-002": {
       "title": "从numpy手写到深度学习框架",
@@ -52,12 +52,12 @@
       "searchFallback": true
     },
     "gap-007": {
-      "title": "AI发型推荐应用的技术方案",
-      "suggestedTopic": "基于AI的发型替换技术概览",
+      "title": "AI发型应用所需图像生成技术未涉足",
+      "suggestedTopic": "图像生成与风格迁移（GAN/扩散模型）",
       "priority": 1,
       "status": "failed",
-      "updatedAt": "2026-05-09T01:22:42.643Z",
-      "score": 55,
+      "updatedAt": "2026-05-15T15:16:28.076Z",
+      "score": 68,
       "hasNote": true,
       "searchFallback": true
     },
