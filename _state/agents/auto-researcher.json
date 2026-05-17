@@ -1,11 +1,13 @@
 {
   "agentId": "auto-researcher",
   "name": "自主研究",
-  "lastRun": "2026-05-16T14:22:24.770Z",
+  "lastRun": "2026-05-17T14:28:35.991Z",
   "status": "success",
   "summary": {
-    "status": "skipped",
-    "reason": "no_open_gaps"
+    "gapId": "gap-008",
+    "title": "发型替换应用的计算机视觉基础（图像分割与生成）",
+    "score": 82,
+    "status": "resolved"
   },
   "errors": []
 }

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-15T15:16:28.076Z",
+  "updatedAt": "2026-05-17T14:28:35.990Z",
   "gaps": {
     "gap-002": {
       "title": "从numpy手写到深度学习框架",
@@ -68,6 +68,16 @@
       "status": "resolved",
       "updatedAt": "2026-05-14T15:21:20.411Z",
       "score": 88,
+      "hasNote": true,
+      "searchFallback": true
+    },
+    "gap-008": {
+      "title": "发型替换应用的计算机视觉基础（图像分割与生成）",
+      "suggestedTopic": "图像分割与生成模型实战",
+      "priority": 1,
+      "status": "resolved",
+      "updatedAt": "2026-05-17T14:28:35.990Z",
+      "score": 82,
       "hasNote": true,
       "searchFallback": true
     }
