@@ -1,12 +1,12 @@
 {
   "agentId": "auto-researcher",
   "name": "自主研究",
-  "lastRun": "2026-05-17T14:28:35.991Z",
+  "lastRun": "2026-05-18T16:26:04.188Z",
   "status": "success",
   "summary": {
-    "gapId": "gap-008",
-    "title": "发型替换应用的计算机视觉基础（图像分割与生成）",
-    "score": 82,
+    "gapId": "gap-007",
+    "title": "缺少模型部署与MLOps的实践经验",
+    "score": 85,
     "status": "resolved"
   },
   "errors": []
