@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-20T16:26:57.879Z",
+  "generatedAt": "2026-05-21T16:15:56.828Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -22,13 +22,13 @@
       "title": "协方差矩阵与PCA的数学桥接缺失",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学特征值分解和PCA调用，但笔记中缺少协方差矩阵如何从数据构造、特征分解如何导出主成分的推导过程。",
+      "why": "已学PCA调用和特征值分解，但未深入理解协方差矩阵如何连接两者，导致PCA原理理解停留在表面。",
       "prerequisites_met": [
         "线性代数基础",
         "特征值分解",
         "PCA基本概念"
       ],
-      "suggestedTopic": "协方差矩阵与PCA的数学推导",
+      "suggestedTopic": "协方差矩阵的几何意义与PCA推导",
       "relatedCourses": [
         "04-多元统计分析",
         "05-数值分析"
@@ -37,34 +37,33 @@
     },
     {
       "id": "gap-002",
-      "title": "深度学习原理从零实现缺失",
+      "title": "深度学习反向传播原理未掌握",
       "category": "理论基础",
       "priority": 1,
-      "why": "AI学习笔记多为骨架规划，缺少从零实现神经网络（如反向传播、梯度下降）的推导和代码实践。",
+      "why": "AI学习笔记多为骨架规划，缺少对反向传播算法的数学推导和实现，这是深度学习核心。",
       "prerequisites_met": [
-        "Python编程",
-        "多元微积分",
-        "线性代数"
+        "微积分",
+        "链式法则",
+        "Python编程"
       ],
-      "suggestedTopic": "从零实现神经网络：反向传播与梯度下降",
+      "suggestedTopic": "反向传播算法的数学推导与手动实现",
       "relatedCourses": [
-        "08-AI学习",
-        "04-多元统计分析"
+        "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-003",
-      "title": "多Agent系统设计模式与编排缺失",
+      "title": "多Agent系统通信协议设计缺失",
       "category": "工程深化",
-      "priority": 1,
-      "why": "已有timetable多Agent项目，但缺少系统性的Agent通信、任务编排、错误恢复等设计模式学习。",
+      "priority": 2,
+      "why": "已搭建7 Agent系统，但未系统学习Agent间通信协议（如消息队列、RPC），影响系统扩展性。",
       "prerequisites_met": [
         "Node.js",
         "GitHub Actions",
-        "Python"
+        "n8n"
       ],
-      "suggestedTopic": "多Agent系统架构与编排模式",
+      "suggestedTopic": "多Agent通信协议与编排模式",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -72,19 +71,17 @@
     },
     {
       "id": "gap-004",
-      "title": "图神经网络（GAT）原理理解不深",
+      "title": "图神经网络理论基础薄弱",
       "category": "AI/ML",
       "priority": 2,
-      "why": "有GAT/图注意力网络笔记，但仅停留在调用层面，缺少注意力机制在图上的数学推导。",
+      "why": "有GAT/图注意力网络笔记，但缺乏对图神经网络基础（如消息传递、聚合函数）的系统理解。",
       "prerequisites_met": [
         "深度学习基础",
-        "注意力机制",
-        "图论基础"
+        "线性代数"
       ],
-      "suggestedTopic": "图注意力网络（GAT）原理与实现",
+      "suggestedTopic": "图神经网络基础：消息传递与聚合",
       "relatedCourses": [
-        "08-AI学习",
-        "04-多元统计分析"
+        "08-AI学习"
       ],
       "status": "open"
     },
@@ -93,12 +90,12 @@
       "title": "数值分析中误差传播与稳定性分析深度不足",
       "category": "理论基础",
       "priority": 2,
-      "why": "数值分析笔记有MATLAB实验，但缺少对算法误差来源、条件数、数值稳定性的系统分析。",
+      "why": "数值分析笔记有秦九韶算法和稳定性分析，但未深入理解误差传播机制和条件数概念。",
       "prerequisites_met": [
         "数值分析基础",
-        "MATLAB编程"
+        "MATLAB"
       ],
-      "suggestedTopic": "数值误差分析与算法稳定性",
+      "suggestedTopic": "误差传播与条件数分析",
       "relatedCourses": [
         "05-数值分析"
       ],
@@ -106,15 +103,15 @@
     },
     {
       "id": "gap-006",
-      "title": "大数据技术基础中分布式计算原理缺失",
+      "title": "大数据技术中分布式存储与计算原理缺失",
       "category": "工程深化",
-      "priority": 2,
-      "why": "大数据技术基础笔记仅4篇，缺少MapReduce、HDFS、Spark等核心分布式计算原理。",
+      "priority": 3,
+      "why": "大数据技术基础笔记仅入门Linux/Vim，未涉及HDFS、MapReduce等核心分布式原理。",
       "prerequisites_met": [
         "Linux基础",
-        "Python编程"
+        "编程基础"
       ],
-      "suggestedTopic": "分布式计算原理：MapReduce与Spark",
+      "suggestedTopic": "HDFS与MapReduce原理",
       "relatedCourses": [
         "01-大数据技术基础"
       ],
@@ -122,31 +119,31 @@
     },
     {
       "id": "gap-007",
-      "title": "数学模型与优化算法实战不足",
-      "category": "项目实战",
+      "title": "AI模型部署与推理优化未涉及",
+      "category": "工程深化",
       "priority": 3,
-      "why": "数学模型课程笔记少，缺少线性规划、整数规划等优化算法的实际应用案例。",
+      "why": "有模型训练和调用经验，但未学习模型部署（如ONNX、TensorRT）和推理优化技术。",
       "prerequisites_met": [
-        "线性代数",
-        "MATLAB基础"
+        "Python",
+        "深度学习基础"
       ],
-      "suggestedTopic": "优化算法实战：线性规划与整数规划",
+      "suggestedTopic": "模型部署与推理优化",
       "relatedCourses": [
-        "06-数学模型与数学软件"
+        "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-008",
-      "title": "AI模型部署与推理优化缺失",
-      "category": "工程深化",
-      "priority": 3,
-      "why": "有模型训练经验，但缺少模型导出、量化、ONNX、TensorRT等部署优化知识。",
+      "title": "发型替换应用所需图像生成技术未学习",
+      "category": "项目实战",
+      "priority": 1,
+      "why": "用户对AI发型应用感兴趣，但缺少图像生成（如Stable Diffusion、ControlNet）和图像分割知识。",
       "prerequisites_met": [
-        "深度学习基础",
-        "Python编程"
+        "Python",
+        "深度学习基础"
       ],
-      "suggestedTopic": "AI模型部署与推理优化",
+      "suggestedTopic": "基于扩散模型的图像编辑与替换",
       "relatedCourses": [
         "08-AI学习"
       ],
