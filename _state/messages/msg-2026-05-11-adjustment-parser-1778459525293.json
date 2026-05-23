@@ -1,11 +1,11 @@
 {
-  "id": "msg-2026-05-10-adjustment-parser-1778385036051",
+  "id": "msg-2026-05-11-adjustment-parser-1778459525293",
   "from": "adjustment-parser",
   "to": [
     "timetable-generator"
   ],
   "type": "task-complete",
-  "timestamp": "2026-05-10T03:50:36.051Z",
+  "timestamp": "2026-05-11T00:32:05.293Z",
   "payload": {
     "course": "数据结构",
     "mode": "once"
