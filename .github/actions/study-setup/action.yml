@@ -1,12 +1,12 @@
 name: study-setup
-description: "Checkout timetable → setup Node.js → clone jiangshu-study"
+description: "Setup Node.js → clone jiangshu-study (checkout must run first)"
 inputs:
   node-version:
     description: "Node.js version"
     required: false
     default: "22"
   token:
-    description: "PAT for timetable checkout + jiangshu-study clone"
+    description: "PAT for cloning jiangshu-study"
     required: true
   study-repo:
     description: "jiangshu-study repo URL"
@@ -19,11 +19,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: 拉取 timetable 仓库
-      uses: actions/checkout@v6
-      with:
-        token: ${{ inputs.token }}
-
     - name: 安装 Node.js
       uses: actions/setup-node@v6
       with:

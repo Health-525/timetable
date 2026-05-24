@@ -22,6 +22,11 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
+      - name: 拉取 timetable
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
       - uses: ./.github/actions/study-setup
         with:
           token: ${{ secrets.STUDY_PUSH_TOKEN }}
