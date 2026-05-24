@@ -50,6 +50,10 @@ jobs:
             _timetable/data/schedule.json \
             09-日常处理/课表.ics
 
+      - name: 获取 AI 热点
+        shell: bash
+        run: node _timetable/scripts/fetch_ai_news.js _timetable/_out/ai_news.json
+
       - name: 生成仪表板
         shell: bash
         run: |
@@ -60,6 +64,7 @@ jobs:
             _timetable/_out/learning_gaps.json \
             日报 \
             youtube-daily \
+            _timetable/_out/ai_news.json \
             09-日常处理/仪表板.md
 
       - name: 准备订阅日历静态文件

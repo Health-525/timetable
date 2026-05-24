@@ -202,13 +202,33 @@ function renderRecent(dir, limit) {
   return lines.join('\n');
 }
 
+// ── AI 热点 ──
+
+function renderAINews(newsPath) {
+  const news = loadJSON(newsPath);
+  if (!news || !news.length) return '';
+  const lines = [];
+  for (const item of news.slice(0, 5)) {
+    const title = item.title || '';
+    const url = item.url || '';
+    const link = url ? `[${title}](${url})` : title;
+    lines.push(`> [!info] ${link}`);
+    if (item.summary) lines.push(`> ${item.summary}`);
+  }
+  return lines.join('\n');
+}
+
 // ── 主入口 ──
 
 function main(argv) {
-  const [schedulePath, assignmentsPath, runningPath, gapsPath, dailyDir, youtubeDir, outputPath] = argv.slice(2);
+  const rest = argv.slice(2);
+  // 支持 7 参数（无 ai_news）和 8 参数（有 ai_news）
+  const outputPath = rest[rest.length - 1];
+  const aiNewsPath = rest.length >= 8 ? rest[rest.length - 2] : null;
+  const [schedulePath, assignmentsPath, runningPath, gapsPath, dailyDir, youtubeDir] = rest;
 
   if (!schedulePath || !assignmentsPath || !outputPath) {
-    console.error('Usage: generate-dashboard.js <schedule.json> <assignments.json> <running.json> <gaps.json> <日报dir> <youtube-dir> <output.md>');
+    console.error('Usage: generate-dashboard.js <schedule.json> <assignments.json> <running.json> <gaps.json> <日报dir> <youtube-dir> [ai_news.json] <output.md>');
     return 2;
   }
 
@@ -248,6 +268,16 @@ function main(argv) {
     }
   } else {
     out.push(`✨ 今天没有课，自由安排`);
+  }
+
+  // ── AI 热点 ──
+  const aiNewsSection = aiNewsPath ? renderAINews(aiNewsPath) : '';
+  if (aiNewsSection) {
+    out.push('');
+    out.push(`---`);
+    out.push(`## 🤖 AI 热点`);
+    out.push('');
+    out.push(aiNewsSection);
   }
 
   // ── 作业倒计时 ──
