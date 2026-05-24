@@ -1,0 +1,38 @@
+name: study-setup
+description: "Checkout timetable → setup Node.js → clone jiangshu-study"
+inputs:
+  node-version:
+    description: "Node.js version"
+    required: false
+    default: "22"
+  token:
+    description: "PAT for timetable checkout + jiangshu-study clone"
+    required: true
+  study-repo:
+    description: "jiangshu-study repo URL"
+    required: false
+    default: "https://github.com/Health-525/jiangshu-study.git"
+  study-dir:
+    description: "Directory to clone into"
+    required: false
+    default: "_study"
+runs:
+  using: composite
+  steps:
+    - name: 拉取 timetable 仓库
+      uses: actions/checkout@v6
+      with:
+        token: ${{ inputs.token }}
+
+    - name: 安装 Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: 克隆 jiangshu-study
+      shell: bash
+      env:
+        STUDY_PUSH_TOKEN: ${{ inputs.token }}
+        STUDY_REPO: ${{ inputs.study-repo }}
+        STUDY_DIR: ${{ inputs.study-dir }}
+      run: node scripts/ci/clone-study-repo.js

@@ -19,20 +19,9 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取 timetable 仓库
-        uses: actions/checkout@v6
+      - uses: ./.github/actions/study-setup
         with:
           token: ${{ secrets.STUDY_PUSH_TOKEN }}
-
-      - name: 安装 Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-
-      - name: 克隆 jiangshu-study
-        env:
-          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
-        run: node scripts/ci/clone-study-repo.js
 
       - name: 生成日报
         env:

@@ -1,0 +1,87 @@
+name: 内容处理
+
+on:
+  repository_dispatch:
+    types: [content-push]
+  schedule:
+    # 每天 22:00 UTC (北京时间次日 06:00)
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: timetable-content-write
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/study-setup
+        with:
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: 配置 git 身份
+        run: |
+          git config user.name "timetable-bot"
+          git config user.email "timetable-bot@users.noreply.github.com"
+
+      # ── 作业 ──
+      - name: 解析作业
+        id: parse_assignments
+        continue-on-error: true
+        run: |
+          if [ -f "_study/09-日常处理/作业.md" ]; then
+            node scripts/parse_assignments.js \
+              --note _study/09-日常处理/作业.md \
+              --data data/assignments.json
+          else
+            echo "作业.md 不存在，跳过"
+          fi
+
+      # ── 调课 ──
+      - name: 解析调课
+        id: parse_adjustments
+        continue-on-error: true
+        run: |
+          if [ -f "_study/09-日常处理/调课.md" ]; then
+            node scripts/parse_adjustments.js \
+              --note _study/09-日常处理/调课.md \
+              --adj data/adjustments.json
+          else
+            echo "调课.md 不存在，跳过"
+          fi
+
+      # ── 阳光长跑 ──
+      - name: 解析阳光长跑
+        id: parse_running
+        continue-on-error: true
+        run: |
+          if [ -f "_study/09-日常处理/阳光长跑.md" ]; then
+            node scripts/parse_running.js \
+              --note _study/09-日常处理/阳光长跑.md \
+              --data data/running.json
+          else
+            echo "阳光长跑.md 不存在，跳过"
+          fi
+
+      # ── 推送数据到 timetable ──
+      - name: 提交数据到 timetable
+        env:
+          PUBLISH_MODE: origin
+          PUBLISH_REPO_DIR: .
+          PUBLISH_ADD_PATH: "data/assignments.json data/adjustments.json data/running.json"
+          PUBLISH_COMMIT_MESSAGE: 'feat: update content data from Obsidian'
+        run: node scripts/ci/publish-with-rebase.js
+
+      # ── 推送更新回 jiangshu-study ──
+      - name: 推送更新回 jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+          PUBLISH_MODE: study
+          PUBLISH_REPO_DIR: _study
+          PUBLISH_ADD_PATH: "09-日常处理/作业.md 09-日常处理/调课.md 09-日常处理/阳光长跑.md"
+          PUBLISH_COMMIT_MESSAGE: 'chore: update processed content from CI'
+        run: node scripts/ci/publish-with-rebase.js

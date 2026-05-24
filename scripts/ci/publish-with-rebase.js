@@ -22,7 +22,6 @@ const mode = env('PUBLISH_MODE');
 const repoDir = path.resolve(process.cwd(), env('PUBLISH_REPO_DIR', '.'));
 const addPath = env('PUBLISH_ADD_PATH');
 const message = env('PUBLISH_COMMIT_MESSAGE');
-const remoteName = env('PUBLISH_REMOTE_NAME', 'origin');
 const remoteBranch = env('PUBLISH_REMOTE_BRANCH', 'main');
 const retries = Number(env('PUBLISH_RETRIES', '3'));
 const gitUserName = env('GIT_USER_NAME', 'timetable-bot');
@@ -41,6 +40,21 @@ if (!message) {
   process.exit(1);
 }
 
+// 确定推送目标 remote URL
+let pushRemote;
+if (mode === 'study') {
+  const token = env('STUDY_PUSH_TOKEN');
+  const repo = env('STUDY_REPO', 'https://github.com/Health-525/jiangshu-study.git');
+  if (!token) {
+    console.error('[publish] missing STUDY_PUSH_TOKEN for study mode');
+    process.exit(1);
+  }
+  pushRemote = repo.replace('https://', `https://x-access-token:${token}@`);
+} else {
+  pushRemote = env('PUBLISH_REMOTE_NAME', 'origin');
+}
+
+// 提交
 run(`git config user.name ${quote(gitUserName)}`, { cwd: repoDir });
 run(`git config user.email ${quote(gitUserEmail)}`, { cwd: repoDir });
 try {
@@ -51,49 +65,25 @@ try {
 
 const hasChanges = read('git diff --cached --name-only', { cwd: repoDir }).length > 0;
 if (!hasChanges) {
-  console.log('[publish] no staged changes');
+  console.log('[publish] no staged changes, skip');
   process.exit(0);
 }
 
 run(`git commit -m ${quote(message)}`, { cwd: repoDir });
 
-if (mode === 'study') {
-  const token = env('STUDY_PUSH_TOKEN');
-  const repo = env('STUDY_REPO', 'https://github.com/Health-525/jiangshu-study.git');
-  if (!token) {
-    console.error('[publish] missing STUDY_PUSH_TOKEN for study mode');
-    process.exit(1);
-  }
-  const authedRepo = repo.replace('https://', `https://x-access-token:${token}@`);
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      run(`git fetch ${quote(authedRepo)} ${quote(remoteBranch)}`, { cwd: repoDir });
-      run('git rebase --autostash FETCH_HEAD', { cwd: repoDir });
-      run(`git push ${quote(authedRepo)} HEAD:${remoteBranch}`, { cwd: repoDir });
-      console.log(`[publish] pushed study repo on attempt ${attempt}`);
-      process.exit(0);
-    } catch (error) {
-      if (attempt === retries) {
-        console.error(`[publish] study push failed after ${retries} attempts`);
-        throw error;
-      }
-      console.log(`[publish] study push attempt ${attempt} failed, retrying...`);
-    }
-  }
-}
-
+// 推送（带 retry）
 for (let attempt = 1; attempt <= retries; attempt++) {
   try {
-    run(`git fetch ${quote(remoteName)} ${quote(remoteBranch)}`, { cwd: repoDir });
+    run(`git fetch ${quote(pushRemote)} ${quote(remoteBranch)}`, { cwd: repoDir });
     run('git rebase --autostash FETCH_HEAD', { cwd: repoDir });
-    run(`git push ${quote(remoteName)} HEAD:${remoteBranch}`, { cwd: repoDir });
-    console.log(`[publish] pushed origin repo on attempt ${attempt}`);
+    run(`git push ${quote(pushRemote)} HEAD:${remoteBranch}`, { cwd: repoDir });
+    console.log(`[publish] pushed ${mode} on attempt ${attempt}`);
     process.exit(0);
   } catch (error) {
     if (attempt === retries) {
-      console.error(`[publish] push failed after ${retries} attempts`);
+      console.error(`[publish] ${mode} push failed after ${retries} attempts`);
       throw error;
     }
-    console.log(`[publish] push attempt ${attempt} failed, retrying...`);
+    console.log(`[publish] ${mode} push attempt ${attempt} failed, retrying...`);
   }
 }
