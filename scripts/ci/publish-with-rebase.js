@@ -68,7 +68,7 @@ if (mode === 'study') {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       run(`git fetch ${quote(authedRepo)} ${quote(remoteBranch)}`, { cwd: repoDir });
-      run('git rebase --no-autostash FETCH_HEAD', { cwd: repoDir });
+      run('git rebase --autostash FETCH_HEAD', { cwd: repoDir });
       run(`git push ${quote(authedRepo)} HEAD:${remoteBranch}`, { cwd: repoDir });
       console.log(`[publish] pushed study repo on attempt ${attempt}`);
       process.exit(0);
@@ -85,7 +85,7 @@ if (mode === 'study') {
 for (let attempt = 1; attempt <= retries; attempt++) {
   try {
     run(`git fetch ${quote(remoteName)} ${quote(remoteBranch)}`, { cwd: repoDir });
-    run('git rebase --no-autostash FETCH_HEAD', { cwd: repoDir });
+    run('git rebase --autostash FETCH_HEAD', { cwd: repoDir });
     run(`git push ${quote(remoteName)} HEAD:${remoteBranch}`, { cwd: repoDir });
     console.log(`[publish] pushed origin repo on attempt ${attempt}`);
     process.exit(0);
