@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * 生成 Obsidian 仪表板 — 扁平排版，移动端优先
+ * 生成 Obsidian 仪表板 — iPhone 移动端极简排版
+ * 原则：最重要信息在最上面，不用分隔线，不用嵌套，一目了然
  */
 
 const fs = require('fs');
@@ -16,16 +17,10 @@ function bjToday() {
 function diffDays(a, b) { return Math.round((a.getTime() - b.getTime()) / 86400000); }
 function pad2(n) { return String(n).padStart(2, '0'); }
 
-function formatDeadlineBJ(isoStr) {
+function deadlineBJ(isoStr) {
   const d = new Date(isoStr);
   const bj = new Date(d.getTime() + CST_MS);
-  return `${bj.getUTCMonth() + 1}月${bj.getUTCDate()}日 ${pad2(bj.getUTCHours())}:${pad2(bj.getUTCMinutes())}`;
-}
-
-function deadlineBJDateOnly(isoStr) {
-  const d = new Date(isoStr);
-  const bj = new Date(d.getTime() + CST_MS);
-  return new Date(Date.UTC(bj.getUTCFullYear(), bj.getUTCMonth(), bj.getUTCDate()));
+  return { text: `${bj.getUTCMonth() + 1}月${bj.getUTCDate()}日 ${pad2(bj.getUTCHours())}:${pad2(bj.getUTCMinutes())}`, date: new Date(Date.UTC(bj.getUTCFullYear(), bj.getUTCMonth(), bj.getUTCDate())) };
 }
 
 function loadJSON(p) {
@@ -46,29 +41,22 @@ function parseWeekSpec(spec) {
   return weeks;
 }
 
-function shortDate(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00+08:00');
-  return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
-}
-
-// ── 课表 ──
-
 const WDAY = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
-function getCurrentWeek(schedule) {
+function getWeekInfo(schedule) {
   const w1m = new Date(schedule.meta?.week1_monday || '2026-03-02');
   const today = bjToday();
   const diff = Math.floor((today.getTime() - w1m.getTime()) / (7 * 86400000));
   return { week: Math.max(1, diff + 1), weekday: bjNow().getUTCDay() || 7 };
 }
 
-function getTodayCourses(schedule) {
-  const { week, weekday } = getCurrentWeek(schedule);
+function getCoursesForDay(schedule, targetWeekday) {
+  const { week } = getWeekInfo(schedule);
   const pt = schedule.periodTimes || {};
   const courses = [];
 
   for (const c of schedule.courses || []) {
-    if (Number(c.weekday) !== weekday) continue;
+    if (Number(c.weekday) !== targetWeekday) continue;
     if (!parseWeekSpec(c.weeks).includes(week)) continue;
     const ps = Array.isArray(c.periods) ? c.periods : [];
     const tw = pt[String(ps[0])] || '';
@@ -83,7 +71,7 @@ function getTodayCourses(schedule) {
   for (const s of schedule.special || []) {
     if (!parseWeekSpec(s.weeks).includes(week)) continue;
     const wds = Array.isArray(s.weekday) ? s.weekday.map(Number) : [Number(s.weekday)];
-    if (!wds.includes(weekday)) continue;
+    if (!wds.includes(targetWeekday)) continue;
     for (const t of s.times || []) {
       courses.push({
         title: s.title.replace(/\s+/g, ' ').trim(),
@@ -94,112 +82,137 @@ function getTodayCourses(schedule) {
   }
 
   courses.sort((a, b) => a.time.localeCompare(b.time));
-  return { courses, week, weekday };
+  return courses;
 }
 
-// ── 作业 ──
+// ── 生成函数 ──
 
-function hwCallout(days) {
-  if (days < 0) return 'danger';
-  if (days <= 2) return 'danger';
-  if (days <= 5) return 'warning';
-  return 'tip';
-}
-
-function hwIcon(days) {
-  if (days < 0) return '⚠️';
-  if (days === 0) return '🔴';
-  if (days <= 2) return '🟡';
-  if (days <= 5) return '🟢';
-  return '📌';
-}
-
-function hwLabel(days) {
-  if (days < 0) return `逾期 ${Math.abs(days)} 天`;
-  if (days === 0) return '今天截止';
-  return `还剩 ${days} 天`;
-}
-
-function renderAssignments(assignments) {
-  if (!assignments || !assignments.length) return '';
-  const pending = assignments.filter(a => !a.done && a.deadline)
+function renderHomework(assignments) {
+  if (!assignments) return null;
+  const pending = assignments
+    .filter(a => !a.done && a.deadline)
     .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
-  if (!pending.length) return '';
+  if (!pending.length) return { text: '🎉 全部作业已完成', count: 0, urgent: false };
 
   const today = bjToday();
-  const lines = [];
-  for (const a of pending) {
-    const days = diffDays(deadlineBJDateOnly(a.deadline), today);
-    lines.push(`> [!${hwCallout(days)}] ${hwIcon(days)} ${a.course} **·** ${a.title}`);
-    lines.push(`> 📅 ${formatDeadlineBJ(a.deadline)} **·** ${hwLabel(days)}`);
-    if (a.note) lines.push(`> ${a.note}`);
-    lines.push('');
+  const items = [];
+  let urgent = false;
+
+  for (const a of pending.slice(0, 5)) {
+    const { text, date } = deadlineBJ(a.deadline);
+    const days = diffDays(date, today);
+
+    let icon;
+    if (days < 0) { icon = '⚠️'; urgent = true; }
+    else if (days === 0) { icon = '🔴'; urgent = true; }
+    else if (days <= 2) { icon = '🟡'; urgent = true; }
+    else if (days <= 5) icon = '🟢';
+    else icon = '📌';
+
+    const label = days < 0 ? `逾期${Math.abs(days)}天`
+      : days === 0 ? '今天!'
+      : `${days}天后`;
+
+    items.push(`${icon} ${a.course}·${a.title} — ${label}`);
   }
-  return lines.join('\n');
+
+  const callout = urgent ? 'danger' : pending.length >= 3 ? 'warning' : 'tip';
+  return {
+    text: `> [!${callout}] ⏰ ${pending.length} 项作业\n> ${items.join('\n> ')}`,
+    count: pending.length,
+    urgent,
+  };
 }
 
-// ── 跑步 ──
+function renderSchedule(schedule) {
+  if (!schedule) return null;
+  const { week, weekday } = getWeekInfo(schedule);
+
+  // 今天有课 → 显示今天；今天没课 → 显示明天/下一个上课日
+  let displayDay = weekday;
+  let label = '今天';
+  const todayCourses = getCoursesForDay(schedule, weekday);
+  if (!todayCourses.length) {
+    // 找下一个有课的最近日（最多往后看7天）
+    for (let offset = 1; offset <= 7; offset++) {
+      const next = weekday + offset > 7 ? weekday + offset - 7 : weekday + offset;
+      const courses = getCoursesForDay(schedule, next);
+      if (courses.length) {
+        displayDay = next;
+        label = offset === 1 ? '明天' : WDAY[next];
+        break;
+      }
+    }
+  }
+
+  const courses = getCoursesForDay(schedule, displayDay);
+  if (!courses.length) return { text: '✨ 近7天没有课', week, weekday };
+
+  const lines = [];
+  for (const c of courses.slice(0, 8)) {
+    const loc = c.location ? ` @${c.location}` : '';
+    lines.push(`> ${c.time} ${c.title}${loc}`);
+  }
+
+  return {
+    text: `> [!info] 📅 ${label}课表 · 第${week}周\n${lines.join('\n')}`,
+    week,
+    weekday,
+  };
+}
 
 function renderRunning(running) {
-  if (!running || !running.records) return '';
-
+  if (!running || !running.records) return null;
   const records = running.records || [];
   const morning = records.filter(r => r.type === 'morning').length;
   const free = records.filter(r => r.type === 'free').length;
 
-  const semStart = new Date('2026-03-02');
-  const elapsed = Math.max(1, Math.floor((bjToday().getTime() - semStart.getTime()) / 86400000));
-
-  // 近14天 mini 热力图
+  // 近7天
   const cells = [];
-  for (let i = 13; i >= 0; i--) {
+  for (let i = 6; i >= 0; i--) {
     const d = new Date(bjToday());
     d.setUTCDate(d.getUTCDate() - i);
     const ds = `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`;
     const rec = records.find(r => r.date === ds);
-    cells.push(!rec ? '⬜' : rec.type === 'morning' ? '🟩' : '🟨');
+    cells.push(!rec ? '·' : rec.type === 'morning' ? '跑' : '免');
   }
 
-  return [
-    `🌅 晨跑 **${morning}** 次　🆓 减免 **${free}** 次　📆 已过 ${elapsed} 天`,
-    `\`${cells.join('')}\``,
-  ].join('\n');
+  return `🏃 晨跑 **${morning}** \`${cells.join(' ')}\``;
 }
-
-// ── 知识空白 ──
 
 function renderGaps(gapsData) {
-  if (!gapsData || !gapsData.gaps) return '';
-  const open = (gapsData.gaps || []).filter(g => g.status === 'open').slice(0, 3);
-  if (!open.length) return '';
-
-  const lines = [];
-  for (const g of open) {
-    const prio = g.priority === 1 ? '🔴' : g.priority === 2 ? '🟡' : '🟢';
-    const desc = g.why.length > 80 ? g.why.slice(0, 80) + '...' : g.why;
-    lines.push(`> [!info] ${prio} ${g.title}`);
-    lines.push(`> ${desc}`);
-    lines.push('');
-  }
-  return lines.join('\n');
+  if (!gapsData || !gapsData.gaps) return null;
+  const open = (gapsData.gaps || []).filter(g => g.status === 'open');
+  if (!open.length) return null;
+  return `🧠 ${open.length} 个知识空白待研究`;
 }
 
-// ── 最近文件 ──
+function renderRecentLinks(dailyDir, youtubeDir) {
+  const links = [];
 
-function renderRecent(dir, limit) {
-  if (!fs.existsSync(dir)) return '';
-  const files = fs.readdirSync(dir)
-    .filter(f => f.endsWith('.md'))
-    .sort().reverse().slice(0, limit);
-  if (!files.length) return '';
-
-  const lines = [];
-  for (const f of files) {
-    const name = f.replace('.md', '');
-    const fp = path.join(path.basename(dir), f).replace(/\\/g, '/');
-    lines.push(`- [[${fp}|${name}]]`);
+  if (fs.existsSync(dailyDir)) {
+    const files = fs.readdirSync(dailyDir)
+      .filter(f => f.endsWith('.md'))
+      .sort().reverse().slice(0, 2);
+    for (const f of files) {
+      const name = f.replace('.md', '');
+      const short = name.slice(5); // "2026-05-24" → "05-24"
+      links.push(`[[${path.join(path.basename(dailyDir), f).replace(/\\/g, '/')}|📝 ${short}]]`);
+    }
   }
-  return lines.join('\n');
+
+  if (fs.existsSync(youtubeDir)) {
+    const files = fs.readdirSync(youtubeDir)
+      .filter(f => f.endsWith('.md'))
+      .sort().reverse().slice(0, 2);
+    for (const f of files) {
+      const name = f.replace('.md', '');
+      const short = name.slice(5);
+      links.push(`[[${path.join(path.basename(youtubeDir), f).replace(/\\/g, '/')}|🎬 ${short}]]`);
+    }
+  }
+
+  return links.length ? links.join(' · ') : null;
 }
 
 // ── 主入口 ──
@@ -207,88 +220,40 @@ function renderRecent(dir, limit) {
 function main(argv) {
   const [schedulePath, assignmentsPath, runningPath, gapsPath, dailyDir, youtubeDir, outputPath] = argv.slice(2);
 
-  if (!schedulePath || !assignmentsPath || !outputPath) {
-    console.error('Usage: generate-dashboard.js <schedule.json> <assignments.json> <running.json> <gaps.json> <日报dir> <youtube-dir> <output.md>');
-    return 2;
-  }
+  if (!outputPath) { console.error('missing output path'); return 2; }
 
   const schedule = loadJSON(schedulePath);
   const assignments = loadJSON(assignmentsPath);
   const running = loadJSON(runningPath);
   const gaps = loadJSON(gapsPath);
 
-  const { courses, week, weekday } = schedule
-    ? getTodayCourses(schedule)
-    : { courses: [], week: '?', weekday: '?' };
-
   const now = bjNow();
-  const nowStr = `${pad2(now.getUTCMonth() + 1)}月${pad2(now.getUTCDate())}日 ${WDAY[weekday]} · 第${week}周 · ${pad2(now.getUTCHours())}:${pad2(now.getUTCMinutes())}`;
+  const nowStr = `${pad2(now.getUTCMonth() + 1)}月${pad2(now.getUTCDate())}日 ${WDAY[getWeekInfo(schedule || { meta: { week1_monday: '2026-03-02' } }).weekday]}`;
 
-  const hwSection = renderAssignments(assignments);
-  const runSection = renderRunning(running);
-  const gapSection = renderGaps(gaps);
-  const dailyLinks = renderRecent(dailyDir, 5);
-  const youtubeLinks = renderRecent(youtubeDir, 5);
+  const hw = renderHomework(assignments);
+  const sc = renderSchedule(schedule);
+  const run = renderRunning(running);
+  const gap = renderGaps(gaps);
+  const links = renderRecentLinks(dailyDir, youtubeDir);
 
   const out = [];
 
-  out.push(`# 📊 仪表板`);
+  // 标题行
+  out.push(`# ${nowStr}`);
   out.push('');
-  out.push(`\`${nowStr}\``);
-  out.push('');
 
-  // ── 今日课表 ──
-  out.push(`---`);
-  out.push(`## 📅 今日课表`);
-  out.push('');
-  if (courses.length) {
-    for (const c of courses) {
-      out.push(`> [!info] ${c.time} — ${c.title}`);
-      if (c.location) out.push(`> 📍 ${c.location}`);
-    }
-  } else {
-    out.push(`✨ 今天没有课，自由安排`);
-  }
+  // 作业 — 最重要，放最前面
+  if (hw && hw.text) { out.push(hw.text); out.push(''); }
 
-  // ── 作业倒计时 ──
-  if (hwSection) {
-    out.push('');
-    out.push(`---`);
-    out.push(`## ⏰ 作业倒计时`);
-    out.push('');
-    out.push(hwSection);
-  }
+  // 课表
+  if (sc && sc.text) { out.push(sc.text); out.push(''); }
 
-  // ── 阳光长跑 ──
-  if (runSection) {
-    out.push('');
-    out.push(`---`);
-    out.push(`## 🏃 阳光长跑`);
-    out.push('');
-    out.push(runSection);
-  }
+  // 跑步 + 知识空白 — 一行一条
+  if (run) { out.push(run); out.push(''); }
+  if (gap) { out.push(gap); out.push(''); }
 
-  // ── 知识空白 ──
-  if (gapSection) {
-    out.push('');
-    out.push(`---`);
-    out.push(`## 🧠 知识空白`);
-    out.push('');
-    out.push(gapSection);
-  }
-
-  // ── 最近 ──
-  if (dailyLinks || youtubeLinks) {
-    out.push('');
-    out.push(`---`);
-    out.push(`## 📝 最近`);
-    out.push('');
-    if (dailyLinks) out.push(dailyLinks);
-    if (dailyLinks && youtubeLinks) out.push('');
-    if (youtubeLinks) out.push(youtubeLinks);
-  }
-
-  out.push('');
+  // 快捷入口
+  if (links) { out.push(links); out.push(''); }
 
   const outDir = path.dirname(outputPath);
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
@@ -297,6 +262,4 @@ function main(argv) {
   return 0;
 }
 
-if (require.main === module) {
-  process.exit(main(process.argv));
-}
+if (require.main === module) process.exit(main(process.argv));
