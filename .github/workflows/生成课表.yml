@@ -50,6 +50,18 @@ jobs:
             _timetable/data/schedule.json \
             09-日常处理/课表.ics
 
+      - name: 生成仪表板
+        shell: bash
+        run: |
+          node _timetable/scripts/generate-dashboard.js \
+            _timetable/data/schedule.json \
+            _timetable/data/assignments.json \
+            _timetable/data/running.json \
+            _timetable/_out/learning_gaps.json \
+            日报 \
+            youtube-daily \
+            09-日常处理/仪表板.md
+
       - name: 准备订阅日历静态文件
         shell: bash
         run: |
@@ -151,6 +163,6 @@ jobs:
         env:
           PUBLISH_MODE: origin
           PUBLISH_REPO_DIR: .
-          PUBLISH_ADD_PATH: "09-日常处理/课表.md 09-日常处理/课表.ics public/schedule.ics public/index.html"
+          PUBLISH_ADD_PATH: "09-日常处理/课表.md 09-日常处理/课表.ics 09-日常处理/仪表板.md public/schedule.ics public/index.html"
           PUBLISH_COMMIT_MESSAGE: 'chore: 自动更新课表与订阅日历'
         run: node _timetable/scripts/ci/publish-with-rebase.js
