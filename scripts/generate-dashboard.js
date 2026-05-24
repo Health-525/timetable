@@ -208,13 +208,14 @@ function renderAINews(newsPath) {
   const news = loadJSON(newsPath);
   if (!news || !news.length) return '';
   const lines = [];
-  for (const item of news.slice(0, 5)) {
+  for (const item of news.slice(0, 6)) {
     const title = item.title || '';
     const url = item.url || '';
     const link = url ? `[${title}](${url})` : title;
-    lines.push(`> [!info] ${link}`);
-    if (item.summary) lines.push(`> ${item.summary}`);
+    lines.push(`- ${link}`);
   }
+  lines.push('');
+  lines.push('📎 来自 [AIHOT](https://aihot.virxact.com/)');
   return lines.join('\n');
 }
 
