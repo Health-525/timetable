@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-24T14:26:35.864Z",
+  "generatedAt": "2026-05-25T15:54:23.011Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -22,11 +22,11 @@
       "title": "协方差矩阵与PCA的数学桥接缺失",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学特征值分解和PCA调用，但笔记中缺少协方差矩阵如何从数据构造、特征分解后如何得到主成分的详细推导，导致PCA原理理解不深。",
+      "why": "已学PCA调用和特征值分解，但未深入理解协方差矩阵如何连接两者，导致PCA原理理解停留在表面。",
       "prerequisites_met": [
-        "线性代数基础",
-        "特征值分解",
-        "PCA基本概念"
+        "多元统计分析（PCA概念）",
+        "线性代数（特征值分解）",
+        "Python数据处理（numpy）"
       ],
       "suggestedTopic": "协方差矩阵与PCA的数学推导",
       "relatedCourses": [
@@ -37,16 +37,16 @@
     },
     {
       "id": "gap-002",
-      "title": "LLM原理从零实现缺失",
+      "title": "深度学习基础模块缺失",
       "category": "AI/ML",
       "priority": 1,
-      "why": "已fork LLMs-from-scratch仓库但未深入学习，AI学习课程笔记最少，缺乏对Transformer、注意力机制等核心原理的推导和实现。",
+      "why": "AI学习课程笔记最少，仅有骨架规划，缺乏深度学习核心概念（如反向传播、CNN、RNN）的系统学习。",
       "prerequisites_met": [
         "Python编程",
-        "线性代数",
-        "基础机器学习概念"
+        "多元统计分析（矩阵运算）",
+        "数值分析（梯度优化）"
       ],
-      "suggestedTopic": "从零实现小型Transformer",
+      "suggestedTopic": "深度学习基础：从感知机到CNN",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -54,30 +54,12 @@
     },
     {
       "id": "gap-003",
-      "title": "深度学习框架（PyTorch/TensorFlow）实战缺失",
+      "title": "多Agent系统原理与设计模式缺失",
       "category": "工程深化",
       "priority": 2,
-      "why": "有深度学习笔记（GAT等）但未系统学习框架使用，仅停留在理论或调用API层面，缺乏模型训练、调试、部署的工程经验。",
+      "why": "已使用多Agent工具（timetable项目），但缺乏对Agent通信、协调、任务分解等设计模式的系统理解。",
       "prerequisites_met": [
-        "Python编程",
-        "numpy/pandas",
-        "基础神经网络知识"
-      ],
-      "suggestedTopic": "PyTorch深度学习实战",
-      "relatedCourses": [
-        "08-AI学习",
-        "02-Python数据处理与分析"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-004",
-      "title": "多Agent系统设计模式缺失",
-      "category": "AI/ML",
-      "priority": 2,
-      "why": "已实现timetable多Agent系统，但缺乏对Agent通信、任务编排、记忆共享等设计模式的系统学习，当前实现可能不够健壮。",
-      "prerequisites_met": [
-        "Node.js",
+        "Node.js/JavaScript",
         "GitHub Actions",
         "LLM API调用"
       ],
@@ -88,53 +70,66 @@
       "status": "open"
     },
     {
-      "id": "gap-005",
-      "title": "机器学习模型评估与调优缺失",
-      "category": "AI/ML",
+      "id": "gap-004",
+      "title": "模型部署与推理优化知识空白",
+      "category": "工程深化",
       "priority": 2,
-      "why": "已学PCA等无监督方法，但缺乏监督学习模型评估（交叉验证、混淆矩阵、ROC曲线）和超参数调优的系统知识。",
+      "why": "有模型调用经验，但未涉及模型量化、剪枝、ONNX导出、TensorRT等部署优化技术。",
       "prerequisites_met": [
         "Python编程",
-        "pandas/numpy",
-        "基础统计知识"
+        "深度学习基础（待补）",
+        "Docker基础"
       ],
-      "suggestedTopic": "机器学习模型评估与调优",
+      "suggestedTopic": "模型部署与推理优化",
       "relatedCourses": [
-        "04-多元统计分析",
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-005",
+      "title": "生成式AI与扩散模型原理缺失",
+      "category": "AI/ML",
+      "priority": 2,
+      "why": "用户对AI生成应用（如发型替换）感兴趣，但缺乏对扩散模型、VAE等生成模型原理的理解。",
+      "prerequisites_met": [
+        "深度学习基础（待补）",
+        "概率论基础"
+      ],
+      "suggestedTopic": "扩散模型与生成式AI原理",
+      "relatedCourses": [
         "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-006",
-      "title": "数值线性代数与矩阵计算优化缺失",
-      "category": "理论基础",
-      "priority": 3,
-      "why": "数值分析课程已学稳定性分析，但未深入矩阵分解（LU、QR、SVD）的数值算法及其在机器学习中的应用。",
+      "title": "RAG系统深入优化知识空白",
+      "category": "工程深化",
+      "priority": 2,
+      "why": "已使用RAG概念，但未深入理解检索策略、分块优化、重排序、混合检索等高级技术。",
       "prerequisites_met": [
-        "线性代数",
-        "数值分析基础",
-        "MATLAB编程"
+        "LLM API调用",
+        "Python编程",
+        "向量数据库基础"
       ],
-      "suggestedTopic": "数值线性代数与矩阵分解",
+      "suggestedTopic": "高级RAG系统设计与优化",
       "relatedCourses": [
-        "05-数值分析",
-        "04-多元统计分析"
+        "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-007",
-      "title": "大数据技术栈（Hadoop/Spark）实战缺失",
+      "title": "大数据技术栈深度不足",
       "category": "工程深化",
       "priority": 3,
-      "why": "大数据技术基础课程仅入门理论，缺乏Hadoop/Spark等分布式计算框架的实际操作经验。",
+      "why": "大数据技术基础课程笔记较少，仅入门Linux/Vim，缺乏Hadoop、Spark、Flink等核心框架的实践。",
       "prerequisites_met": [
         "Linux基础",
-        "Java基础",
-        "分布式系统概念"
+        "Python编程"
       ],
-      "suggestedTopic": "Hadoop与Spark实战入门",
+      "suggestedTopic": "Hadoop/Spark大数据处理实践",
       "relatedCourses": [
         "01-大数据技术基础"
       ],
@@ -142,17 +137,17 @@
     },
     {
       "id": "gap-008",
-      "title": "AI应用项目（发型推荐）未启动",
-      "category": "项目实战",
-      "priority": 1,
-      "why": "用户明确对AI发型应用感兴趣，但尚未开始任何相关项目或学习，缺乏图像生成、模型替换等知识。",
+      "title": "数值分析算法在机器学习中的应用桥接缺失",
+      "category": "数学桥接",
+      "priority": 3,
+      "why": "已学数值分析（秦九韶、稳定性），但未将其与机器学习优化（如梯度下降收敛性、矩阵分解数值稳定性）联系起来。",
       "prerequisites_met": [
-        "Python编程",
-        "深度学习基础",
-        "图像处理基础"
+        "数值分析基础",
+        "机器学习基础（待补）"
       ],
-      "suggestedTopic": "基于生成模型的发型推荐系统",
+      "suggestedTopic": "数值优化在机器学习中的应用",
       "relatedCourses": [
+        "05-数值分析",
         "08-AI学习"
       ],
       "status": "open"
