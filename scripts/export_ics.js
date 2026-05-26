@@ -50,6 +50,19 @@ function parseLocalDate(isoString) {
   return new Date(year, month - 1, day, 0, 0, 0, 0);
 }
 
+function parseLocalDateTime(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return null;
+
+  const normalized = raw.replace("T", " ");
+  const [datePart, timePart = "00:00"] = normalized.split(/\s+/, 2);
+  const [year, month, day] = String(datePart).split("-").map(Number);
+  const [hour, minute] = String(timePart).split(":").map(Number);
+
+  if (![year, month, day, hour, minute].every(Number.isFinite)) return null;
+  return new Date(year, month - 1, day, hour, minute, 0, 0);
+}
+
 function addDays(date, days) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
@@ -135,6 +148,17 @@ function getMaxWeek(schedule) {
       if (week > maxWeek) maxWeek = week;
     }
   }
+
+  // If there are explicit one-off events, ensure we include weeks covering them.
+  const week1Monday = parseLocalDate(schedule.meta?.week1_monday || "2026-03-02");
+  for (const item of schedule.oneOff || []) {
+    const start = parseLocalDateTime(item.start);
+    if (!start) continue;
+    const deltaDays = Math.floor((start - week1Monday) / 86400000);
+    const week = Math.floor(deltaDays / 7) + 1;
+    if (week > maxWeek) maxWeek = week;
+  }
+
   return maxWeek;
 }
 
@@ -282,6 +306,29 @@ function buildEvents(schedule, adjustments = []) {
         );
       }
     }
+  }
+
+  // One-off events with explicit datetimes (not tied to week/period rules)
+  for (const item of schedule.oneOff || []) {
+    const start = parseLocalDateTime(item.start);
+    const end = parseLocalDateTime(item.end);
+    if (!start || !end) continue;
+
+    const deltaDays = Math.floor((start - week1Monday) / 86400000);
+    const week = Math.floor(deltaDays / 7) + 1;
+    const weekday = ((start.getDay() + 6) % 7) + 1; // Mon=1..Sun=7
+
+    events.push({
+      start,
+      end,
+      summary: cleanText(item.title),
+      location: cleanText(item.location),
+      description: cleanText(item.note),
+      startText: `${pad2(start.getHours())}:${pad2(start.getMinutes())}`,
+      week,
+      weekday,
+      periods: [],
+    });
   }
 
   events.sort((a, b) => a.start - b.start || a.summary.localeCompare(b.summary, "zh-CN"));
