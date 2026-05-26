@@ -128,6 +128,22 @@ function parseClock(text) {
   return { hour, minute };
 }
 
+function clockToMinutes(clockText) {
+  const clock = parseClock(clockText);
+  if (!clock) return null;
+  return clock.hour * 60 + clock.minute;
+}
+
+function minutesToClock(mins) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${pad2(h)}:${pad2(m)}`;
+}
+
+function rangesOverlap(aStart, aEnd, bStart, bEnd) {
+  return aStart < bEnd && bStart < aEnd;
+}
+
 function generateUID(date, startText, title) {
   const base = `${formatICSDate(date)}-${startText}-${title}`;
   let hash = 0;
@@ -260,6 +276,30 @@ function buildEvents(schedule, adjustments = []) {
         }
       }
 
+      // One-off events can block normal course windows to avoid duplicates.
+      // Example: hackathon overlaps a Friday afternoon class.
+      const blockedRanges = [];
+      for (const item of schedule.oneOff || []) {
+        const start = parseLocalDateTime(item.start);
+        const end = parseLocalDateTime(item.end);
+        if (!start || !end) continue;
+
+        const dayStart = new Date(date);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(date);
+        dayEnd.setHours(23, 59, 59, 999);
+
+        if (end <= dayStart || start >= dayEnd) continue;
+
+        const s = Math.max(start.getTime(), dayStart.getTime());
+        const e = Math.min(end.getTime(), dayEnd.getTime());
+        const sDate = new Date(s);
+        const eDate = new Date(e);
+        const sMins = sDate.getHours() * 60 + sDate.getMinutes();
+        const eMins = eDate.getHours() * 60 + eDate.getMinutes();
+        if (eMins > sMins) blockedRanges.push([sMins, eMins]);
+      }
+
       for (const course of schedule.courses || []) {
         if (Number(course.weekday) !== weekday) continue;
         if (!hasWeek(course.weeks, week)) continue;
@@ -267,6 +307,13 @@ function buildEvents(schedule, adjustments = []) {
         const window = getPeriodWindow(periodTimes, course.periods);
         if (!window) continue;
         if (specialWindows.has(`${window.start}-${window.end}`)) continue;
+
+        const wStart = clockToMinutes(window.start);
+        const wEnd = clockToMinutes(window.end);
+        if (wStart != null && wEnd != null) {
+          const overlapped = blockedRanges.some(([bs, be]) => rangesOverlap(wStart, wEnd, bs, be));
+          if (overlapped) continue;
+        }
 
         const startClock = parseClock(window.start);
         const endClock = parseClock(window.end);
