@@ -149,23 +149,26 @@
     "course": "数值分析",
     "title": "第5章作业",
     "deadline": "2026-05-28T07:04:00.000Z",
-    "done": false,
-    "createdAt": "2026-05-26T07:05:05.547Z"
+    "done": true,
+    "createdAt": "2026-05-26T07:05:05.547Z",
+    "submittedAt": "2026-05-28T13:33:10.964Z"
   },
   {
     "id": "a-1779959330795-0",
     "course": "其他",
     "title": "测试",
     "deadline": "2026-05-31T09:08:00.000Z",
-    "done": false,
-    "createdAt": "2026-05-28T09:08:50.796Z"
+    "done": true,
+    "createdAt": "2026-05-28T09:08:50.796Z",
+    "submittedAt": "2026-05-28T13:33:10.964Z"
   },
   {
     "id": "a-1779975106388-0",
     "course": "多元统计分析",
     "title": "简单",
     "deadline": "2026-05-29T13:31:00.000Z",
-    "done": false,
-    "createdAt": "2026-05-28T13:31:46.389Z"
+    "done": true,
+    "createdAt": "2026-05-28T13:31:46.389Z",
+    "submittedAt": "2026-05-28T13:33:10.964Z"
   }
 ]
