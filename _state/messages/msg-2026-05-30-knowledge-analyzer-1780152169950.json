@@ -1,0 +1,14 @@
+{
+  "id": "msg-2026-05-30-knowledge-analyzer-1780152169950",
+  "from": "knowledge-analyzer",
+  "to": [
+    "auto-researcher"
+  ],
+  "type": "task-complete",
+  "timestamp": "2026-05-30T14:42:49.950Z",
+  "payload": {
+    "gapCount": 10,
+    "source": "llm"
+  },
+  "consumed": false
+}
