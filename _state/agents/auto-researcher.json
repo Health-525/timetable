@@ -1,13 +1,11 @@
 {
   "agentId": "auto-researcher",
   "name": "自主研究",
-  "lastRun": "2026-05-31T14:50:32.981Z",
+  "lastRun": "2026-06-01T18:42:42.086Z",
   "status": "success",
   "summary": {
-    "gapId": "gap-010",
-    "title": "飞书API与自动化集成缺失",
-    "score": 82,
-    "status": "resolved"
+    "status": "skipped",
+    "reason": "no_open_gaps"
   },
   "errors": []
 }
