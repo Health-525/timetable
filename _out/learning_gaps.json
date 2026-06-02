@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T18:42:18.868Z",
+  "generatedAt": "2026-06-02T17:27:18.151Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -22,144 +22,135 @@
       "title": "协方差矩阵与PCA的数学桥接缺失",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学多元统计分析中的PCA原理和Python中的PCA调用，但笔记中缺少协方差矩阵的特征分解如何具体推导出主成分的详细过程，导致理解停留在应用层。",
+      "why": "已学特征值分解和PCA调用，但笔记中缺少协方差矩阵如何从数据构造、特征分解如何导出主成分的推导过程。多元统计分析笔记有PCA概念，但未深入协方差矩阵的数学细节。",
       "prerequisites_met": [
         "线性代数基础",
         "特征值分解",
-        "PCA基本概念",
-        "Python numpy/pandas"
+        "PCA基本概念"
       ],
-      "suggestedTopic": "协方差矩阵与PCA的数学推导",
+      "suggestedTopic": "协方差矩阵的构造与PCA的数学推导",
       "relatedCourses": [
         "04-多元统计分析",
-        "02-Python数据处理与分析"
+        "05-数值分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-002",
-      "title": "深度学习基础模块缺失",
+      "title": "LLM原理从零实现缺失",
       "category": "AI/ML",
       "priority": 1,
-      "why": "AI学习课程笔记最多但内容最弱，仅有骨架规划；虽然fork了LLMs-from-scratch和深度学习项目，但缺少从零开始的神经网络基础（前向传播、反向传播、梯度下降）的系统笔记。",
+      "why": "用户fork了LLMs-from-scratch仓库但笔记中无相关记录，AI学习笔记多为骨架规划，缺少Transformer、注意力机制、预训练等核心原理的深入笔记。",
       "prerequisites_met": [
         "Python编程",
-        "多元统计分析",
-        "数值分析"
+        "神经网络基础",
+        "线性代数"
       ],
-      "suggestedTopic": "神经网络与反向传��基础",
+      "suggestedTopic": "从零实现小型Transformer",
       "relatedCourses": [
-        "08-AI学习",
-        "04-多元统计分析"
+        "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-003",
-      "title": "多Agent系统设计原理缺失",
+      "title": "深度学习框架（PyTorch/TensorFlow）实战缺失",
       "category": "工程深化",
       "priority": 2,
-      "why": "已实现timetable的7个Agent工作流，但笔记中缺少对多Agent协作模式（如规划-执行-反思循环、Agent间通信协议）的系统总结，停留在工具使用层面。",
+      "why": "用户有深度学习目录（GAT/图注意力网络）但笔记中无框架使用记录，且AI学习笔记未覆盖框架安装、张量操作、自动求导等基础。",
       "prerequisites_met": [
-        "Node.js",
-        "GitHub Actions",
-        "Python",
-        "LLM API调用"
+        "Python数据处理",
+        "numpy基础"
       ],
-      "suggestedTopic": "多Agent系统架构与协作模式",
+      "suggestedTopic": "PyTorch入门与实战",
       "relatedCourses": [
         "08-AI学习",
-        "07-英语"
+        "02-Python数据处理与分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-004",
-      "title": "图神经网络（GAT）原理理解不深",
-      "category": "AI/ML",
+      "title": "多Agent系统设计模式缺失",
+      "category": "工程深化",
       "priority": 2,
-      "why": "电脑中有GAT/图注意力网络的Jupyter笔记，但笔记中缺少对注意力机制在图结构上如何工作的数学推导，以及与其他图模型（GCN）的对比。",
+      "why": "用户正在参加多Agent黑客松，timetable项目有7个Agent，但笔记中缺少Agent通信、任务编排、状态管理等设计模式的系统学习。",
       "prerequisites_met": [
-        "深度学习基础",
-        "线性代数",
-        "注意力机制基本概念"
+        "Node.js",
+        "GitHub Actions",
+        "LLM API调用"
       ],
-      "suggestedTopic": "图注意力网络（GAT）原理与实现",
+      "suggestedTopic": "多Agent系统架构与设计模式",
       "relatedCourses": [
-        "08-AI学习",
-        "04-多元统计分析"
+        "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-005",
       "title": "RAG系统深入优化缺失",
-      "category": "工程深化",
+      "category": "AI/ML",
       "priority": 2,
-      "why": "已使用RAG技术（videonote-ai项目），但笔记中缺少对检索策略（如混合检索、重排序）、文档分块策略、以及评估方法的系统学习。",
+      "why": "用户有RAG概念和videonote-ai项目，但笔记中缺少检索策略、分块优化、重排序等进阶技术。",
       "prerequisites_met": [
-        "LLM API调用",
-        "Python",
-        "向量数据库基本概念"
+        "LLM API",
+        "向量数据库概念",
+        "Python"
       ],
-      "suggestedTopic": "高级RAG技术：检索优化与评估",
+      "suggestedTopic": "高级RAG技术：分块、检索与重排序",
       "relatedCourses": [
-        "08-AI学习",
-        "02-Python数据处理与分析"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-006",
-      "title": "数值分析中优化算法与机器学习的联系缺失",
-      "category": "数学桥接",
-      "priority": 3,
-      "why": "数值分析课程学习了MATLAB实验和稳定性分析，但笔记中未将梯度下降、牛顿法等优化算法与机器学习中的模型训练联系起来。",
-      "prerequisites_met": [
-        "数值分析基础",
-        "多元微积分",
-        "线性代数"
-      ],
-      "suggestedTopic": "数值优化算法在机器学习中的应用",
-      "relatedCourses": [
-        "05-数值分析",
         "08-AI学习"
       ],
       "status": "open"
     },
     {
+      "id": "gap-006",
+      "title": "数值分析中特征值算法的数值稳定性缺失",
+      "category": "理论基础",
+      "priority": 3,
+      "why": "数值分析笔记有稳定性分析，但未涉及特征值计算的数值方法（如QR算法），而PCA依赖特征值分解。",
+      "prerequisites_met": [
+        "数值分析基础",
+        "特征值概念",
+        "MATLAB"
+      ],
+      "suggestedTopic": "特征值计算的数值方法",
+      "relatedCourses": [
+        "05-数值分析",
+        "04-多元统计分析"
+      ],
+      "status": "open"
+    },
+    {
       "id": "gap-007",
-      "title": "模型部署与推理优化缺失",
+      "title": "大数据技术栈（Hadoop/Spark）实战缺失",
       "category": "工程深化",
       "priority": 3,
-      "why": "有多个AI项目（FrameDetective、videonote-ai），但笔记中缺少模型部署（如ONNX、TensorRT、Docker化推理服务）和推理加速（量化、剪枝）的系统知识。",
+      "why": "大数据技术基础课程笔记仅5篇，且无Hadoop/Spark等分布式计算框架的实践笔记。",
       "prerequisites_met": [
-        "Python",
-        "Docker基础",
-        "深度学习基础"
+        "Linux基础",
+        "Java基础"
       ],
-      "suggestedTopic": "模型部署与推理优化实践",
+      "suggestedTopic": "Hadoop与Spark入门实战",
       "relatedCourses": [
-        "08-AI学习",
         "01-大数据技术基础"
       ],
       "status": "open"
     },
     {
       "id": "gap-008",
-      "title": "时间序列分析模块缺失",
-      "category": "AI/ML",
-      "priority": 3,
-      "why": "多元统计分析中学习了PCA等降维方法，但未涉及时间序列分析（ARIMA、LSTM等），而用户有日报周报、打卡等时间序列相关兴趣。",
+      "title": "AI发型应用相关计算机视觉技术缺失",
+      "category": "项目实战",
+      "priority": 1,
+      "why": "用户明确对AI发型应用感兴趣，但笔记中缺少图像分割、生成对抗网络（GAN）或扩散模型等图像生成技术。",
       "prerequisites_met": [
-        "统计学基础",
-        "Python数据处理",
-        "线性代数"
+        "Python",
+        "深度学习基础",
+        "图像处理基础"
       ],
-      "suggestedTopic": "时间序列分析与预测",
+      "suggestedTopic": "图像分割与生成模型（GAN/扩散模型）",
       "relatedCourses": [
-        "04-多元统计分析",
-        "02-Python数据处理与分析"
+        "08-AI学习"
       ],
       "status": "open"
     }
