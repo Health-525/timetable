@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-03T18:02:05.811Z",
+  "generatedAt": "2026-06-04T16:21:41.488Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -19,34 +19,35 @@
   "gaps": [
     {
       "id": "gap-001",
-      "title": "协方差矩阵与PCA的数学桥接缺失",
+      "title": "协方差矩阵与特征值分解的桥接：从PCA原理到实现",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学特征值分解和PCA调用，但未深入理解协方差矩阵如何桥接两者，导致PCA原理理解停留在表面。",
+      "why": "已学多元统计分析中的PCA数学推导（特征值分解、协方差矩阵）和Python中调用PCA库，但缺少从协方差矩阵到特征值分解的中间推导过程，以及如何用numpy手动实现PCA。",
       "prerequisites_met": [
         "线性代数基础",
         "特征值分解",
-        "PCA基本概念"
+        "PCA概念",
+        "Python/numpy"
       ],
-      "suggestedTopic": "协方差矩阵与PCA的数学推导",
+      "suggestedTopic": "PCA的数学推导与手动实现",
       "relatedCourses": [
         "04-多元统计分析",
-        "05-数值分析"
+        "02-Python数据处理与分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-002",
-      "title": "深度学习基础理论薄弱",
+      "title": "深度学习基础：从感知机到多层神经网络的前向与反向传播推导",
       "category": "AI/ML",
       "priority": 1,
-      "why": "AI学习课程笔记最多但内容最弱，仅有骨架规划，缺乏神经网络、反向传播等核心原理的深入笔记。",
+      "why": "AI学习课程笔记最多但内容最弱，只有骨架规划。已了解感知机、激活函数等概念，但缺少从感知机到多层神经网络的完整推导，尤其是反向传播算法的数学原理和代码实现。",
       "prerequisites_met": [
-        "Python编程",
         "线性代数",
-        "微积分"
+        "微积分",
+        "Python编程"
       ],
-      "suggestedTopic": "深度学习基础：神经网络与反向传播",
+      "suggestedTopic": "多层感知机与反向传播",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -54,14 +55,48 @@
     },
     {
       "id": "gap-003",
-      "title": "多Agent系统设计模式缺失",
+      "title": "图神经网络（GNN）原理：从图注意力网络（GAT）到实际应用",
+      "category": "AI/ML",
+      "priority": 2,
+      "why": "电脑中有GAT/图注意力网络的Jupyter笔记，但知识画像中未提及，说明可能只是简单运行代码，缺乏对GNN基础（图卷积、消息传递机制）的系统理解。",
+      "prerequisites_met": [
+        "深度学习基础",
+        "线性代数",
+        "Python"
+      ],
+      "suggestedTopic": "图神经网络基础与GAT详解",
+      "relatedCourses": [
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-004",
+      "title": "数值分析中的误差分析与算法稳定性在机器学习中的应用",
       "category": "工程深化",
       "priority": 2,
-      "why": "已实现7 Agent学习自动化系统，但缺乏对多Agent协作模式、通信协议、任务编排的系统性理解。",
+      "why": "数值分析课程已学算法稳定性、误差分析，但未将其与机器学习模型训练中的数值稳定性（如梯度消失/爆炸、softmax溢出）联系起来。",
+      "prerequisites_met": [
+        "数值分析基础",
+        "机器学习基础"
+      ],
+      "suggestedTopic": "机器学习中的数值稳定性",
+      "relatedCourses": [
+        "05-数值分析",
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-005",
+      "title": "多Agent系统设计模式：从timetable项目到通用框架",
+      "category": "工程深化",
+      "priority": 2,
+      "why": "已实现7 Agent的timetable项目，但缺少对多Agent系统设计模式（如协调、通信、任务分解）的系统学习，项目可能偏向工程实现而非理论设计。",
       "prerequisites_met": [
         "Node.js",
         "GitHub Actions",
-        "Agent开发经验"
+        "Python"
       ],
       "suggestedTopic": "多Agent系统架构与设计模式",
       "relatedCourses": [
@@ -70,64 +105,34 @@
       "status": "open"
     },
     {
-      "id": "gap-004",
-      "title": "RAG系统原理与优化未深入",
+      "id": "gap-006",
+      "title": "RAG（检索增强生成）原理与实现：从视频总结项目到深入理解",
       "category": "AI/ML",
       "priority": 2,
-      "why": "已使用RAG技术，但未系统学习检索增强生成的原理、分块策略、检索优化等核心内容。",
+      "why": "已使用n8n+AssemblyAI+DeepSeek实现视频字幕总结，但可能只是调用API，缺少对RAG核心组件（嵌入、检索、融合）的深入理解。",
       "prerequisites_met": [
-        "LLM API使用",
+        "Python",
+        "LLM API调用",
         "向量数据库概念"
       ],
-      "suggestedTopic": "RAG系统原理与高级优化",
+      "suggestedTopic": "RAG系统构建与优化",
       "relatedCourses": [
         "08-AI学习"
       ],
       "status": "open"
     },
     {
-      "id": "gap-005",
-      "title": "数值分析中的误差分析与稳定性理论不足",
-      "category": "理论基础",
-      "priority": 2,
-      "why": "已完成MATLAB实验，但笔记中缺乏对误差来源、条件数、算法稳定性的系统性数学推导。",
-      "prerequisites_met": [
-        "数值分析基础",
-        "MATLAB实验"
-      ],
-      "suggestedTopic": "数值误差分析与算法稳定性",
-      "relatedCourses": [
-        "05-数值分析"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-006",
-      "title": "大数据技术栈中的分布式计算原理缺失",
-      "category": "工程深化",
-      "priority": 2,
-      "why": "大数据技术基础课程仅入门Linux/Vim，缺乏对Hadoop/Spark等分布式计算框架的原理理解。",
-      "prerequisites_met": [
-        "Linux基础",
-        "Python编程"
-      ],
-      "suggestedTopic": "分布式计算原理与MapReduce",
-      "relatedCourses": [
-        "01-大数据技术基础"
-      ],
-      "status": "open"
-    },
-    {
       "id": "gap-007",
-      "title": "AI模型部署与推理优化未涉及",
-      "category": "工程深化",
-      "priority": 3,
-      "why": "有模型训练经验但未学习模型部署、量化、剪枝等推理优化技术。",
+      "title": "发型替换应用的AI模型：从图像分割到生成式模型",
+      "category": "项目实战",
+      "priority": 1,
+      "why": "用户明确对AI发型应用感兴趣，但缺乏相关技术储备。需要学习图像分割（如SAM）、图像生成（如Stable Diffusion）或风格迁移模型。",
       "prerequisites_met": [
+        "Python",
         "深度学习基础",
-        "Python"
+        "图像处理基础"
       ],
-      "suggestedTopic": "模型部署与推理优化",
+      "suggestedTopic": "图像分割与生成式模型在发型替换中的应用",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -135,18 +140,17 @@
     },
     {
       "id": "gap-008",
-      "title": "发型替换应用所需计算机视觉技术空白",
-      "category": "项目实战",
-      "priority": 1,
-      "why": "用户明确对AI发型应用感兴趣，但缺乏图像分割、生成对抗网络等CV技术基础。",
+      "title": "飞书API集成：从日报周报自动化到企业级应用",
+      "category": "工程深化",
+      "priority": 3,
+      "why": "用户想加入飞书功能并实现日报周报自动化，但知识画像中未提及飞书API或相关开发经验。",
       "prerequisites_met": [
-        "Python",
-        "深度学习基础"
+        "Python/Node.js",
+        "REST API",
+        "自动化工作流"
       ],
-      "suggestedTopic": "图像分割与生成模型在发型替换中的应用",
-      "relatedCourses": [
-        "08-AI学习"
-      ],
+      "suggestedTopic": "飞书开放平台API与机器人开发",
+      "relatedCourses": [],
       "status": "open"
     }
   ]
