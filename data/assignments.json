@@ -171,5 +171,50 @@
     "done": true,
     "createdAt": "2026-05-28T13:31:46.389Z",
     "submittedAt": "2026-05-28T13:33:10.964Z"
+  },
+  {
+    "id": "a-mayuan-exam",
+    "course": "马原",
+    "title": "马原考试",
+    "deadline": "2026-06-03T06:00:00.000Z",
+    "note": "复习备考",
+    "done": false,
+    "createdAt": "2026-06-01T12:00:00.000Z"
+  },
+  {
+    "id": "a-xingshi-zhengce",
+    "course": "形势与政策",
+    "title": "形式与政策作业",
+    "deadline": "2026-06-04T15:59:00.000Z",
+    "note": "完成并提交",
+    "done": false,
+    "createdAt": "2026-06-01T12:00:00.000Z"
+  },
+  {
+    "id": "a-bigdata-exam",
+    "course": "大数据技术基础",
+    "title": "大数据基础考试",
+    "deadline": "2026-06-14T16:00:00.000Z",
+    "note": "复习备考",
+    "done": false,
+    "createdAt": "2026-06-01T12:00:00.000Z"
+  },
+  {
+    "id": "a-duoyuan-exam",
+    "course": "多元统计分析",
+    "title": "多元统计分析考试",
+    "deadline": "2026-06-16T00:00:00.000Z",
+    "note": "复习备考",
+    "done": false,
+    "createdAt": "2026-06-01T12:00:00.000Z"
+  },
+  {
+    "id": "a-maogai-exam",
+    "course": "毛概",
+    "title": "毛概考试",
+    "deadline": "2026-06-17T06:00:00.000Z",
+    "note": "复习备考",
+    "done": false,
+    "createdAt": "2026-06-01T12:00:00.000Z"
   }
 ]
