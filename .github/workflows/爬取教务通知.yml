@@ -1,0 +1,42 @@
+name: 爬取教务通知
+
+on:
+  schedule:
+    # 每天北京时间 08:30 = UTC 00:30
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: study-jwc-news
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取 timetable
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - uses: ./.github/actions/study-setup
+        with:
+          token: ${{ secrets.STUDY_PUSH_TOKEN }}
+
+      - name: 爬取教务处通知
+        run: node scripts/fetch_jwc_news.js _out/jwc_news.json
+
+      - name: 提交到 jiangshu-study
+        env:
+          STUDY_PUSH_TOKEN: ${{ secrets.STUDY_PUSH_TOKEN }}
+          PUBLISH_MODE: study
+          PUBLISH_REPO_DIR: _study
+          PUBLISH_ADD_PATH: _data/
+          PUBLISH_COMMIT_MESSAGE: 'data: 教务通知更新 ${{ github.run_id }}'
+        run: |
+          mkdir -p _study/_data
+          cp _out/jwc_news.json _study/_data/jwc_news.json
+          node scripts/ci/publish-with-rebase.js
