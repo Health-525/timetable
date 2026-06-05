@@ -178,8 +178,9 @@
     "title": "马原考试",
     "deadline": "2026-06-03T06:00:00.000Z",
     "note": "复习备考",
-    "done": false,
-    "createdAt": "2026-06-01T12:00:00.000Z"
+    "done": true,
+    "createdAt": "2026-06-01T12:00:00.000Z",
+    "submittedAt": "2026-06-05T08:22:40.230Z"
   },
   {
     "id": "a-xingshi-zhengce",
@@ -187,8 +188,9 @@
     "title": "形式与政策作业",
     "deadline": "2026-06-04T15:59:00.000Z",
     "note": "完成并提交",
-    "done": false,
-    "createdAt": "2026-06-01T12:00:00.000Z"
+    "done": true,
+    "createdAt": "2026-06-01T12:00:00.000Z",
+    "submittedAt": "2026-06-05T08:22:40.230Z"
   },
   {
     "id": "a-bigdata-exam",
