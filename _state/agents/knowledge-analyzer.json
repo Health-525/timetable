@@ -1,10 +1,10 @@
 {
   "agentId": "knowledge-analyzer",
   "name": "知识空白分析",
-  "lastRun": "2026-06-04T16:21:41.489Z",
+  "lastRun": "2026-06-05T16:01:51.021Z",
   "status": "success",
   "summary": {
-    "gapCount": 8,
+    "gapCount": 7,
     "source": "llm"
   },
   "errors": []
