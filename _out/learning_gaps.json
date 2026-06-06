@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-05T16:01:51.020Z",
+  "generatedAt": "2026-06-06T14:45:09.745Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -22,11 +22,11 @@
       "title": "协方差矩阵与PCA的数学桥接缺失",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学特征值分解和PCA调用，但笔记中缺少协方差矩阵如何从数据构造、特征分解与主成分方向的对应关系，导致PCA原理理解停留在表面。",
+      "why": "已学特征值分解和PCA调用，但未深入理解协方差矩阵如何桥接两者。多元统计分析笔记中有PCA推导，但缺少从数据协方差到特征分解的完整逻辑链。",
       "prerequisites_met": [
         "线性代数基础",
         "特征值分解",
-        "PCA基本概念"
+        "PCA概念"
       ],
       "suggestedTopic": "协方差矩阵与PCA的数学推导",
       "relatedCourses": [
@@ -37,34 +37,32 @@
     },
     {
       "id": "gap-002",
-      "title": "深度学习模型训练流程不完整",
+      "title": "LLM原理从零实现缺失",
       "category": "AI/ML",
       "priority": 1,
-      "why": "AI学习笔记有22篇但多为骨架规划，缺少从数据加载、模型定义、训练循环到评估的完整实践，尤其缺少PyTorch/TensorFlow的端到端项目。",
+      "why": "AI学习笔记多为骨架规划，缺少对Transformer、注意力机制等核心原理的深入笔记。虽fork了LLMs-from-scratch仓库，但未转化为个人理解。",
       "prerequisites_met": [
         "Python编程",
-        "pandas/numpy",
-        "机器学习基础概念"
+        "深度学习基础（GAT/图注意力）"
       ],
-      "suggestedTopic": "PyTorch图像分类实战",
+      "suggestedTopic": "从零实现小型Transformer",
       "relatedCourses": [
-        "08-AI学习",
-        "02-Python数据处理与分析"
+        "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-003",
-      "title": "多Agent协作的系统设计原理缺失",
+      "title": "多Agent系统设计模式缺失",
       "category": "工程深化",
       "priority": 2,
-      "why": "已实现timetable的7个Agent脚本，但缺少对Agent通信协议、任务分解、状态管理等系统设计原理的学习，停留在工具调用层面。",
+      "why": "已实现7 Agent的timetable项目，但缺乏对Agent通信、任务编排、错误恢复等设计模式的系统学习。笔记中无相关总结。",
       "prerequisites_met": [
-        "Node.js/JavaScript",
+        "Node.js",
         "GitHub Actions",
-        "API调用"
+        "多Agent实践"
       ],
-      "suggestedTopic": "多Agent系统架构设计",
+      "suggestedTopic": "多Agent系统架构与设计模式",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -72,34 +70,31 @@
     },
     {
       "id": "gap-004",
-      "title": "数值分析中误差传播与稳定性分析深度不足",
+      "title": "数值分析中误差传播与稳定性深度不足",
       "category": "理论基础",
       "priority": 2,
-      "why": "数值分析笔记有8篇但多为MATLAB实验，缺少对截断误差、舍入误差、算法稳定性的严格数学分析，尤其是秦九韶算法等案例的误差界推导。",
+      "why": "数值分析笔记有MATLAB实验，但缺少对误差来源、条件数、算法稳定性的严格数学分析。仅停留在应用层。",
       "prerequisites_met": [
         "数值分析基础",
-        "MATLAB编程",
-        "微积分"
+        "MATLAB实验"
       ],
-      "suggestedTopic": "数值算法的误差分析与稳定性理论",
+      "suggestedTopic": "数值误差分析与算法稳定性",
       "relatedCourses": [
-        "05-数值分析",
-        "06-数学模型与数学软件"
+        "05-数值分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-005",
-      "title": "大数据技术栈中分布式计算原理缺失",
+      "title": "大数据技术基础中分布式系统原理缺失",
       "category": "工程深化",
       "priority": 2,
-      "why": "大数据技术基础笔记5篇但偏理论入门，缺少对Hadoop/Spark等分布式计算框架的实践，以及MapReduce、数据分片等核心概念的理解。",
+      "why": "大数据技术基础笔记仅5篇，覆盖Linux/Vim入门，但缺少Hadoop/Spark等分布式计算框架的原理笔记。",
       "prerequisites_met": [
         "Linux基础",
-        "Python编程",
-        "数据库基础"
+        "Python编程"
       ],
-      "suggestedTopic": "Hadoop/Spark分布式计算入门",
+      "suggestedTopic": "Hadoop/Spark分布式计算原理",
       "relatedCourses": [
         "01-大数据技术基础"
       ],
@@ -107,36 +102,49 @@
     },
     {
       "id": "gap-006",
-      "title": "生成式AI模型（如扩散模型）原理空白",
+      "title": "数学模型与软件中优化算法深度不足",
+      "category": "理论基础",
+      "priority": 3,
+      "why": "数学模型笔记仅2篇，缺少对线性规划、整数规划等优化算法的数学推导和MATLAB实现。",
+      "prerequisites_met": [
+        "线性代数",
+        "MATLAB基础"
+      ],
+      "suggestedTopic": "优化算法：线性规划与整数规划",
+      "relatedCourses": [
+        "06-数学模型与数学软件"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-007",
+      "title": "AI学习中的强化学习模块缺失",
       "category": "AI/ML",
       "priority": 3,
-      "why": "用户对AI应用兴趣浓厚（如发型替换应用），但笔记中缺少对生成模型（如GAN、扩散模型）的原理学习，无法支撑模型替换类项目。",
+      "why": "AI学习笔记中无强化学习相关内容，但用户对多Agent系统感兴趣，强化学习是重要基础。",
       "prerequisites_met": [
-        "深度学习基础",
         "Python编程",
-        "图像处理基础"
+        "机器学习基础"
       ],
-      "suggestedTopic": "扩散模型原理与实现",
+      "suggestedTopic": "强化学习入门：Q-learning与策略梯度",
       "relatedCourses": [
         "08-AI学习"
       ],
       "status": "open"
     },
     {
-      "id": "gap-007",
-      "title": "模型部署与推理优化知识缺失",
-      "category": "工程深化",
-      "priority": 3,
-      "why": "已有多个AI项目但均未涉及模型部署（如ONNX、TensorRT、Docker化服务），缺少从训练到生产环境的完整链路。",
+      "id": "gap-008",
+      "title": "图像生成与模型替换技术缺失",
+      "category": "项目实战",
+      "priority": 1,
+      "why": "用户明确对AI发型应用和模型自动替换感兴趣，但无相关笔记或项目。需学习图像生成、人脸关键点检测、图像分割等。",
       "prerequisites_met": [
-        "Docker基础",
-        "Python后端",
-        "深度学习框架"
+        "Python编程",
+        "深度学习基础（GAT）"
       ],
-      "suggestedTopic": "模型部署与推理优化实践",
+      "suggestedTopic": "图像生成与风格迁移：从GAN到扩散模型",
       "relatedCourses": [
-        "08-AI学习",
-        "01-大数据技术基础"
+        "08-AI学习"
       ],
       "status": "open"
     }
