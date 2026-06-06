@@ -181,7 +181,7 @@
       "note": "复习备考",
       "done": true,
       "createdAt": "2026-06-01T12:00:00.000Z",
-      "completedAt": "2026-06-06T07:15:28.837Z"
+      "completedAt": "2026-06-06T07:15:27.046Z"
     },
     {
       "id": "a-xingshi-zhengce",
@@ -189,8 +189,9 @@
       "title": "形式与政策作业",
       "deadline": "2026-06-04T15:59:00.000Z",
       "note": "完成并提交",
-      "done": false,
-      "createdAt": "2026-06-01T12:00:00.000Z"
+      "done": true,
+      "createdAt": "2026-06-01T12:00:00.000Z",
+      "completedAt": "2026-06-06T07:15:29.876Z"
     },
     {
       "id": "a-bigdata-exam",
