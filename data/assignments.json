@@ -2,200 +2,198 @@
   "assignments": [
     {
       "id": "a-1774081345228-0",
-      "course": "Python数据处理与分析",
+      "subject": "Python数据处理与分析",
       "title": "课本作业",
       "deadline": "2026-03-24T08:22:00.000Z",
       "done": true,
       "createdAt": "2026-03-21T08:22:25.228Z",
-      "submittedAt": "2026-03-21T08:25:54.684Z"
+      "completedAt": "2026-03-21T08:25:54.684Z"
     },
     {
       "id": "a-1774085327691-0",
-      "course": "数值分析",
+      "subject": "数值分析",
       "title": "小白公子演示一下",
       "deadline": "2026-03-24T09:28:00.000Z",
       "done": true,
       "createdAt": "2026-03-21T09:28:47.692Z",
-      "submittedAt": "2026-03-21T09:29:23.139Z"
+      "completedAt": "2026-03-21T09:29:23.139Z"
     },
     {
       "id": "a-1774280132268-0",
-      "course": "数值分析",
+      "subject": "数值分析",
       "title": "课本作业",
       "deadline": "2026-03-26T15:35:00.000Z",
       "done": true,
       "createdAt": "2026-03-23T15:35:32.269Z",
-      "submittedAt": "2026-03-26T22:19:21.889Z"
+      "completedAt": "2026-03-26T22:19:21.889Z"
     },
     {
       "id": "a-1774264321861-0",
-      "course": "大数据技术基础",
+      "subject": "大数据技术基础",
       "title": "随堂练习，已经写好了。直接转pdf，周五下午交",
       "deadline": "2026-03-27T11:11:00.000Z",
       "done": true,
       "createdAt": "2026-03-23T11:12:01.861Z",
-      "submittedAt": "2026-03-28T09:32:08.913Z"
+      "completedAt": "2026-03-28T09:32:08.913Z"
     },
     {
       "id": "a-1774070738275",
-      "course": "数值分析",
+      "subject": "数值分析",
       "title": "上机作业",
       "deadline": "2026-03-27T15:59:00.000Z",
-      "needsPhoto": false,
       "done": true,
       "createdAt": "2026-03-21T05:25:38.276Z",
-      "submittedAt": "2026-03-21T08:25:54.684Z"
+      "completedAt": "2026-03-21T08:25:54.684Z"
     },
     {
       "id": "a-1774690624464-0",
-      "course": "其他",
+      "subject": "其他",
       "title": "法规规范",
       "deadline": "2026-03-28T09:34:00.000Z",
       "done": true,
       "createdAt": "2026-03-28T09:37:04.466Z",
-      "submittedAt": "2026-03-28T09:43:59.270Z"
+      "completedAt": "2026-03-28T09:43:59.270Z"
     },
     {
       "id": "a-1774079361861-0",
-      "course": "数据结构与算法",
+      "subject": "数据结构与算法",
       "title": "第三章习题",
       "deadline": "2026-03-28T15:59:00.000Z",
-      "needsPhoto": false,
       "done": true,
       "createdAt": "2026-03-21T07:49:21.861Z",
-      "submittedAt": "2026-03-21T08:25:54.684Z"
+      "completedAt": "2026-03-21T08:25:54.684Z"
     },
     {
       "id": "a-1774278926983-0",
-      "course": "数值分析",
+      "subject": "数值分析",
       "title": "上机练习matlab学习通提交",
       "deadline": "2026-03-29T15:14:00.000Z",
       "done": true,
       "createdAt": "2026-03-23T15:15:26.984Z",
-      "submittedAt": "2026-03-28T09:32:08.916Z"
+      "completedAt": "2026-03-28T09:32:08.916Z"
     },
     {
       "id": "a-1774081554684-0",
-      "course": "马原",
+      "subject": "马原",
       "title": "好好学习",
       "deadline": "2026-03-31T08:25:00.000Z",
       "done": true,
       "createdAt": "2026-03-21T08:25:54.685Z",
-      "submittedAt": "2026-03-21T08:29:27.721Z"
+      "completedAt": "2026-03-21T08:29:27.721Z"
     },
     {
       "id": "a-1774563561895-0",
-      "course": "多元统计分析",
+      "subject": "多元统计分析",
       "title": "ppt证明",
       "deadline": "2026-03-31T09:50:00.000Z",
       "done": true,
       "createdAt": "2026-03-26T22:19:21.895Z",
-      "submittedAt": "2026-04-08T02:45:06.239Z"
+      "completedAt": "2026-04-08T02:45:06.239Z"
     },
     {
       "id": "a-1774330629419-0",
-      "course": "其他",
+      "subject": "其他",
       "title": "能源经济大赛答辩",
       "deadline": "2026-04-01T05:36:00.000Z",
       "done": true,
       "createdAt": "2026-03-24T05:37:09.419Z",
-      "submittedAt": "2026-04-08T02:45:06.243Z"
+      "completedAt": "2026-04-08T02:45:06.243Z"
     },
     {
       "id": "a-1779597022522-0",
-      "course": "体育",
+      "subject": "体育",
       "title": "哈哈哈",
       "deadline": "2026-05-26T04:29:00.000Z",
       "done": true,
       "createdAt": "2026-05-24T04:30:22.522Z",
-      "submittedAt": "2026-05-26T07:06:53.470Z"
+      "completedAt": "2026-05-26T07:06:53.470Z"
     },
     {
       "id": "a-1779595845059-0",
-      "course": "其他",
+      "subject": "其他",
       "title": "测试",
       "deadline": "2026-05-27T15:45:00.000Z",
       "done": true,
       "createdAt": "2026-05-24T04:10:45.059Z",
-      "submittedAt": "2026-05-24T04:27:53.013Z"
+      "completedAt": "2026-05-24T04:27:53.013Z"
     },
     {
       "id": "a-1779779105546-0",
-      "course": "数值分析",
+      "subject": "数值分析",
       "title": "第5章作业",
       "deadline": "2026-05-28T07:04:00.000Z",
       "done": true,
       "createdAt": "2026-05-26T07:05:05.547Z",
-      "submittedAt": "2026-05-28T13:33:10.964Z"
+      "completedAt": "2026-05-28T13:33:10.964Z"
     },
     {
       "id": "a-1779762739555-0",
-      "course": "其他",
+      "subject": "其他",
       "title": "猎豹黑客松",
       "deadline": "2026-05-29T02:31:00.000Z",
       "done": true,
       "createdAt": "2026-05-26T02:32:19.556Z",
-      "submittedAt": "2026-06-03T01:42:40.137Z"
+      "completedAt": "2026-06-03T01:42:40.137Z"
     },
     {
       "id": "a-1779596873014-0",
-      "course": "马原",
+      "subject": "马原",
       "title": "哥哥哥哥",
       "deadline": "2026-05-29T04:12:00.000Z",
       "done": true,
       "createdAt": "2026-05-24T04:27:53.014Z",
-      "submittedAt": "2026-05-26T07:06:53.470Z"
+      "completedAt": "2026-05-26T07:06:53.470Z"
     },
     {
       "id": "a-1779975106388-0",
-      "course": "多元统计分析",
+      "subject": "多元统计分析",
       "title": "简单",
       "deadline": "2026-05-29T13:31:00.000Z",
       "done": true,
       "createdAt": "2026-05-28T13:31:46.389Z",
-      "submittedAt": "2026-05-28T13:33:10.964Z"
+      "completedAt": "2026-05-28T13:33:10.964Z"
     },
     {
       "id": "a-1779757378686-0",
-      "course": "其他",
+      "subject": "其他",
       "title": "测试一下",
       "deadline": "2026-05-31T01:02:00.000Z",
       "done": true,
       "createdAt": "2026-05-26T01:02:58.687Z",
-      "submittedAt": "2026-05-26T07:06:53.470Z"
+      "completedAt": "2026-05-26T07:06:53.470Z"
     },
     {
       "id": "a-1779959330795-0",
-      "course": "其他",
+      "subject": "其他",
       "title": "测试",
       "deadline": "2026-05-31T09:08:00.000Z",
       "done": true,
       "createdAt": "2026-05-28T09:08:50.796Z",
-      "submittedAt": "2026-05-28T13:33:10.964Z"
+      "completedAt": "2026-05-28T13:33:10.964Z"
     },
     {
       "id": "a-mayuan-exam",
-      "course": "马原",
+      "subject": "马原",
       "title": "马原考试",
       "deadline": "2026-06-03T06:00:00.000Z",
       "note": "复习备考",
       "done": true,
       "createdAt": "2026-06-01T12:00:00.000Z",
-      "completedAt": "2026-06-07T04:39:18.787Z"
+      "completedAt": "2026-06-07T11:09:24.533Z"
     },
     {
       "id": "a-xingshi-zhengce",
-      "course": "形势与政策",
+      "subject": "形势与政策",
       "title": "形式与政策作业",
       "deadline": "2026-06-04T15:59:00.000Z",
       "note": "完成并提交",
       "done": true,
       "createdAt": "2026-06-01T12:00:00.000Z",
-      "completedAt": "2026-06-07T04:39:20.611Z"
+      "completedAt": "2026-06-07T11:09:26.616Z"
     },
     {
       "id": "a-bigdata-exam",
-      "course": "大数据技术基础",
+      "subject": "大数据技术基础",
       "title": "大数据基础考试",
       "deadline": "2026-06-14T16:00:00.000Z",
       "note": "复习备考",
@@ -204,7 +202,7 @@
     },
     {
       "id": "a-duoyuan-exam",
-      "course": "多元统计分析",
+      "subject": "多元统计分析",
       "title": "多元统计分析考试",
       "deadline": "2026-06-16T00:00:00.000Z",
       "note": "复习备考",
@@ -213,7 +211,7 @@
     },
     {
       "id": "a-maogai-exam",
-      "course": "毛概",
+      "subject": "毛概",
       "title": "毛概考试",
       "deadline": "2026-06-17T06:00:00.000Z",
       "note": "复习备考",
