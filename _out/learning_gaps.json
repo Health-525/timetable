@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-07T14:55:10.640Z",
+  "generatedAt": "2026-06-08T16:51:12.931Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -19,16 +19,16 @@
   "gaps": [
     {
       "id": "gap-001",
-      "title": "协方差矩阵与特征值分解的桥接：从PCA原理到实现",
+      "title": "协方差矩阵与PCA的数学桥接缺失",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学多元统计分析中的PCA数学推导（特征值分解、协方差矩阵），但未深入理解协方差矩阵如何桥接到特征值分解，以及如何用数值方法（如幂迭代）计算特征向量。当前笔记中PCA部分缺少从协方差矩阵到特征值分解的中间推导步骤。",
+      "why": "已学特征值分解和PCA调用，但未深入理解协方差矩阵如何桥接两者，导致PCA原理理解停留在表面。",
       "prerequisites_met": [
-        "多元统计分析PCA原理",
-        "线性代数特征值分解",
-        "数值分析迭代方法"
+        "线性代数基础",
+        "特征值分解",
+        "PCA基本概念"
       ],
-      "suggestedTopic": "PCA的数值计算与协方差矩阵谱分解",
+      "suggestedTopic": "协方差矩阵与PCA的数学推导",
       "relatedCourses": [
         "04-多元统计分析",
         "05-数值分析"
@@ -37,68 +37,32 @@
     },
     {
       "id": "gap-002",
-      "title": "深度学习基础：从感知机到多层神经网络的数学原理",
+      "title": "深度学习基础模块缺失",
       "category": "AI/ML",
       "priority": 1,
-      "why": "AI学习课程笔记最多（22篇）但内容多为骨架规划，缺少核心深度学习原理笔记。已掌握线性代数、微积分、数值优化基础，但未系统学习反向传播、激活函数、损失函数等基础概念。",
+      "why": "AI学习课程笔记虽多但内容零散，缺乏系统性的深度学习基础（如神经网络、反向传播、CNN/RNN等），与已学PCA等统计方法脱节。",
       "prerequisites_met": [
-        "多元统计分析中的线性模型",
-        "数值分析中的优化方法",
-        "Python数据处理"
+        "Python编程",
+        "多元统计分析",
+        "数值分析"
       ],
-      "suggestedTopic": "深度学习基础：反向传播与神经网络",
+      "suggestedTopic": "深度学习基础（神经网络与反向传播）",
       "relatedCourses": [
         "08-AI学习",
-        "04-多元统计分析"
+        "02-Python数据处理与分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-003",
-      "title": "图神经网络（GAT）的理论深化：注意力机制与图卷积",
-      "category": "AI/ML",
-      "priority": 2,
-      "why": "电脑中有GAT/图注意力网络的Jupyter笔记，但笔记内容较浅，缺少对图注意力机制数学原理、多头注意力、与Transformer关系的深入理解。已具备线性代数和概率论基础。",
-      "prerequisites_met": [
-        "线性代数",
-        "概率论",
-        "Python深度学习基础"
-      ],
-      "suggestedTopic": "图注意力网络（GAT）原理与实现",
-      "relatedCourses": [
-        "08-AI学习",
-        "04-多元统计分析"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-004",
-      "title": "数值线性代数：特征值计算的数值方法",
-      "category": "理论基础",
-      "priority": 2,
-      "why": "数值分析课程已学稳定性分析、秦九韶算法，但缺少特征值计算的数值方法（如幂法、QR算法）。PCA等多元方法依赖特征值分解，但未从数值计算角度理解。",
-      "prerequisites_met": [
-        "数值分析基础",
-        "线性代数特征值",
-        "MATLAB编程"
-      ],
-      "suggestedTopic": "特征值计算的数值方法",
-      "relatedCourses": [
-        "05-数值分析",
-        "04-多元统计分析"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-005",
-      "title": "多Agent系统设计模式：从timetable项目到通用框架",
+      "title": "多Agent系统设计原理缺失",
       "category": "工程深化",
       "priority": 2,
-      "why": "已实现timetable多Agent系统，但笔记中缺少对多Agent协作模式（如规划-执行-反思、工具使用、记忆共享）的系统总结。当前项目偏实践，缺少理论抽象。",
+      "why": "已实现7 Agent的timetable项目，但缺乏对多Agent协作模式、通信协议、任务编排等设计原理的系统学习。",
       "prerequisites_met": [
-        "Node.js开发",
+        "Node.js",
         "GitHub Actions",
-        "LLM API调用"
+        "Agent开发经验"
       ],
       "suggestedTopic": "多Agent系统架构与设计模式",
       "relatedCourses": [
@@ -107,83 +71,87 @@
       "status": "open"
     },
     {
-      "id": "gap-006",
-      "title": "机器学习模型评估与调参：交叉验证、偏差方差权衡",
+      "id": "gap-004",
+      "title": "图神经网络（GAT）原理理解不深",
       "category": "AI/ML",
       "priority": 2,
-      "why": "已学PCA等无监督方法，但缺少监督学习模型评估的系统知识。当前AI学习笔记中未覆盖交叉验证、过拟合、正则化等核心概念。",
+      "why": "电脑中有GAT/图注意力网络笔记，但笔记内容可能仅停留在实现层面，缺乏对注意力机制在图数据上的数学原理推导。",
       "prerequisites_met": [
-        "Python数据处理",
-        "多元统计分析基础"
+        "深度学习基础",
+        "线性代数",
+        "注意力机制概念"
       ],
-      "suggestedTopic": "机器学习模型评估与调参",
+      "suggestedTopic": "图注意力网络（GAT）数学原理",
       "relatedCourses": [
         "08-AI学习",
-        "02-Python数据处理与分析"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-007",
-      "title": "计算机视觉基础：从FrameDetective到图像分类原理",
-      "category": "AI/ML",
-      "priority": 3,
-      "why": "FrameDetective项目使用了Qwen-2.5-VL和SAM-3，但笔记中缺少对视觉模型（CNN、ViT、目标检测）原理的系统学习。用户对AI应用有兴趣，但视觉基础薄弱。",
-      "prerequisites_met": [
-        "Python深度学习基础",
-        "线性代数"
-      ],
-      "suggestedTopic": "计算机视觉基础：CNN与目标检测",
-      "relatedCourses": [
-        "08-AI学习"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-008",
-      "title": "自然语言处理基础：从字幕提取到文本理解",
-      "category": "AI/ML",
-      "priority": 3,
-      "why": "已实现视频字幕提取（Whisper）和AI总结，但缺少NLP基础（词嵌入、RNN、Transformer）的系统学习。当前笔记中未覆盖文本分类、序列标注等任务。",
-      "prerequisites_met": [
-        "Python数据处理",
-        "LLM API调用"
-      ],
-      "suggestedTopic": "自然语言处理基础：词嵌入与Transformer",
-      "relatedCourses": [
-        "08-AI学习"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-009",
-      "title": "概率图模型：从多元统计到贝叶斯网络",
-      "category": "数学桥接",
-      "priority": 3,
-      "why": "多元统计分析中涉及变量关系，但未扩展到概率图模型（贝叶斯网络、马尔可夫随机场）。用户有概率论基础，但笔记中无相关内容。",
-      "prerequisites_met": [
-        "多元统计分析",
-        "概率论基础"
-      ],
-      "suggestedTopic": "概率图模型入门",
-      "relatedCourses": [
         "04-多元统计分析"
       ],
       "status": "open"
     },
     {
-      "id": "gap-010",
-      "title": "模型部署与推理优化：从训练到生产环境",
+      "id": "gap-005",
+      "title": "模型部署与推理优化知识空白",
       "category": "工程深化",
-      "priority": 3,
-      "why": "已有Docker、ECS部署经验，但未涉及AI模型部署（如ONNX、TensorRT、模型量化）。用户有多个AI项目，但缺少模型上线流程的笔记。",
+      "priority": 2,
+      "why": "有多个AI项目经验，但缺乏模型部署（如ONNX、TensorRT）、推理加速、边缘端部署等工程化知识。",
       "prerequisites_met": [
-        "Docker基础",
-        "Python后端开发",
-        "LLM API使用"
+        "Python",
+        "Docker",
+        "深度学习基础"
       ],
-      "suggestedTopic": "AI模型部署与推理优化",
+      "suggestedTopic": "模型部署与推理优化",
       "relatedCourses": [
+        "08-AI学习",
+        "01-大数据技术基础"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-006",
+      "title": "生成式AI（扩散模型/GAN）兴趣缺口",
+      "category": "AI/ML",
+      "priority": 3,
+      "why": "用户对AI发型应用、模型自动替换感兴趣，但未开始学习生成式AI相关技术（如扩散模型、GAN）。",
+      "prerequisites_met": [
+        "深度学习基础",
+        "Python",
+        "图像处理基础"
+      ],
+      "suggestedTopic": "扩散模型与生成式AI",
+      "relatedCourses": [
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-007",
+      "title": "大数据技术基础理论薄弱",
+      "category": "理论基础",
+      "priority": 3,
+      "why": "大数据技术基础课程笔记仅5篇，掌握停留在Linux/Vim使用，缺乏对Hadoop、Spark、分布式系统等核心理论的深入。",
+      "prerequisites_met": [
+        "Linux基础",
+        "编程基础"
+      ],
+      "suggestedTopic": "大数据技术核心（Hadoop/Spark）",
+      "relatedCourses": [
+        "01-大数据技术基础"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-008",
+      "title": "数值分析算法与机器学习结合不足",
+      "category": "数学桥接",
+      "priority": 3,
+      "why": "数值分析课程有8篇笔记，但未与机器学习（如优化算法、梯度下降）建立联系，缺乏交叉应用。",
+      "prerequisites_met": [
+        "数值分析",
+        "机器学习基础"
+      ],
+      "suggestedTopic": "数值优化在机器学习中的应用",
+      "relatedCourses": [
+        "05-数值分析",
         "08-AI学习"
       ],
       "status": "open"
