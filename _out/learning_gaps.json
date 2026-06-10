@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T16:06:14.132Z",
+  "generatedAt": "2026-06-10T16:38:11.056Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -19,120 +19,104 @@
   "gaps": [
     {
       "id": "gap-001",
-      "title": "协方差矩阵与PCA的数学桥接缺失",
+      "title": "协方差矩阵与特征值分解的桥接：从PCA数学推导到sklearn调用",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学多元统计分析中的PCA原理和调用，但笔记中缺少从协方差矩阵特征分解到PCA降维的详细推导，无法解释PCA为何选取最大特征值对应的特征向量。",
+      "why": "已学多元统计分析中的PCA数学推导（特征值分解、协方差矩阵）和Python数据处理（pandas/numpy），但笔记中缺少将两者结合的实践，即如何用numpy手动实现PCA，理解sklearn PCA的底层原理。",
       "prerequisites_met": [
-        "特征值分解",
-        "PCA基本概念",
-        "线性代数基础"
+        "多元统计分析PCA推导",
+        "Python数据处理",
+        "numpy基础"
       ],
-      "suggestedTopic": "PCA的数学推导：协方差矩阵与特征分解",
+      "suggestedTopic": "手动实现PCA：从协方差矩阵到特征分解",
       "relatedCourses": [
         "04-多元统计分析",
-        "05-数值分析"
+        "02-Python数据处理与分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-002",
-      "title": "深度学习基础理论薄弱，仅停留在调用层",
+      "title": "深度学习基础：从感知机到反向传播的数学推导",
       "category": "AI/ML",
       "priority": 1,
-      "why": "AI学习课程笔记最多但内容最弱，仅有骨架规划；虽有GAT/图注意力网络笔记，但缺乏神经网络基础（反向传播、优化器、损失函数）的系统学习。",
+      "why": "AI学习课程笔记最多（22篇）但多为骨架规划，缺少核心原理笔记。已学数值分析和多元统计，具备微积分和线性代数基础，但未系统学习神经网络的前向传播、反向传播推导。",
       "prerequisites_met": [
-        "Python编程",
+        "微积分",
         "线性代数",
-        "微积分"
+        "数值分析"
       ],
-      "suggestedTopic": "深度学习基础：反向传播与优化算法",
+      "suggestedTopic": "神经网络与反向传播数学推导",
       "relatedCourses": [
         "08-AI学习",
-        "02-Python数据处理与分析"
+        "05-数值分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-003",
-      "title": "多Agent系统缺乏系统设计知识",
-      "category": "工程深化",
+      "title": "图神经网络（GAT）原理深入：从注意力机制到图卷积",
+      "category": "AI/ML",
       "priority": 2,
-      "why": "已实现7 Agent学习自动化系统，但笔记中缺少Agent通信协议、任务编排、状态管理等系统设计原理，仅停留在工程实现层面。",
+      "why": "电脑中有GAT/图注意力网络的Jupyter笔记，但笔记中未覆盖图神经网络的基础（图卷积、消息传递），且多元统计中的谱聚类与图论有联系，但未建立桥接。",
       "prerequisites_met": [
-        "Node.js",
-        "GitHub Actions",
-        "Python"
+        "深度学习基础",
+        "线性代数",
+        "注意力机制概念"
       ],
-      "suggestedTopic": "多Agent系统架构设计：通信与编排",
+      "suggestedTopic": "图神经网络基础：GCN与GAT原理",
       "relatedCourses": [
         "08-AI学习",
-        "01-大数据技术基础"
+        "04-多元统计分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-004",
-      "title": "数值分析中误差分析与稳定性理论理解不深",
-      "category": "理论基础",
+      "title": "LLM原理与实践：从Transformer到微调",
+      "category": "AI/ML",
       "priority": 2,
-      "why": "数值分析笔记有8篇，但主要集中在算法实现（秦九韶算法等），对浮点误差、条件数、算法稳定性等核心理论缺乏深入推导。",
+      "why": "已使用多种LLM API（Claude、DeepSeek、GLM），Fork了LLMs-from-scratch仓库，但笔记中缺少Transformer架构、自注意力机制、微调等核心知识。",
       "prerequisites_met": [
-        "MATLAB基础",
-        "数值分析实验"
+        "深度学习基础",
+        "Python编程",
+        "API使用经验"
       ],
-      "suggestedTopic": "数值误差与稳定性分析",
+      "suggestedTopic": "Transformer架构与LLM微调入门",
       "relatedCourses": [
-        "05-数值分析",
-        "04-多元统计分析"
+        "08-AI学习",
+        "07-英语"
       ],
       "status": "open"
     },
     {
       "id": "gap-005",
-      "title": "大数据技术基础缺乏分布式系统实践",
+      "title": "大数据技术基础：Hadoop/Spark生态核心概念",
       "category": "工程深化",
       "priority": 2,
-      "why": "大数据技术基础笔记5篇，但仅停留在Linux/Vim入门，未涉及Hadoop/Spark等分布式框架的实际操作或原理。",
+      "why": "大数据技术基础课程笔记5篇，但多为Linux/Vim入门，缺少HDFS、MapReduce、Spark等核心框架的笔记。已有多Agent系统经验，但大数据分布式计算知识薄弱。",
       "prerequisites_met": [
         "Linux基础",
         "Python编程"
       ],
-      "suggestedTopic": "分布式计算入门：Hadoop与MapReduce",
+      "suggestedTopic": "Hadoop与Spark基础：分布式计算入门",
       "relatedCourses": [
-        "01-大数据技术基础",
-        "02-Python数据处理与分析"
+        "01-大数据技术基础"
       ],
       "status": "open"
     },
     {
       "id": "gap-006",
-      "title": "LLM原理从零实现项目未深入",
-      "category": "AI/ML",
-      "priority": 3,
-      "why": "Fork了LLMs-from-scratch项目但未深入，缺乏对Transformer架构、注意力机制、预训练目标等核心概念的笔记。",
-      "prerequisites_met": [
-        "Python编程",
-        "深度学习基础（待补）"
-      ],
-      "suggestedTopic": "Transformer架构与注意力机制详解",
-      "relatedCourses": [
-        "08-AI学习",
-        "04-多元统计分析"
-      ],
-      "status": "open"
-    },
-    {
-      "id": "gap-007",
-      "title": "数学模型课程缺乏优化算法实战",
+      "title": "数学模型深化：优化理论与数值优化算法",
       "category": "理论基础",
       "priority": 3,
-      "why": "数学模型与数学软件笔记仅2篇，内容基础，未涉及线性规划、整数规划、启发式算法等实际建模与求解。",
+      "why": "数学模型课程笔记2篇，数值分析有MATLAB实验，但缺少优化理论（梯度下降、牛顿法、约束优化）的系统笔记，而这是机器学习的核心基础。",
       "prerequisites_met": [
-        "MATLAB基础",
-        "线性代数"
+        "微积分",
+        "线性代数",
+        "数值分析"
       ],
-      "suggestedTopic": "数学建模中的优化算法：线性规划与整数规划",
+      "suggestedTopic": "优化理论：梯度下降与牛顿法",
       "relatedCourses": [
         "06-数学模型与数学软件",
         "05-数值分析"
@@ -140,53 +124,68 @@
       "status": "open"
     },
     {
-      "id": "gap-008",
-      "title": "计算机视觉基础薄弱，仅停留在调用API",
+      "id": "gap-007",
+      "title": "计算机视觉基础：从图像处理到目标检测",
       "category": "AI/ML",
-      "priority": 2,
-      "why": "FrameDetective项目使用了Qwen-2.5-VL和SAM-3，但笔记中缺乏图像处理基础、卷积神经网络、目标检测原理等知识。",
+      "priority": 3,
+      "why": "FrameDetective项目使用了Qwen-2.5-VL和SAM-3，但笔记中缺少计算机视觉基础（卷积、图像处理、目标检测原理），仅停留在调用API层面。",
       "prerequisites_met": [
         "Python编程",
-        "深度学习基础（待补）"
+        "深度学习基础"
       ],
-      "suggestedTopic": "计算机视觉基础：CNN与目标检测",
+      "suggestedTopic": "计算机视觉入门：CNN与目标检测",
       "relatedCourses": [
-        "08-AI学习",
-        "02-Python数据处理与分析"
+        "08-AI学习"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-008",
+      "title": "多Agent系统设计模式：从timetable项目到通用框架",
+      "category": "工程深化",
+      "priority": 2,
+      "why": "timetable项目实现了7个Agent的学习自动化，但笔记中缺少多Agent协作模式、任务分配、通信协议等设计模式的总结，不利于复用和扩展。",
+      "prerequisites_met": [
+        "Node.js",
+        "GitHub Actions",
+        "Python"
+      ],
+      "suggestedTopic": "多Agent系统架构与设计模式",
+      "relatedCourses": [
+        "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-009",
-      "title": "RAG系统缺乏检索与生成原理理解",
+      "title": "RAG系统深入：从向量数据库到检索增强生成",
       "category": "AI/ML",
       "priority": 3,
-      "why": "已使用RAG技术，但笔记中缺少向量数据库、嵌入模型、检索策略、生成融合等核心原理的系统学习。",
+      "why": "videonote-ai项目使用了n8n+AssemblyAI+DeepSeek，但笔记中缺少RAG原理（嵌入、检索、融合）的深入笔记，仅停留在工具使用层面。",
       "prerequisites_met": [
         "LLM API使用",
         "Python编程"
       ],
-      "suggestedTopic": "RAG系统原理：检索增强生成技术详解",
+      "suggestedTopic": "RAG系统原理与实践",
       "relatedCourses": [
-        "08-AI学习",
-        "01-大数据技术基础"
+        "08-AI学习"
       ],
       "status": "open"
     },
     {
       "id": "gap-010",
-      "title": "数据结构与算法缺乏高级主题",
-      "category": "理论基础",
-      "priority": 3,
-      "why": "数据结构与算法笔记仅涉及哈夫曼编码，缺少图算法、动态规划、字符串匹配等常见面试与竞赛主题。",
+      "title": "发型AI应用：图像分割与生成模型入门",
+      "category": "项目实战",
+      "priority": 1,
+      "why": "用户明确对AI发型应用感兴趣（模型自动替换），但笔记中缺少图像分割（SAM）、生成模型（Stable Diffusion）等基础知识，无法直接实现该创意。",
       "prerequisites_met": [
-        "C/C++编程",
-        "基础数据结构"
+        "Python编程",
+        "深度学习基础",
+        "FrameDetective经验"
       ],
-      "suggestedTopic": "高级算法：图算法与动态规划",
+      "suggestedTopic": "图像分割与生成模型：从SAM到Stable Diffusion",
       "relatedCourses": [
-        "03-数据结构与算法",
-        "05-数值分析"
+        "08-AI学习"
       ],
       "status": "open"
     }
