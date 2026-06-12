@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T16:57:24.303Z",
+  "generatedAt": "2026-06-12T16:22:52.449Z",
   "profile": {
     "strengths": [
       "**多元统计分析**：手写数学推导，能解释 PCA/LDA/CCA 原理",
@@ -22,7 +22,7 @@
       "title": "协方差矩阵与PCA的数学桥接缺失",
       "category": "数学桥接",
       "priority": 1,
-      "why": "已学特征值分解和PCA调用，但笔记中缺少协方差矩阵如何从数据计算、特征分解后如何得到主成分的推导过程。",
+      "why": "已学特征值分解和PCA调用，但笔记中缺少协方差矩阵如何从数据构造、特征分解与主成分方向的对应关系，导致PCA原理理解停留在表面。",
       "prerequisites_met": [
         "线性代数基础",
         "特征值分解",
@@ -40,30 +40,31 @@
       "title": "深度学习模型训练流程不完整",
       "category": "AI/ML",
       "priority": 1,
-      "why": "AI学习笔记有22篇但多为骨架规划，缺少从数据加载、模型定义、训练循环到评估的完整实战笔记。",
+      "why": "AI学习笔记有22篇但多为骨架规划，缺少从数据加载、模型定义、损失函数、反向传播到评估的完整训练代码实践，尤其缺少PyTorch/TensorFlow实战。",
       "prerequisites_met": [
         "Python基础",
         "numpy/pandas",
-        "PyTorch/TensorFlow基本概念"
+        "机器学习基础概念"
       ],
-      "suggestedTopic": "深度学习完整训练流程实战",
+      "suggestedTopic": "PyTorch深度学习实战：图像分类",
       "relatedCourses": [
-        "08-AI学习"
+        "08-AI学习",
+        "02-Python数据处理与分析"
       ],
       "status": "open"
     },
     {
       "id": "gap-003",
-      "title": "多Agent系统设计模式未系统化",
+      "title": "多Agent系统通信机制理解不足",
       "category": "工程深化",
       "priority": 2,
-      "why": "timetable项目使用了7个Agent，但笔记中缺少对Agent通信、任务编排、错误处理等设计模式的总结。",
+      "why": "已搭建7 Agent的timetable系统，但笔记中缺少Agent间消息传递、任务编排、状态同步等核心机制的原理分析，停留在工具使用层面。",
       "prerequisites_met": [
         "Node.js",
         "GitHub Actions",
-        "LLM API调用"
+        "API调用"
       ],
-      "suggestedTopic": "多Agent系统架构设计模式",
+      "suggestedTopic": "多Agent系统架构与通信协议",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -71,31 +72,34 @@
     },
     {
       "id": "gap-004",
-      "title": "数值分析中误差分析与稳定性理论薄弱",
+      "title": "数值分析中误差传播与稳定性缺乏深入理解",
       "category": "理论基础",
       "priority": 2,
-      "why": "数值分析实验完成了秦九韶算法和稳定性分析，但笔记中缺少对截断误差、舍入误差、条件数等核心概念的深入推导。",
+      "why": "数值分析笔记有10篇但多为MATLAB实验记录，缺少对截断误差、舍入误差、算法稳定性等核心概念的数学推导和对比分析。",
       "prerequisites_met": [
-        "MATLAB基础",
-        "数值分析基本概念"
+        "微积分",
+        "线性代数",
+        "MATLAB基础"
       ],
-      "suggestedTopic": "数值误差分析与算法稳定性理论",
+      "suggestedTopic": "数值误差分析与算法稳定性",
       "relatedCourses": [
-        "05-数值分析"
+        "05-数值分析",
+        "06-数学模型与数学软件"
       ],
       "status": "open"
     },
     {
       "id": "gap-005",
-      "title": "大数据技术栈缺乏分布式系统实践",
+      "title": "大数据技术栈缺少分布式计算实践",
       "category": "工程深化",
       "priority": 2,
-      "why": "大数据技术基础笔记有5篇但偏理论，缺少Hadoop/Spark等分布式框架的实际操作笔记。",
+      "why": "大数据技术基础笔记5篇但偏理论，缺少Hadoop/Spark等分布式框架的实际操作，无法处理大规模数据。",
       "prerequisites_met": [
         "Linux基础",
-        "Java基础"
+        "Java基础",
+        "Python"
       ],
-      "suggestedTopic": "Hadoop/Spark分布式计算入门实践",
+      "suggestedTopic": "Hadoop/Spark入门实战",
       "relatedCourses": [
         "01-大数据技术基础"
       ],
@@ -103,15 +107,16 @@
     },
     {
       "id": "gap-006",
-      "title": "AI学习笔记缺少模型评估与调优方法论",
+      "title": "AI模型部署与推理优化未涉及",
       "category": "AI/ML",
       "priority": 3,
-      "why": "AI学习笔记有22篇但多为规划，缺少关于过拟合、欠拟合、交叉验证、超参数调优等模型评估内容的笔记。",
+      "why": "有多个AI项目但笔记中缺少模型导出（ONNX/TensorRT）、推理加速、API服务化等部署知识，无法将模型落地。",
       "prerequisites_met": [
-        "机器学习基础概念",
-        "Python"
+        "Python",
+        "深度学习基础",
+        "Docker基础"
       ],
-      "suggestedTopic": "模型评估与超参数调优",
+      "suggestedTopic": "模型部署与推理优化",
       "relatedCourses": [
         "08-AI学习"
       ],
@@ -119,18 +124,35 @@
     },
     {
       "id": "gap-007",
-      "title": "用户兴趣方向（AI发型应用）缺乏技术储备",
-      "category": "项目实战",
+      "title": "数据结构与算法中图算法缺失",
+      "category": "理论基础",
       "priority": 3,
-      "why": "用户对AI发型应用感兴趣，但笔记中缺少图像生成、风格迁移、人脸关键点检测等相关技术笔记。",
+      "why": "数据结构笔记仅涉及哈夫曼编码，缺少图遍历（BFS/DFS）、最短路径、最小生成树等核心图算法，而图在推荐系统、社交网络分析中很重要。",
       "prerequisites_met": [
-        "Python",
-        "深度学习基础",
-        "OpenCV基础"
+        "C/C++基础",
+        "基础数据结构"
       ],
-      "suggestedTopic": "图像生成与风格迁移技术",
+      "suggestedTopic": "图算法：BFS/DFS与最短路径",
       "relatedCourses": [
-        "08-AI学习"
+        "03-数据结构与算法"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "gap-008",
+      "title": "数学模型课程中优化算法缺乏实践",
+      "category": "数学桥接",
+      "priority": 3,
+      "why": "数学模型笔记2篇，缺少线性规划、整数规划、梯度下降等优化算法的MATLAB/Python实现，无法解决实际优化问题。",
+      "prerequisites_met": [
+        "线性代数",
+        "MATLAB基础",
+        "Python"
+      ],
+      "suggestedTopic": "优化算法：线性规划与梯度下降",
+      "relatedCourses": [
+        "06-数学模型与数学软件",
+        "05-数值分析"
       ],
       "status": "open"
     }
